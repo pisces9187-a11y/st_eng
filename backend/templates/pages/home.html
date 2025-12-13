@@ -1,0 +1,409 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Học Tiếng Anh Online - Chinh phục Tiếng Anh giao tiếp sau 3 tháng{% endblock %}
+
+{% block meta_description %}Nền tảng học tiếng Anh online hiệu quả với Flashcard, Luyện nghe, Luyện nói, Luyện viết và bài test đánh giá trình độ.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtext {
+        font-size: 1.25rem;
+        color: #495057;
+    }
+    
+    /* Feature Cards */
+    .feature-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+        border-radius: 20px;
+        background: rgba(244, 124, 38, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Teacher Cards */
+    .teacher-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .teacher-card img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 4px solid #F47C26;
+    }
+    
+    /* Testimonial */
+    .testimonial-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .testimonial-card img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+    }
+    
+    /* CTA Gradient */
+    .bg-gradient-orange {
+        background: linear-gradient(135deg, #F47C26 0%, #e06b1a 100%);
+    }
+    
+    /* Partner Logos */
+    .partner-logo {
+        height: 40px;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+    }
+    
+    .partner-logo:hover {
+        opacity: 1;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-subtext {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="display-3 fw-bold text-primary-dark mb-4 hero-title">
+                    Từ <span class="text-energetic-orange">"Ấp Úng"</span> Đến <span class="text-energetic-orange">"Bắn"</span> Tiếng Anh Như Gió.
+                </h1>
+                <p class="lead hero-subtext mb-4">
+                    Bạn giỏi ngữ pháp nhưng sợ giao tiếp? Phương pháp phản xạ độc quyền của chúng tôi sẽ giúp bạn mở miệng nói tiếng Anh tự nhiên ngay từ bài học đầu tiên.
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-3 mb-3">
+                    <a href="{% url 'users:onboarding' %}" class="btn btn-primary-orange btn-lg shadow">
+                        <i class="fas fa-rocket me-2"></i>HỌC THỬ MIỄN PHÍ NGAY
+                    </a>
+                    <a href="{% url 'users:onboarding' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-clipboard-check me-2"></i>Kiểm tra trình độ
+                    </a>
+                </div>
+                <div class="mb-4">
+                    <p class="small text-muted mb-0">
+                        <i class="fas fa-sparkles text-energetic-orange me-2"></i>Không cần thẻ tín dụng. Hủy bất cứ lúc nào.
+                    </p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="text-warning">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <span class="text-muted">Hơn <strong>10,000 học viên</strong> đã tham gia</span>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center">
+                <div class="p-4">
+                    <i class="fas fa-graduation-cap text-energetic-orange" style="font-size: 12rem; opacity: 0.9;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Social Proof Banner -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="text-center mb-3">
+            <p class="text-muted mb-0">Đối tác và được tin tưởng bởi</p>
+        </div>
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-5">
+            <span class="text-muted fw-bold">Google</span>
+            <span class="text-muted fw-bold">Microsoft</span>
+            <span class="text-muted fw-bold">Amazon</span>
+            <span class="text-muted fw-bold">VinGroup</span>
+            <span class="text-muted fw-bold">FPT</span>
+        </div>
+    </div>
+</section>
+
+<!-- Value Proposition Section -->
+<section class="py-5 my-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-primary-dark mb-3">Tại sao chọn chúng tôi?</h2>
+            <p class="lead text-muted">Phương pháp học tập hiện đại, hiệu quả vượt trội</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card text-center h-100 p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-brain fa-2x text-energetic-orange"></i>
+                    </div>
+                    <h3 class="h5 fw-bold text-primary-dark mb-3">AI Cá nhân hóa</h3>
+                    <p class="text-muted">Lộ trình học được AI tối ưu dựa trên trình độ và mục tiêu của bạn.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card text-center h-100 p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-gamepad fa-2x text-energetic-orange"></i>
+                    </div>
+                    <h3 class="h5 fw-bold text-primary-dark mb-3">Gamification</h3>
+                    <p class="text-muted">Học như chơi game với XP, Streak, Bảng xếp hạng và Huy hiệu.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card text-center h-100 p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-users fa-2x text-energetic-orange"></i>
+                    </div>
+                    <h3 class="h5 fw-bold text-primary-dark mb-3">Cộng đồng</h3>
+                    <p class="text-muted">Diễn đàn trao đổi, thử thách nhóm và hỗ trợ từ giáo viên.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card text-center h-100 p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-certificate fa-2x text-energetic-orange"></i>
+                    </div>
+                    <h3 class="h5 fw-bold text-primary-dark mb-3">Chứng chỉ</h3>
+                    <p class="text-muted">Nhận chứng chỉ có giá trị khi hoàn thành mỗi cấp độ.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-primary-dark mb-3">Bắt đầu trong 3 bước</h2>
+            <p class="lead text-muted">Đơn giản, nhanh chóng và hiệu quả</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <div class="mb-4" style="width:80px;height:80px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
+                        <span class="text-white fw-bold fs-2">1</span>
+                    </div>
+                    <h3 class="h4 fw-bold text-primary-dark mb-3">Làm bài test</h3>
+                    <p class="text-muted mb-0">Đánh giá chính xác trình độ hiện tại qua bài test thông minh chỉ 15 phút.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <div class="mb-4" style="width:80px;height:80px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
+                        <span class="text-white fw-bold fs-2">2</span>
+                    </div>
+                    <h3 class="h4 fw-bold text-primary-dark mb-3">Nhận lộ trình</h3>
+                    <p class="text-muted mb-0">AI xây dựng lộ trình học cá nhân hóa, tối ưu thời gian và hiệu quả.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <div class="mb-4" style="width:80px;height:80px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
+                        <span class="text-white fw-bold fs-2">3</span>
+                    </div>
+                    <h3 class="h4 fw-bold text-primary-dark mb-3">Học & Nhận chứng chỉ</h3>
+                    <p class="text-muted mb-0">Luyện tập mỗi ngày với bài tập tương tác và nhận chứng chỉ khi hoàn thành.</p>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'users:onboarding' %}" class="btn btn-primary-orange btn-lg">
+                <i class="fas fa-play me-2"></i>Bắt đầu ngay
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Teachers Section -->
+<section class="py-5 bg-primary-dark" id="teachers">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-white mb-3">Giáo viên tiêu biểu</h2>
+            <p class="lead text-light opacity-75">Đội ngũ giáo viên bản xứ giàu kinh nghiệm</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="teacher-card text-center">
+                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
+                        <span class="text-white fw-bold fs-3">SJ</span>
+                    </div>
+                    <h4 class="fw-bold text-primary-dark mb-2">Sarah Johnson</h4>
+                    <p class="text-muted mb-2">🇺🇸 USA</p>
+                    <p class="small text-muted mb-0">8 năm kinh nghiệm</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="teacher-card text-center">
+                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
+                        <span class="text-white fw-bold fs-3">JW</span>
+                    </div>
+                    <h4 class="fw-bold text-primary-dark mb-2">James Wilson</h4>
+                    <p class="text-muted mb-2">🇬🇧 UK</p>
+                    <p class="small text-muted mb-0">10 năm kinh nghiệm</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="teacher-card text-center">
+                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
+                        <span class="text-white fw-bold fs-3">ED</span>
+                    </div>
+                    <h4 class="fw-bold text-primary-dark mb-2">Emma Davis</h4>
+                    <p class="text-muted mb-2">🇦🇺 Australia</p>
+                    <p class="small text-muted mb-0">6 năm kinh nghiệm</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="teacher-card text-center">
+                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
+                        <span class="text-white fw-bold fs-3">MB</span>
+                    </div>
+                    <h4 class="fw-bold text-primary-dark mb-2">Michael Brown</h4>
+                    <p class="text-muted mb-2">🇨🇦 Canada</p>
+                    <p class="small text-muted mb-0">7 năm kinh nghiệm</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5" id="testimonials">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-primary-dark mb-3">Học viên nói gì về chúng tôi</h2>
+            <p class="lead text-muted">Hơn 10,000 học viên đã thay đổi cuộc sống</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card p-4 h-100">
+                    <div class="mb-3 text-warning">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-muted mb-4">"Sau 3 tháng học với EnglishMaster, tôi đã tự tin giao tiếp với đối tác nước ngoài. Phương pháp học rất khoa học!"</p>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#183B56,#2C5282);display:flex;align-items:center;justify-content:center;">
+                            <span class="text-white fw-bold">A</span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-primary-dark mb-0">Nguyễn Văn A</h6>
+                            <small class="text-muted">Marketing Manager</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card p-4 h-100">
+                    <div class="mb-3 text-warning">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-muted mb-4">"Tôi đã thử nhiều app học tiếng Anh nhưng chưa cái nào hiệu quả như EnglishMaster. Cảm ơn đội ngũ!"</p>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#183B56,#2C5282);display:flex;align-items:center;justify-content:center;">
+                            <span class="text-white fw-bold">B</span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-primary-dark mb-0">Trần Thị B</h6>
+                            <small class="text-muted">Software Engineer</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card p-4 h-100">
+                    <div class="mb-3 text-warning">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-muted mb-4">"Từ A2 lên B2 chỉ trong 6 tháng! Điều tôi không nghĩ là có thể. EnglishMaster đã thay đổi cuộc sống của tôi."</p>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#183B56,#2C5282);display:flex;align-items:center;justify-content:center;">
+                            <span class="text-white fw-bold">C</span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-primary-dark mb-0">Lê Văn C</h6>
+                            <small class="text-muted">University Student</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA Section -->
+<section class="py-5 bg-gradient-orange text-white">
+    <div class="container py-4">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-4">Bạn đã sẵn sàng thay đổi trình độ Tiếng Anh?</h2>
+                <p class="lead mb-5 opacity-90">Hãy bắt đầu hành trình chinh phục Tiếng Anh của bạn ngay hôm nay!</p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="{% url 'users:signup' %}" class="btn btn-light btn-lg shadow-lg px-5">
+                        <i class="fas fa-rocket me-2"></i>ĐĂNG KÝ NGAY
+                    </a>
+                    <a href="{% url 'users:onboarding' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-clipboard-check me-2"></i>KIỂM TRA TRÌNH ĐỘ MIỄN PHÍ
+                    </a>
+                </div>
+                <p class="mt-4 mb-0 opacity-75"><small><i class="fas fa-shield-alt me-2"></i>Không cần thẻ tín dụng • Hủy bất cứ lúc nào</small></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

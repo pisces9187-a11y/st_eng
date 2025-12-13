@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    
+    <style>
+        body {
+            background: #F9FAFC;
+            font-family: 'Open Sans', sans-serif;
+        }
+        
+        .notifications-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .notifications-header {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        
+        .notifications-header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #183B56;
+            margin-bottom: 16px;
+        }
+        
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 10px 24px;
+            border: 2px solid #E0E6ED;
+            background: white;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #57606F;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-tab:hover, .filter-tab.active {
+            border-color: #F47C26;
+            color: #F47C26;
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        .filter-tab .badge {
+            background: #E0E6ED;
+            color: #57606F;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+        
+        .filter-tab.active .badge {
+            background: #F47C26;
+            color: white;
+        }
+        
+        /* Actions Bar */
+        .actions-bar {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .btn-action {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-mark-read {
+            background: #2ECC71;
+            color: white;
+        }
+        
+        .btn-mark-read:hover {
+            background: #27AE60;
+        }
+        
+        .btn-delete {
+            background: #E74C3C;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #C0392B;
+        }
+        
+        .select-all-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        /* Notifications List */
+        .notifications-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .notification-item {
+            display: flex;
+            gap: 20px;
+            padding: 24px;
+            border-bottom: 1px solid #E0E6ED;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-item:hover {
+            background: rgba(244, 124, 38, 0.03);
+        }
+        
+        .notification-item.unread {
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        .notification-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+        
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.25rem;
+            color: white;
+        }
+        
+        .notification-icon.lesson {
+            background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+        }
+        
+        .notification-icon.achievement {
+            background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+        }
+        
+        .notification-icon.reminder {
+            background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+        }
+        
+        .notification-icon.system {
+            background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+        }
+        
+        .notification-icon.promo {
+            background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+        }
+        
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .notification-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+        
+        .notification-item.unread .notification-title {
+            color: #F47C26;
+        }
+        
+        .notification-time {
+            color: #57606F;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            margin-left: 12px;
+        }
+        
+        .notification-message {
+            color: #2C3E50;
+            line-height: 1.6;
+            font-size: 0.9375rem;
+            margin-bottom: 12px;
+        }
+        
+        .notification-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .notification-btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-btn-primary {
+            background: #F47C26;
+            color: white;
+        }
+        
+        .notification-btn-primary:hover {
+            background: #D35400;
+        }
+        
+        .notification-btn-secondary {
+            background: #E0E6ED;
+            color: #57606F;
+        }
+        
+        .notification-btn-secondary:hover {
+            background: #D1D8E0;
+        }
+        
+        .unread-badge {
+            width: 10px;
+            height: 10px;
+            background: #F47C26;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #E0E6ED;
+            margin-bottom: 24px;
+        }
+        
+        .empty-state h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #57606F;
+            margin-bottom: 12px;
+        }
+        
+        /* Settings Panel */
+        .settings-panel {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-top: 24px;
+        }
+        
+        .settings-panel h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            margin-bottom: 24px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #E0E6ED;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-info h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #183B56;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        
+        .setting-info p {
+            color: #57606F;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #E0E6ED;
+            border-radius: 30px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: #F47C26;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="notifications-container">
+            <!-- Header -->
+            <div class="notifications-header">
+                <h1><i class="fas fa-bell me-3"></i>Thông báo</h1>
+                <div class="filter-tabs">
+                    <button 
+                        v-for="tab in tabs" 
+                        :key="tab.value"
+                        class="filter-tab"
+                        :class="{active: activeTab === tab.value}"
+                        @click="activeTab = tab.value"
+                    >
+                        {{ tab.label }}
+                        <span class="badge">{{ getTabCount(tab.value) }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions Bar -->
+            <div class="actions-bar" v-if="filteredNotifications.length > 0">
+                <div class="bulk-actions">
+                    <input 
+                        type="checkbox" 
+                        class="select-all-checkbox"
+                        v-model="selectAll"
+                        @change="toggleSelectAll"
+                    >
+                    <span class="text-muted" style="font-size: 0.875rem;">
+                        {{ selectedCount > 0 ? selectedCount + ' đã chọn' : 'Chọn tất cả' }}
+                    </span>
+                </div>
+                <div class="bulk-actions">
+                    <button class="btn-action btn-mark-read" @click="markSelectedAsRead" v-if="selectedCount > 0">
+                        <i class="fas fa-check me-2"></i>Đánh dấu đã đọc
+                    </button>
+                    <button class="btn-action btn-delete" @click="deleteSelected" v-if="selectedCount > 0">
+                        <i class="fas fa-trash me-2"></i>Xóa
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-list" v-if="filteredNotifications.length > 0">
+                <div 
+                    v-for="notification in filteredNotifications" 
+                    :key="notification.id"
+                    class="notification-item"
+                    :class="{unread: !notification.read}"
+                    @click="openNotification(notification)"
+                >
+                    <input 
+                        type="checkbox" 
+                        class="notification-checkbox"
+                        v-model="notification.selected"
+                        @click.stop
+                    >
+                    <div class="notification-icon" :class="notification.type">
+                        <i :class="getIconClass(notification.type)"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <div class="notification-title">{{ notification.title }}</div>
+                            <div class="notification-time">{{ notification.time }}</div>
+                        </div>
+                        <div class="notification-message">{{ notification.message }}</div>
+                        <div class="notification-actions" v-if="notification.actions">
+                            <button 
+                                v-for="action in notification.actions" 
+                                :key="action.label"
+                                class="notification-btn"
+                                :class="'notification-btn-' + action.type"
+                                @click.stop="handleAction(action, notification)"
+                            >
+                                {{ action.label }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="notifications-list">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>Không có thông báo</h3>
+                    <p class="text-muted">Bạn đã xem hết tất cả thông báo</p>
+                </div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div class="settings-panel">
+                <h3><i class="fas fa-cog me-2"></i>Cài đặt thông báo</h3>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Nhắc nhở học tập hàng ngày</h4>
+                        <p>Nhận thông báo nhắc bạn học vào mỗi ngày</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" v-model="settings.dailyReminder">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Thành tựu & Phần thưởng</h4>
+                        <p>Thông báo khi đạt được thành tựu mới</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" v-model="settings.achievements">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Bài học mới</h4>
+                        <p>Thông báo khi có bài học mới được thêm vào</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" v-model="settings.newLessons">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Khuyến mãi & Ưu đãi</h4>
+                        <p>Nhận thông báo về các chương trình khuyến mãi</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" v-model="settings.promotions">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Email thông báo</h4>
+                        <p>Gửi thông báo quan trọng qua email</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" v-model="settings.emailNotifications">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeTab: 'all',
+                    selectAll: false,
+                    tabs: [
+                        { value: 'all', label: 'Tất cả' },
+                        { value: 'unread', label: 'Chưa đọc' },
+                        { value: 'lesson', label: 'Bài học' },
+                        { value: 'achievement', label: 'Thành tựu' },
+                        { value: 'reminder', label: 'Nhắc nhở' },
+                        { value: 'system', label: 'Hệ thống' }
+                    ],
+                    settings: {
+                        dailyReminder: true,
+                        achievements: true,
+                        newLessons: true,
+                        promotions: false,
+                        emailNotifications: true
+                    },
+                    notifications: [
+                        {
+                            id: 1,
+                            type: 'lesson',
+                            title: 'Bài học mới: Advanced Grammar',
+                            message: 'Bài học "Conditional Sentences" vừa được thêm vào khóa học B2 của bạn.',
+                            time: '5 phút trước',
+                            read: false,
+                            selected: false,
+                            actions: [
+                                { label: 'Học ngay', type: 'primary', link: 'lesson-player.html' },
+                                { label: 'Xem sau', type: 'secondary' }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            type: 'achievement',
+                            title: '🏆 Thành tựu mới: Streak Master',
+                            message: 'Chúc mừng! Bạn đã học liên tục 15 ngày và nhận được 500 XP.',
+                            time: '2 giờ trước',
+                            read: false,
+                            selected: false,
+                            actions: [
+                                { label: 'Xem thành tựu', type: 'primary', link: 'achievements.html' }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            type: 'reminder',
+                            title: '⏰ Đã đến giờ học rồi!',
+                            message: 'Bạn chưa hoàn thành mục tiêu học 30 phút hôm nay. Hãy bắt đầu ngay!',
+                            time: '3 giờ trước',
+                            read: false,
+                            selected: false,
+                            actions: [
+                                { label: 'Học ngay', type: 'primary', link: 'dashboard.html' }
+                            ]
+                        },
+                        {
+                            id: 4,
+                            type: 'system',
+                            title: 'Cập nhật hệ thống',
+                            message: 'Chúng tôi đã thêm tính năng luyện nói mới với AI. Hãy thử ngay!',
+                            time: '1 ngày trước',
+                            read: true,
+                            selected: false,
+                            actions: [
+                                { label: 'Thử ngay', type: 'primary', link: 'speaking-practice.html' }
+                            ]
+                        },
+                        {
+                            id: 5,
+                            type: 'promo',
+                            title: '🎉 Ưu đãi đặc biệt: Giảm 30%',
+                            message: 'Nâng cấp lên Pro chỉ với 84k/tháng. Ưu đãi kết thúc trong 48 giờ!',
+                            time: '1 ngày trước',
+                            read: true,
+                            selected: false,
+                            actions: [
+                                { label: 'Nâng cấp ngay', type: 'primary', link: 'pricing.html' }
+                            ]
+                        },
+                        {
+                            id: 6,
+                            type: 'lesson',
+                            title: 'Hoàn thành 10 bài học',
+                            message: 'Bạn đã hoàn thành 10 bài học trong tuần này. Thật tuyệt vời!',
+                            time: '2 ngày trước',
+                            read: true,
+                            selected: false
+                        }
+                    ]
+                };
+            },
+            computed: {
+                filteredNotifications() {
+                    if (this.activeTab === 'all') {
+                        return this.notifications;
+                    } else if (this.activeTab === 'unread') {
+                        return this.notifications.filter(n => !n.read);
+                    } else {
+                        return this.notifications.filter(n => n.type === this.activeTab);
+                    }
+                },
+                selectedCount() {
+                    return this.notifications.filter(n => n.selected).length;
+                }
+            },
+            methods: {
+                getTabCount(tab) {
+                    if (tab === 'all') {
+                        return this.notifications.length;
+                    } else if (tab === 'unread') {
+                        return this.notifications.filter(n => !n.read).length;
+                    } else {
+                        return this.notifications.filter(n => n.type === tab).length;
+                    }
+                },
+                getIconClass(type) {
+                    const icons = {
+                        lesson: 'fas fa-book',
+                        achievement: 'fas fa-trophy',
+                        reminder: 'fas fa-bell',
+                        system: 'fas fa-info-circle',
+                        promo: 'fas fa-gift'
+                    };
+                    return icons[type] || 'fas fa-bell';
+                },
+                toggleSelectAll() {
+                    this.filteredNotifications.forEach(n => {
+                        n.selected = this.selectAll;
+                    });
+                },
+                markSelectedAsRead() {
+                    this.notifications.forEach(n => {
+                        if (n.selected) {
+                            n.read = true;
+                            n.selected = false;
+                        }
+                    });
+                    this.selectAll = false;
+                },
+                deleteSelected() {
+                    if (confirm('Bạn có chắc muốn xóa ' + this.selectedCount + ' thông báo?')) {
+                        this.notifications = this.notifications.filter(n => !n.selected);
+                        this.selectAll = false;
+                    }
+                },
+                openNotification(notification) {
+                    notification.read = true;
+                    // In production: Mark as read in backend
+                },
+                handleAction(action, notification) {
+                    if (action.link) {
+                        window.location.href = action.link;
+                    } else {
+                        notification.read = true;
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

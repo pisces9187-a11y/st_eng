@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Player - Unit 5: Past Simple</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Lesson Player Specific Styles */
+        .grammar-ic {
+            background-color: rgba(24, 59, 86, 0.1); /* Xanh nhạt */
+            border-bottom: 2px solid var(--bs-secondary);
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+        
+        .grammar-ic:hover {
+            background-color: rgba(24, 59, 86, 0.2);
+        }
+        
+        .grammar-dc {
+            background-color: rgba(244, 124, 38, 0.1); /* Cam nhạt */
+            border-bottom: 2px solid var(--bs-primary);
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+        
+        .grammar-dc:hover {
+            background-color: rgba(244, 124, 38, 0.2);
+        }
+        
+        .video-placeholder {
+            background: linear-gradient(135deg, #183B56 0%, #2C5F8D 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+        
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background: rgba(244, 124, 38, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .play-button:hover {
+            transform: scale(1.1);
+            background: rgba(244, 124, 38, 1);
+        }
+        
+        .dictation-input {
+            max-width: 120px;
+            border-bottom: 2px solid var(--bs-primary) !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="vh-100 d-flex flex-column bg-white">
+            <!-- Top Navigation Bar -->
+            <nav class="navbar px-4 border-bottom bg-white">
+                <div class="d-flex align-items-center w-100">
+                    <button class="btn btn-light rounded-circle" @click="goBack">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="progress flex-grow-1 mx-3" style="height: 8px;">
+                        <div class="progress-bar bg-primary" role="progressbar" :style="{width: progress + '%'}"></div>
+                    </div>
+                    <div class="fw-bold text-secondary">{{ lessonTitle }}</div>
+                </div>
+            </nav>
+
+            <div class="container-fluid flex-grow-1 d-flex p-0">
+                <!-- Main Content Area -->
+                <main class="col-lg-8 col-12 p-4 bg-light overflow-auto">
+                    
+                    <!-- Video Player Area -->
+                    <div class="ratio ratio-16x9 shadow-lg rounded-3 mb-4 video-placeholder position-relative">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-white">
+                            <div class="play-button" @click="togglePlay">
+                                <i class="fas fa-play fa-2x text-white" v-if="!isPlaying"></i>
+                                <i class="fas fa-pause fa-2x text-white" v-else></i>
+                            </div>
+                            <p class="mt-3 fw-bold">{{ isPlaying ? 'Video đang phát...' : 'Bấm để phát video' }}</p>
+                        </div>
+                        
+                        <!-- Video Controls Overlay -->
+                        <div class="position-absolute bottom-0 start-0 end-0 p-3 bg-gradient" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-sm btn-light rounded-pill" @click="rewind">
+                                    <i class="fas fa-undo me-1"></i>Rewind 5s
+                                </button>
+                                <button class="btn btn-sm btn-warning rounded-pill">
+                                    <i class="fas fa-repeat me-1"></i>A-B Loop
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sentence Analyzer Card -->
+                    <div class="card border-0 shadow-sm p-4 mb-4">
+                        <h5 class="text-secondary mb-3">
+                            <i class="fas fa-search-plus me-2"></i>Phân tích câu (Sentence Analyzer)
+                        </h5>
+                        
+                        <p class="fs-5 lh-lg">
+                            <span class="grammar-ic" data-bs-toggle="tooltip" data-bs-placement="top" title="Mệnh đề độc lập (Independent Clause)">
+                                I decided to learn English
+                            </span>
+                            <span class="grammar-dc" data-bs-toggle="tooltip" data-bs-placement="top" title="Mệnh đề phụ - Lý do (Dependent Clause)">
+                                because I want to travel the world.
+                            </span>
+                        </p>
+                        
+                        <div class="d-flex gap-2 mt-3 flex-wrap">
+                            <button class="btn btn-outline-secondary btn-sm" @click="toggleGrammar">
+                                <i class="fas fa-eye me-1"></i>Hiện IC/DC
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" @click="changeSpeed">
+                                <i class="fas fa-hare me-1"></i>{{ playbackSpeed }}x
+                            </button>
+                            <button class="btn btn-danger btn-sm text-white" @click="startRecording">
+                                <i class="fas fa-microphone me-1"></i>{{ isRecording ? 'Dừng ghi âm' : 'Ghi âm (Shadowing)' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Additional Learning Notes -->
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="text-secondary mb-3">
+                            <i class="fas fa-lightbulb me-2"></i>Ghi chú ngữ pháp
+                        </h5>
+                        <div class="alert alert-info mb-0">
+                            <strong>Past Simple Tense:</strong> Dùng để diễn tả hành động đã xảy ra và kết thúc trong quá khứ.
+                            <br><strong>Công thức:</strong> Subject + V2/V-ed
+                        </div>
+                    </div>
+                </main>
+
+                <!-- Right Sidebar (Desktop) / Offcanvas (Mobile) -->
+                <aside class="col-lg-4 d-none d-lg-block border-start p-4 bg-white overflow-auto">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <i class="fas fa-pen me-2"></i>Bài tập Nghe chép
+                    </h5>
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-muted small">Điền từ còn thiếu:</label>
+                        <div class="p-3 bg-light rounded border border-2 border-primary-subtle">
+                            I 
+                            <input 
+                                type="text" 
+                                class="form-control d-inline-block border-0 bg-transparent fw-bold text-primary text-center px-1 dictation-input" 
+                                v-model="userAnswer"
+                                placeholder="___"
+                                @input="checkAnswer"
+                            > 
+                            to learn English.
+                        </div>
+                    </div>
+                    
+                    <div v-if="answerFeedback" class="alert d-flex align-items-center" :class="answerFeedback.correct ? 'alert-success' : 'alert-warning'">
+                        <i :class="answerFeedback.correct ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'" class="me-2"></i> 
+                        {{ answerFeedback.message }}
+                    </div>
+
+                    <!-- Vocabulary List -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold text-secondary mb-3">Từ vựng quan trọng</h6>
+                        <div class="list-group">
+                            <div class="list-group-item d-flex justify-content-between align-items-center" v-for="word in vocabulary" :key="word.word">
+                                <div>
+                                    <strong>{{ word.word }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ word.meaning }}</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary rounded-circle" @click="playAudio(word.word)">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Mobile Offcanvas for Exercises -->
+            <button class="btn btn-primary rounded-pill position-fixed bottom-0 start-50 translate-middle-x mb-3 d-lg-none shadow" data-bs-toggle="offcanvas" data-bs-target="#mobileExercises">
+                <i class="fas fa-pen me-2"></i>Bài tập
+            </button>
+
+            <div class="offcanvas offcanvas-bottom d-lg-none" tabindex="-1" id="mobileExercises" style="height: 70vh;">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title fw-bold text-primary">Bài tập Nghe chép</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="mb-4">
+                        <label class="form-label text-muted small">Điền từ còn thiếu:</label>
+                        <div class="p-3 bg-light rounded border border-2 border-primary-subtle">
+                            I 
+                            <input 
+                                type="text" 
+                                class="form-control d-inline-block border-0 bg-transparent fw-bold text-primary text-center px-1 dictation-input" 
+                                v-model="userAnswer"
+                                placeholder="___"
+                            > 
+                            to learn English.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    lessonTitle: 'Unit 5: Past Simple',
+                    progress: 60,
+                    isPlaying: false,
+                    isRecording: false,
+                    showGrammar: true,
+                    playbackSpeed: 1.0,
+                    userAnswer: '',
+                    correctAnswer: 'decided',
+                    answerFeedback: null,
+                    sentence: {
+                        ic: 'I decided to learn English',
+                        dc: 'because I want to travel the world.'
+                    },
+                    vocabulary: [
+                        { word: 'decided', meaning: 'quyết định' },
+                        { word: 'travel', meaning: 'du lịch' },
+                        { word: 'world', meaning: 'thế giới' }
+                    ]
+                }
+            },
+            computed: {
+                highlightedSentence() {
+                    if (this.showGrammar) {
+                        return `<span class="grammar-ic" data-bs-toggle="tooltip" title="Mệnh đề độc lập">${this.sentence.ic}</span> <span class="grammar-dc" data-bs-toggle="tooltip" title="Mệnh đề phụ (Lý do)">${this.sentence.dc}</span>`;
+                    }
+                    return `${this.sentence.ic} ${this.sentence.dc}`;
+                }
+            },
+            methods: {
+                goBack() {
+                    window.history.back();
+                },
+                togglePlay() {
+                    this.isPlaying = !this.isPlaying;
+                    if (this.isPlaying) {
+                        this.progress = Math.min(this.progress + 10, 100);
+                    }
+                },
+                rewind() {
+                    // Rewind 5 seconds functionality
+                    console.log('Rewinding 5 seconds...');
+                },
+                toggleGrammar() {
+                    this.showGrammar = !this.showGrammar;
+                },
+                changeSpeed() {
+                    const speeds = [1.0, 0.75, 0.5, 1.25];
+                    const currentIndex = speeds.indexOf(this.playbackSpeed);
+                    this.playbackSpeed = speeds[(currentIndex + 1) % speeds.length];
+                },
+                startRecording() {
+                    this.isRecording = !this.isRecording;
+                },
+                checkAnswer() {
+                    if (this.userAnswer.toLowerCase().trim() === this.correctAnswer) {
+                        this.answerFeedback = {
+                            correct: true,
+                            message: 'Chính xác! "Decided" là động từ quá khứ.'
+                        };
+                    } else if (this.userAnswer.length > 0) {
+                        this.answerFeedback = {
+                            correct: false,
+                            message: 'Chưa đúng. Hãy thử lại!'
+                        };
+                    } else {
+                        this.answerFeedback = null;
+                    }
+                },
+                playAudio(word) {
+                    alert(`Phát âm: ${word}`);
+                }
+            },
+            mounted() {
+                // Initialize Bootstrap tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

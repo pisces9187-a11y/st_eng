@@ -1,0 +1,713 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Dashboard - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #183B56 0%, #2C5282 100%);
+        color: #fff;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .user-greeting {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid rgba(255,255,255,0.3);
+        object-fit: cover;
+    }
+    
+    .user-avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #F47C26;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        border: 3px solid rgba(255,255,255,0.3);
+    }
+    
+    .greeting-text h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .greeting-text p {
+        opacity: 0.8;
+        margin: 0;
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .stat-icon.streak { background: rgba(244, 124, 38, 0.1); color: #F47C26; }
+    .stat-icon.xp { background: rgba(40, 167, 69, 0.1); color: #28A745; }
+    .stat-icon.lessons { background: rgba(0, 123, 255, 0.1); color: #007BFF; }
+    .stat-icon.time { background: rgba(111, 66, 193, 0.1); color: #6F42C1; }
+    
+    .stat-info h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: #183B56;
+    }
+    
+    .stat-info p {
+        font-size: 0.875rem;
+        color: #6C757D;
+        margin: 0;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #183B56;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .section-title a {
+        font-size: 0.875rem;
+        color: #F47C26;
+        text-decoration: none;
+    }
+    
+    .course-card {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .course-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    
+    .course-thumbnail {
+        height: 140px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .course-thumbnail i {
+        font-size: 3rem;
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .course-body {
+        padding: 1rem;
+    }
+    
+    .course-body h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #183B56;
+    }
+    
+    .course-progress {
+        margin-top: 0.75rem;
+    }
+    
+    .progress {
+        height: 6px;
+        border-radius: 3px;
+        background: #E8ECF0;
+    }
+    
+    .progress-bar {
+        background: #F47C26;
+        border-radius: 3px;
+    }
+    
+    .progress-text {
+        font-size: 0.75rem;
+        color: #6C757D;
+        margin-top: 0.25rem;
+    }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem 1rem;
+        background: #fff;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #183B56;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        color: #F47C26;
+    }
+    
+    .action-btn i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #F47C26;
+    }
+    
+    .action-btn span {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .recent-activity {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #E8ECF0;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+    }
+    
+    .activity-icon.lesson { background: rgba(0, 123, 255, 0.1); color: #007BFF; }
+    .activity-icon.achievement { background: rgba(255, 193, 7, 0.1); color: #FFC107; }
+    .activity-icon.streak { background: rgba(244, 124, 38, 0.1); color: #F47C26; }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-content h5 {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        color: #183B56;
+    }
+    
+    .activity-content p {
+        font-size: 0.8rem;
+        color: #6C757D;
+        margin: 0;
+    }
+    
+    /* Loading state */
+    .loading-placeholder {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+    }
+    
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="container">
+        <div class="user-greeting">
+            <div class="user-avatar-placeholder" id="userAvatar">
+                <span id="avatarInitial">?</span>
+            </div>
+            <div class="greeting-text">
+                <h1 id="greetingMessage">Xin chào!</h1>
+                <p id="motivationText">Hôm nay bạn muốn học gì?</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Stats Row -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon streak">
+                <i class="fas fa-fire"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="streakDays">0</h3>
+                <p>Ngày liên tiếp</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon xp">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="totalXP">0</h3>
+                <p>Điểm XP</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon lessons">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="completedLessons">0</h3>
+                <p>Bài học hoàn thành</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon time">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="studyTime">0h</h3>
+                <p>Thời gian học</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Continue Learning -->
+        <div class="col-lg-8">
+            <div class="section-title">
+                <span><i class="fas fa-play-circle me-2"></i>Tiếp tục học</span>
+                <a href="/lessons/">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            
+            <div class="row g-3" id="continueCoursesContainer">
+                <!-- Loading placeholder -->
+                <div class="col-md-6">
+                    <div class="course-card">
+                        <div class="course-thumbnail loading-placeholder" style="height: 140px;"></div>
+                        <div class="course-body">
+                            <div class="loading-placeholder" style="height: 20px; width: 80%; margin-bottom: 8px;"></div>
+                            <div class="loading-placeholder" style="height: 14px; width: 50%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="course-card">
+                        <div class="course-thumbnail loading-placeholder" style="height: 140px;"></div>
+                        <div class="course-body">
+                            <div class="loading-placeholder" style="height: 20px; width: 80%; margin-bottom: 8px;"></div>
+                            <div class="loading-placeholder" style="height: 14px; width: 50%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="section-title mt-4">
+                <span><i class="fas fa-bolt me-2"></i>Luyện tập nhanh</span>
+            </div>
+            <div class="quick-actions">
+                <a href="/flashcard/" class="action-btn">
+                    <i class="fas fa-clone"></i>
+                    <span>Flashcard</span>
+                </a>
+                <a href="/practice-test/" class="action-btn">
+                    <i class="fas fa-tasks"></i>
+                    <span>Làm bài test</span>
+                </a>
+                <a href="/speaking-practice/" class="action-btn">
+                    <i class="fas fa-microphone"></i>
+                    <span>Luyện nói</span>
+                </a>
+                <a href="/writing-practice/" class="action-btn">
+                    <i class="fas fa-pen"></i>
+                    <span>Luyện viết</span>
+                </a>
+                <a href="/dictation/" class="action-btn">
+                    <i class="fas fa-headphones"></i>
+                    <span>Nghe chép</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Recent Activity -->
+            <div class="section-title">
+                <span><i class="fas fa-history me-2"></i>Hoạt động gần đây</span>
+            </div>
+            <div class="recent-activity" id="recentActivityContainer">
+                <div class="activity-item">
+                    <div class="loading-placeholder" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                    <div class="activity-content">
+                        <div class="loading-placeholder" style="height: 16px; width: 80%; margin-bottom: 4px;"></div>
+                        <div class="loading-placeholder" style="height: 12px; width: 50%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Quick Links -->
+            <div class="section-title mt-4">
+                <span><i class="fas fa-user me-2"></i>Tài khoản</span>
+            </div>
+            <div class="quick-actions" style="grid-template-columns: 1fr 1fr;">
+                <a href="{% url 'users:profile' %}" class="action-btn">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Hồ sơ</span>
+                </a>
+                <a href="{% url 'users:profile-settings' %}" class="action-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Cài đặt</span>
+                </a>
+                <a href="{% url 'users:profile-achievements' %}" class="action-btn">
+                    <i class="fas fa-trophy"></i>
+                    <span>Thành tựu</span>
+                </a>
+                <a href="{% url 'users:logout' %}" class="action-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Đăng xuất</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ================================
+// Dashboard Configuration
+// ================================
+const API_BASE_URL = '/api/v1';
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+    USER: 'user'
+};
+
+// ================================
+// Authentication Check
+// ================================
+function checkAuth() {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) {
+        window.location.href = '/login/?next=/dashboard/';
+        return false;
+    }
+    return true;
+}
+
+// ================================
+// API Helper
+// ================================
+async function apiRequest(endpoint, options = {}) {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    });
+    
+    if (response.status === 401) {
+        // Token expired, try to refresh
+        const refreshed = await refreshToken();
+        if (refreshed) {
+            return apiRequest(endpoint, options);
+        } else {
+            window.location.href = '/login/?next=/dashboard/';
+            return null;
+        }
+    }
+    
+    return response;
+}
+
+async function refreshToken() {
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    if (!refreshToken) return false;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/token/refresh/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh: refreshToken })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access);
+            return true;
+        }
+    } catch (error) {
+        console.error('Token refresh failed:', error);
+    }
+    
+    return false;
+}
+
+// ================================
+// Load User Data
+// ================================
+async function loadUserData() {
+    try {
+        const response = await apiRequest('/users/me/');
+        if (!response || !response.ok) return;
+        
+        const user = await response.json();
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        
+        // Update greeting
+        const hour = new Date().getHours();
+        let greeting = 'Xin chào';
+        if (hour < 12) greeting = 'Chào buổi sáng';
+        else if (hour < 18) greeting = 'Chào buổi chiều';
+        else greeting = 'Chào buổi tối';
+        
+        const displayName = user.full_name || user.username || 'bạn';
+        document.getElementById('greetingMessage').textContent = `${greeting}, ${displayName}!`;
+        
+        // Update avatar
+        const avatarEl = document.getElementById('userAvatar');
+        const initialEl = document.getElementById('avatarInitial');
+        
+        if (user.avatar) {
+            avatarEl.innerHTML = `<img src="${user.avatar}" alt="${displayName}" class="user-avatar">`;
+        } else {
+            initialEl.textContent = displayName.charAt(0).toUpperCase();
+        }
+        
+        // Update stats
+        document.getElementById('streakDays').textContent = user.streak_days || 0;
+        document.getElementById('totalXP').textContent = formatNumber(user.total_xp || 0);
+        document.getElementById('completedLessons').textContent = user.completed_lessons || 0;
+        document.getElementById('studyTime').textContent = formatStudyTime(user.total_study_time || 0);
+        
+    } catch (error) {
+        console.error('Failed to load user data:', error);
+    }
+}
+
+// ================================
+// Load Continue Learning
+// ================================
+async function loadContinueLearning() {
+    try {
+        const response = await apiRequest('/study/progress/in-progress/');
+        const container = document.getElementById('continueCoursesContainer');
+        
+        if (!response || !response.ok) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted">Chưa có khóa học nào. <a href="/lessons/" class="text-primary">Bắt đầu học ngay!</a></p>
+                </div>
+            `;
+            return;
+        }
+        
+        const courses = await response.json();
+        
+        if (!courses || courses.length === 0) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted">Chưa có khóa học nào. <a href="/lessons/" class="text-primary">Bắt đầu học ngay!</a></p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = courses.slice(0, 4).map(course => `
+            <div class="col-md-6">
+                <a href="/lesson-player/?course=${course.course_id}" class="course-card d-block text-decoration-none">
+                    <div class="course-thumbnail" style="background: ${course.thumbnail || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="course-body">
+                        <h4>${course.course_name || 'Khóa học'}</h4>
+                        <div class="course-progress">
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${course.progress || 0}%"></div>
+                            </div>
+                            <div class="progress-text">${course.progress || 0}% hoàn thành</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Failed to load courses:', error);
+    }
+}
+
+// ================================
+// Load Recent Activity
+// ================================
+async function loadRecentActivity() {
+    const container = document.getElementById('recentActivityContainer');
+    
+    try {
+        const response = await apiRequest('/study/activity/recent/');
+        
+        if (!response || !response.ok) {
+            showEmptyActivity(container);
+            return;
+        }
+        
+        const activities = await response.json();
+        
+        if (!activities || activities.length === 0) {
+            showEmptyActivity(container);
+            return;
+        }
+        
+        container.innerHTML = activities.slice(0, 5).map(activity => {
+            let iconClass = 'lesson';
+            let icon = 'fa-book-open';
+            
+            if (activity.type === 'achievement') {
+                iconClass = 'achievement';
+                icon = 'fa-trophy';
+            } else if (activity.type === 'streak') {
+                iconClass = 'streak';
+                icon = 'fa-fire';
+            }
+            
+            return `
+                <div class="activity-item">
+                    <div class="activity-icon ${iconClass}">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h5>${activity.title}</h5>
+                        <p>${formatTimeAgo(activity.created_at)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Failed to load activity:', error);
+        showEmptyActivity(container);
+    }
+}
+
+function showEmptyActivity(container) {
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+            <p class="text-muted small mb-0">Chưa có hoạt động nào</p>
+        </div>
+    `;
+}
+
+// ================================
+// Utility Functions
+// ================================
+function formatNumber(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+}
+
+function formatStudyTime(minutes) {
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Vừa xong';
+    if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`;
+    
+    return date.toLocaleDateString('vi-VN');
+}
+
+// ================================
+// Initialize
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+    if (!checkAuth()) return;
+    
+    loadUserData();
+    loadContinueLearning();
+    loadRecentActivity();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - English Study</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Admin Layout */
+        body {
+            overflow-x: hidden;
+        }
+        
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #183B56 0%, #0F2538 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-sidebar .logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-sidebar .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-item.active {
+            background: rgba(244, 124, 38, 0.2);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-icon {
+            width: 25px;
+            display: inline-block;
+        }
+        
+        .admin-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #F9FAFC;
+        }
+        
+        /* Stats Cards */
+        .stat-card {
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        
+        .stat-card.revenue {
+            border-left-color: #27AE60;
+        }
+        
+        .stat-card.users {
+            border-left-color: #3498DB;
+        }
+        
+        .stat-card.lessons {
+            border-left-color: #F47C26;
+        }
+        
+        .stat-card.engagement {
+            border-left-color: #9B59B6;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Recent Activity */
+        .activity-item {
+            border-left: 3px solid var(--bs-primary);
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Quick Actions */
+        .quick-action {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .quick-action:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                width: 70px;
+            }
+            
+            .admin-sidebar .nav-text {
+                display: none;
+            }
+            
+            .admin-content {
+                margin-left: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="logo">
+                <h4 class="fw-bold mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span class="nav-text">Admin Panel</span>
+                </h4>
+            </div>
+            
+            <nav class="mt-3">
+                <div class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                    <span class="nav-text">Dashboard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-lesson-editor.html')">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span>
+                    <span class="nav-text">Quản lý bài học</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span class="nav-text">Flashcard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-users.html')">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    <span class="nav-text">Học viên</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <span class="nav-text">Doanh thu</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span class="nav-text">Cài đặt</span>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.1);">
+                
+                <div class="nav-item" @click="logout">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span class="nav-text">Đăng xuất</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-secondary mb-1">Tổng quan Dashboard</h2>
+                    <p class="text-muted mb-0">Chào mừng trở lại, Admin! 👋</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-2"></i>Xuất báo cáo
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Thêm bài học
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm stat-card revenue">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Doanh thu hôm nay</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.revenue.toLocaleString('vi-VN') }}đ</h3>
+                                    <span class="badge bg-success mt-2">
+                                        <i class="fas fa-arrow-up me-1"></i>+{{ stats.revenueGrowth }}%
+                                    </span>
+                                </div>
+                                <div class="bg-success bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-dollar-sign fa-2x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm stat-card users">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Học viên mới</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.newUsers }}</h3>
+                                    <span class="badge bg-info mt-2">
+                                        <i class="fas fa-arrow-up me-1"></i>+{{ stats.usersGrowth }}%
+                                    </span>
+                                </div>
+                                <div class="bg-info bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-user-plus fa-2x text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm stat-card lessons">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Bài học hoàn thành</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.completedLessons }}</h3>
+                                    <span class="badge bg-warning mt-2">
+                                        <i class="fas fa-arrow-up me-1"></i>+{{ stats.lessonsGrowth }}%
+                                    </span>
+                                </div>
+                                <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-book-open fa-2x text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm stat-card engagement">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Tỷ lệ hoàn thành</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.completionRate }}%</h3>
+                                    <span class="badge bg-primary mt-2">
+                                        <i class="fas fa-arrow-up me-1"></i>+{{ stats.engagementGrowth }}%
+                                    </span>
+                                </div>
+                                <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-chart-line fa-2x text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-chart-area me-2 text-primary"></i>Doanh thu theo tháng
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-clock me-2 text-primary"></i>Hoạt động gần đây
+                            </h5>
+                        </div>
+                        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                            <div class="activity-item" v-for="activity in recentActivities" :key="activity.id">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <p class="mb-1 fw-bold">{{ activity.title }}</p>
+                                        <p class="text-muted small mb-0">{{ activity.description }}</p>
+                                    </div>
+                                    <span class="badge bg-light text-dark">{{ activity.time }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-bolt me-2 text-primary"></i>Thao tác nhanh
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="quick-action bg-light" @click="goTo('admin-lesson-editor.html')">
+                                <i class="fas fa-plus-circle fa-3x text-primary mb-2"></i>
+                                <h6 class="fw-bold">Thêm bài học</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="quick-action bg-light">
+                                <i class="fas fa-upload fa-3x text-success mb-2"></i>
+                                <h6 class="fw-bold">Import CSV</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="quick-action bg-light" @click="goTo('admin-users.html')">
+                                <i class="fas fa-user-cog fa-3x text-warning mb-2"></i>
+                                <h6 class="fw-bold">Quản lý User</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="quick-action bg-light">
+                                <i class="fas fa-envelope fa-3x text-info mb-2"></i>
+                                <h6 class="fw-bold">Gửi Email</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    stats: {
+                        revenue: 15420000,
+                        revenueGrowth: 12.5,
+                        newUsers: 48,
+                        usersGrowth: 8.2,
+                        completedLessons: 324,
+                        lessonsGrowth: 15.7,
+                        completionRate: 78,
+                        engagementGrowth: 5.3
+                    },
+                    recentActivities: [
+                        { id: 1, title: 'Học viên mới đăng ký', description: 'Nguyễn Văn A vừa đăng ký gói Pro', time: '2 phút trước' },
+                        { id: 2, title: 'Thanh toán thành công', description: 'Trần Thị B - 1.200.000đ', time: '15 phút trước' },
+                        { id: 3, title: 'Hoàn thành bài học', description: 'Unit 5: Past Simple - 24 học viên', time: '1 giờ trước' },
+                        { id: 4, title: 'Feedback mới', description: 'Đánh giá 5 sao từ Lê Văn C', time: '2 giờ trước' },
+                        { id: 5, title: 'Yêu cầu hỗ trợ', description: 'Phạm Thị D cần trợ giúp reset password', time: '3 giờ trước' }
+                    ]
+                };
+            },
+            methods: {
+                goTo(page) {
+                    window.location.href = page;
+                },
+                logout() {
+                    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                        window.location.href = 'login.html';
+                    }
+                }
+            },
+            mounted() {
+                // Initialize Revenue Chart
+                const ctx = document.getElementById('revenueChart');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+                        datasets: [{
+                            label: 'Doanh thu (triệu đồng)',
+                            data: [120, 150, 180, 220, 250, 280, 320, 350, 380, 420, 450, 480],
+                            borderColor: '#F47C26',
+                            backgroundColor: 'rgba(244, 124, 38, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + 'M';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Bắt đầu - EnglishMaster{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center">
+        <div class="mb-4">
+            <i class="fas fa-rocket fa-5x text-primary"></i>
+        </div>
+        <h1 class="h2 mb-3">Chào mừng bạn đến với EnglishMaster!</h1>
+        <p class="text-muted mb-4">
+            Trang onboarding đang được xây dựng.<br>
+            Chúng tôi sẽ giúp bạn thiết lập hành trình học tập phù hợp nhất.
+        </p>
+        
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'users:dashboard' %}" class="btn btn-primary-orange">
+                <i class="fas fa-arrow-right me-2"></i>Đến Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

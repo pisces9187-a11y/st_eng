@@ -1,0 +1,199 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Trung tâm hỗ trợ - EnglishMaster{% endblock %}
+{% block meta_description %}Trung tâm hỗ trợ EnglishMaster - Giải đáp mọi thắc mắc về việc học tiếng Anh{% endblock %}
+
+{% block content %}
+<main class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="mb-3">
+                <i class="fas fa-question-circle text-primary me-2"></i>
+                Trung tâm hỗ trợ
+            </h1>
+            <p class="text-muted lead">Chúng tôi luôn sẵn sàng giúp đỡ bạn</p>
+        </div>
+    </div>
+    
+    <!-- Search Box -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" placeholder="Tìm kiếm câu hỏi...">
+                <button class="btn btn-primary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Categories -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-primary-light text-primary mb-3 mx-auto">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h5>Bắt đầu sử dụng</h5>
+                    <p class="text-muted small">Hướng dẫn đăng ký tài khoản, cài đặt ban đầu</p>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-success-light text-success mb-3 mx-auto">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h5>Học tập</h5>
+                    <p class="text-muted small">Cách học bài, luyện tập, theo dõi tiến độ</p>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-warning-light text-warning mb-3 mx-auto">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h5>Thanh toán</h5>
+                    <p class="text-muted small">Nâng cấp gói, hoàn tiền, hóa đơn</p>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-info-light text-info mb-3 mx-auto">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <h5>Tài khoản & Cài đặt</h5>
+                    <p class="text-muted small">Quản lý thông tin, đổi mật khẩu, thông báo</p>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-danger-light text-danger mb-3 mx-auto">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h5>Khắc phục sự cố</h5>
+                    <p class="text-muted small">Lỗi đăng nhập, không tải được bài học</p>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-purple-light text-purple mb-3 mx-auto">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h5>Ứng dụng di động</h5>
+                    <p class="text-muted small">Cài đặt app, đồng bộ dữ liệu</p>
+                    <a href="#" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8">
+            <h3 class="text-center mb-4">Câu hỏi thường gặp</h3>
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item border-0 shadow-sm mb-3">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Làm thế nào để bắt đầu học?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted">
+                            Sau khi đăng ký tài khoản, bạn sẽ được làm bài kiểm tra đầu vào để xác định trình độ. 
+                            Sau đó hệ thống sẽ gợi ý lộ trình học phù hợp với bạn.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 shadow-sm mb-3">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Tôi có thể học offline không?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted">
+                            Với gói Premium, bạn có thể tải bài học về thiết bị để học offline. 
+                            Tiến độ sẽ được đồng bộ khi có kết nối mạng.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 shadow-sm mb-3">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Làm sao để hủy đăng ký gói Premium?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted">
+                            Vào Cài đặt > Gói đăng ký > Hủy đăng ký. Bạn vẫn có thể sử dụng các tính năng 
+                            Premium đến hết chu kỳ thanh toán hiện tại.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Section -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <h4 class="mb-3">Vẫn cần hỗ trợ?</h4>
+                    <p class="text-muted mb-4">Đội ngũ hỗ trợ của chúng tôi sẵn sàng giúp đỡ bạn 24/7</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a href="mailto:support@englishmaster.vn" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>Email hỗ trợ
+                        </a>
+                        <a href="#" class="btn btn-primary-orange">
+                            <i class="fas fa-comments me-2"></i>Chat trực tuyến
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.bg-primary-light { background: rgba(24, 59, 86, 0.1); }
+.bg-success-light { background: rgba(40, 167, 69, 0.1); }
+.bg-warning-light { background: rgba(255, 193, 7, 0.1); }
+.bg-info-light { background: rgba(23, 162, 184, 0.1); }
+.bg-danger-light { background: rgba(220, 53, 69, 0.1); }
+.bg-purple-light { background: rgba(111, 66, 193, 0.1); }
+.text-purple { color: #6f42c1; }
+.hover-lift:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+}
+</style>
+{% endblock %}

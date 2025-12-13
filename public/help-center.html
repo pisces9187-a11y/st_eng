@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trung tâm trợ giúp - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: #F9FAFC;
+            color: #2C3E50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Hero Header */
+        .hero-header {
+            background: linear-gradient(135deg, #183B56 0%, #2C5F8D 100%);
+            color: white;
+            padding: 64px 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .hero-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 32px;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 16px 60px 16px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+        }
+        
+        .search-box button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #F47C26;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box button:hover {
+            background: #D35400;
+        }
+        
+        /* Quick Links */
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+        
+        .quick-link-card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .quick-link-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .quick-link-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #F47C26 0%, #FFA500 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .quick-link-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+        
+        .quick-link-desc {
+            color: #57606F;
+            font-size: 0.875rem;
+        }
+        
+        /* FAQ Section */
+        .faq-section {
+            background: white;
+            padding: 48px 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 48px;
+        }
+        
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: #183B56;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .faq-tabs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        
+        .faq-tab {
+            padding: 10px 24px;
+            background: white;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #57606F;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-tab:hover, .faq-tab.active {
+            border-color: #F47C26;
+            color: #F47C26;
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .faq-item {
+            margin-bottom: 16px;
+            border: 2px solid #E0E6ED;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item.open {
+            border-color: #F47C26;
+        }
+        
+        .faq-question {
+            padding: 20px 24px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-question:hover {
+            background: rgba(244, 124, 38, 0.02);
+        }
+        
+        .faq-question-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #183B56;
+            flex: 1;
+        }
+        
+        .faq-icon {
+            width: 32px;
+            height: 32px;
+            background: #F47C26;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item.open .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            padding: 0 24px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            color: #57606F;
+            line-height: 1.8;
+        }
+        
+        .faq-item.open .faq-answer {
+            padding: 0 24px 20px 24px;
+            max-height: 500px;
+        }
+        
+        /* Contact Form */
+        .contact-section {
+            background: white;
+            padding: 48px 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 48px;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        
+        .contact-method {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .contact-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #F47C26 0%, #FFA500 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .contact-details h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+        
+        .contact-details p {
+            color: #57606F;
+            margin: 0;
+        }
+        
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 16px;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #F47C26;
+        }
+        
+        .btn-submit {
+            background: #F47C26;
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            background: #D35400;
+            transform: translateY(-2px);
+        }
+        
+        /* Support Hours */
+        .support-hours {
+            background: linear-gradient(135deg, rgba(244, 124, 38, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .support-hours h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            margin-bottom: 12px;
+        }
+        
+        .support-hours p {
+            color: #57606F;
+            margin: 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-title {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- Hero Header -->
+            <div class="hero-header">
+                <h1 class="hero-title">👋 Chúng tôi có thể giúp gì cho bạn?</h1>
+                <p class="hero-subtitle">Tìm kiếm câu trả lời hoặc liên hệ với đội ngũ hỗ trợ của chúng tôi</p>
+                
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        placeholder="Nhập từ khóa tìm kiếm..."
+                        v-model="searchQuery"
+                        @keyup.enter="searchHelp"
+                    >
+                    <button @click="searchHelp">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="quick-links">
+                <div class="quick-link-card" @click="showCategory('account')">
+                    <div class="quick-link-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h3 class="quick-link-title">Tài khoản</h3>
+                    <p class="quick-link-desc">Đăng nhập, đăng ký, quên mật khẩu</p>
+                </div>
+                
+                <div class="quick-link-card" @click="showCategory('payment')">
+                    <div class="quick-link-icon" style="background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h3 class="quick-link-title">Thanh toán</h3>
+                    <p class="quick-link-desc">Phương thức, hóa đơn, hoàn tiền</p>
+                </div>
+                
+                <div class="quick-link-card" @click="showCategory('course')">
+                    <div class="quick-link-icon" style="background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="quick-link-title">Khóa học</h3>
+                    <p class="quick-link-desc">Truy cập, tiến độ, chứng chỉ</p>
+                </div>
+                
+                <div class="quick-link-card" @click="showCategory('technical')">
+                    <div class="quick-link-icon" style="background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3 class="quick-link-title">Kỹ thuật</h3>
+                    <p class="quick-link-desc">Lỗi hệ thống, tính năng</p>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <h2 class="section-title">Câu hỏi thường gặp</h2>
+                
+                <div class="faq-tabs">
+                    <button 
+                        v-for="cat in faqCategories" 
+                        :key="cat.value"
+                        class="faq-tab"
+                        :class="{active: activeCategory === cat.value}"
+                        @click="activeCategory = cat.value"
+                    >
+                        {{ cat.label }}
+                    </button>
+                </div>
+                
+                <div class="faq-list">
+                    <div 
+                        v-for="faq in filteredFAQs" 
+                        :key="faq.id"
+                        class="faq-item"
+                        :class="{open: faq.open}"
+                    >
+                        <div class="faq-question" @click="faq.open = !faq.open">
+                            <div class="faq-question-text">{{ faq.question }}</div>
+                            <div class="faq-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="faq-answer">{{ faq.answer }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="contact-section">
+                <h2 class="section-title">Liên hệ với chúng tôi</h2>
+                
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <div class="contact-method">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h3>Email hỗ trợ</h3>
+                                <p>support@englishlearning.vn</p>
+                                <p style="font-size: 0.875rem; margin-top: 4px;">Phản hồi trong 24 giờ</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="contact-icon" style="background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h3>Hotline</h3>
+                                <p>1900 123 456</p>
+                                <p style="font-size: 0.875rem; margin-top: 4px;">8:00 - 22:00 hàng ngày</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="contact-icon" style="background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);">
+                                <i class="fab fa-facebook-messenger"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h3>Live Chat</h3>
+                                <p>Chat trực tiếp với tư vấn viên</p>
+                                <p style="font-size: 0.875rem; margin-top: 4px;">Trực tuyến 24/7</p>
+                            </div>
+                        </div>
+                        
+                        <div class="support-hours">
+                            <h4>⏰ Giờ hỗ trợ</h4>
+                            <p><strong>T2 - T6:</strong> 8:00 - 22:00</p>
+                            <p><strong>T7 - CN:</strong> 9:00 - 21:00</p>
+                        </div>
+                    </div>
+                    
+                    <form class="contact-form" @submit.prevent="submitForm">
+                        <div class="form-group">
+                            <label>Họ và tên *</label>
+                            <input type="text" v-model="formData.name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" v-model="formData.email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Chủ đề *</label>
+                            <select v-model="formData.subject" required>
+                                <option value="">Chọn chủ đề</option>
+                                <option value="account">Vấn đề tài khoản</option>
+                                <option value="payment">Thanh toán</option>
+                                <option value="course">Khóa học</option>
+                                <option value="technical">Kỹ thuật</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Nội dung *</label>
+                            <textarea v-model="formData.message" rows="5" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    activeCategory: 'all',
+                    faqCategories: [
+                        { value: 'all', label: 'Tất cả' },
+                        { value: 'account', label: 'Tài khoản' },
+                        { value: 'payment', label: 'Thanh toán' },
+                        { value: 'course', label: 'Khóa học' },
+                        { value: 'technical', label: 'Kỹ thuật' }
+                    ],
+                    formData: {
+                        name: '',
+                        email: '',
+                        subject: '',
+                        message: ''
+                    },
+                    faqs: [
+                        {
+                            id: 1,
+                            category: 'account',
+                            question: 'Làm thế nào để đăng ký tài khoản?',
+                            answer: 'Bạn có thể đăng ký tài khoản bằng cách nhấn vào nút "Đăng ký" ở góc trên bên phải trang web. Điền đầy đủ thông tin email, mật khẩu và xác nhận email để hoàn tất đăng ký. Bạn cũng có thể đăng ký nhanh bằng tài khoản Google hoặc Facebook.',
+                            open: false
+                        },
+                        {
+                            id: 2,
+                            category: 'account',
+                            question: 'Tôi quên mật khẩu, phải làm sao?',
+                            answer: 'Trên trang đăng nhập, nhấn vào "Quên mật khẩu". Nhập email đã đăng ký, chúng tôi sẽ gửi link đặt lại mật khẩu đến email của bạn trong vòng 5 phút. Kiểm tra cả hộp thư spam nếu không thấy email.',
+                            open: false
+                        },
+                        {
+                            id: 3,
+                            category: 'payment',
+                            question: 'Các phương thức thanh toán được chấp nhận?',
+                            answer: 'Chúng tôi chấp nhận thanh toán qua: Thẻ ATM nội địa (Internet Banking), Thẻ Visa/Mastercard, Ví điện tử (MoMo, ZaloPay, VNPay), và chuyển khoản ngân hàng. Tất cả giao dịch đều được bảo mật SSL 256-bit.',
+                            open: false
+                        },
+                        {
+                            id: 4,
+                            category: 'payment',
+                            question: 'Chính sách hoàn tiền như thế nào?',
+                            answer: 'Bạn có thể yêu cầu hoàn tiền 100% trong vòng 7 ngày kể từ ngày mua khóa học nếu chưa học quá 20% nội dung. Tiền sẽ được hoàn về tài khoản trong 5-7 ngày làm việc kể từ khi yêu cầu được chấp thuận.',
+                            open: false
+                        },
+                        {
+                            id: 5,
+                            category: 'course',
+                            question: 'Thời gian truy cập khóa học là bao lâu?',
+                            answer: 'Tất cả khóa học bạn mua sẽ có quyền truy cập trọn đời (lifetime access). Bạn có thể học lại bao nhiêu lần tùy thích và truy cập vào tất cả các bài giảng, tài liệu, bài tập đã cập nhật.',
+                            open: false
+                        },
+                        {
+                            id: 6,
+                            category: 'course',
+                            question: 'Làm thế nào để nhận chứng chỉ?',
+                            answer: 'Để nhận chứng chỉ, bạn cần: 1) Hoàn thành 100% bài học trong khóa học, 2) Đạt điểm tối thiểu 70% trong bài kiểm tra cuối khóa, 3) Chứng chỉ sẽ tự động được tạo và gửi vào email của bạn trong vòng 24 giờ.',
+                            open: false
+                        },
+                        {
+                            id: 7,
+                            category: 'technical',
+                            question: 'Video bài giảng không phát được?',
+                            answer: 'Hãy thử: 1) Làm mới trang (F5), 2) Xóa cache trình duyệt, 3) Thử trình duyệt khác (Chrome khuyên dùng), 4) Kiểm tra tốc độ mạng (tối thiểu 5Mbps). Nếu vẫn không được, liên hệ support để được hỗ trợ ngay.',
+                            open: false
+                        },
+                        {
+                            id: 8,
+                            category: 'technical',
+                            question: 'Ứng dụng mobile có sẵn không?',
+                            answer: 'Hiện tại chúng tôi đang phát triển ứng dụng mobile cho iOS và Android. Dự kiến ra mắt trong Q1/2025. Trong khi chờ đợi, bạn có thể truy cập website trên mobile browser, giao diện đã được tối ưu responsive.',
+                            open: false
+                        }
+                    ]
+                };
+            },
+            computed: {
+                filteredFAQs() {
+                    if (this.activeCategory === 'all') {
+                        return this.faqs;
+                    }
+                    return this.faqs.filter(faq => faq.category === this.activeCategory);
+                }
+            },
+            methods: {
+                searchHelp() {
+                    if (this.searchQuery.trim()) {
+                        alert('Tìm kiếm: ' + this.searchQuery);
+                    }
+                },
+                showCategory(category) {
+                    this.activeCategory = category;
+                    window.scrollTo({
+                        top: document.querySelector('.faq-section').offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                },
+                submitForm() {
+                    alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong vòng 24 giờ.');
+                    this.formData = {
+                        name: '',
+                        email: '',
+                        subject: '',
+                        message: ''
+                    };
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

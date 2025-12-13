@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng xếp hạng - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    
+    <style>
+        body {
+            background: #F9FAFC;
+            font-family: 'Open Sans', sans-serif;
+        }
+        
+        .leaderboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        /* Header with Current User Rank */
+        .current-rank-card {
+            background: linear-gradient(135deg, #F47C26 0%, #FFA500 100%);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(244, 124, 38, 0.3);
+            color: white;
+            margin-bottom: 32px;
+        }
+        
+        .current-rank-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+        
+        .rank-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .rank-badge {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: #F47C26;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .rank-details h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .rank-stats {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .rank-stat {
+            text-align: center;
+        }
+        
+        .rank-stat-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.75rem;
+        }
+        
+        .rank-stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        /* Filter Tabs */
+        .leaderboard-header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 12px 24px;
+            border: 2px solid #E0E6ED;
+            background: white;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #57606F;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-tab:hover, .filter-tab.active {
+            border-color: #F47C26;
+            color: #F47C26;
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        /* Top 3 Podium */
+        .podium-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .podium-card {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .podium-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .podium-card.rank-1 {
+            order: 2;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .podium-card.rank-2 {
+            order: 1;
+            background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+            color: white;
+        }
+        
+        .podium-card.rank-3 {
+            order: 3;
+            background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+            color: white;
+        }
+        
+        .podium-crown {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+        
+        .podium-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .podium-rank {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .podium-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+        
+        .podium-card:not(.rank-1):not(.rank-2):not(.rank-3) .podium-name {
+            color: #183B56;
+        }
+        
+        .podium-xp {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        .podium-card:not(.rank-1):not(.rank-2):not(.rank-3) .podium-xp {
+            color: #F47C26;
+        }
+        
+        /* Leaderboard Table */
+        .leaderboard-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #E0E6ED;
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-row:last-child {
+            border-bottom: none;
+        }
+        
+        .leaderboard-row:hover {
+            background: rgba(244, 124, 38, 0.03);
+        }
+        
+        .leaderboard-row.current-user {
+            background: rgba(244, 124, 38, 0.1);
+            border-left: 4px solid #F47C26;
+        }
+        
+        .row-rank {
+            width: 60px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: #183B56;
+            text-align: center;
+        }
+        
+        .row-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 16px;
+        }
+        
+        .row-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .row-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            font-size: 1.125rem;
+            margin-bottom: 4px;
+        }
+        
+        .row-level {
+            color: #57606F;
+            font-size: 0.875rem;
+        }
+        
+        .row-stats {
+            display: flex;
+            gap: 32px;
+            margin-right: 24px;
+        }
+        
+        .row-stat {
+            text-align: center;
+        }
+        
+        .row-stat-value {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            font-size: 1.125rem;
+        }
+        
+        .row-stat-label {
+            color: #57606F;
+            font-size: 0.75rem;
+        }
+        
+        .row-xp {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #F47C26;
+            font-size: 1.5rem;
+            min-width: 100px;
+            text-align: right;
+        }
+        
+        /* Badges */
+        .badge-medal {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        
+        .badge-medal.gold {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        }
+        
+        .badge-medal.silver {
+            background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+        }
+        
+        .badge-medal.bronze {
+            background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .podium-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .podium-card.rank-1 {
+                order: 1;
+            }
+            
+            .podium-card.rank-2 {
+                order: 2;
+            }
+            
+            .podium-card.rank-3 {
+                order: 3;
+            }
+            
+            .row-stats {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="leaderboard-container">
+            <!-- Current User Rank -->
+            <div class="current-rank-card">
+                <div class="current-rank-content">
+                    <div class="rank-info">
+                        <div class="rank-badge">#{{ currentUser.rank }}</div>
+                        <div class="rank-details">
+                            <h2>{{ currentUser.name }}</h2>
+                            <p class="mb-0">Hạng của bạn tuần này</p>
+                        </div>
+                    </div>
+                    <div class="rank-stats">
+                        <div class="rank-stat">
+                            <div class="rank-stat-number">{{ currentUser.xp }}</div>
+                            <div class="rank-stat-label">XP</div>
+                        </div>
+                        <div class="rank-stat">
+                            <div class="rank-stat-number">{{ currentUser.streak }}</div>
+                            <div class="rank-stat-label">Streak</div>
+                        </div>
+                        <div class="rank-stat">
+                            <div class="rank-stat-number">{{ currentUser.lessons }}</div>
+                            <div class="rank-stat-label">Bài học</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="leaderboard-header">
+                <div class="filter-tabs">
+                    <button 
+                        v-for="tab in tabs" 
+                        :key="tab.value"
+                        class="filter-tab"
+                        :class="{active: activeTab === tab.value}"
+                        @click="activeTab = tab.value"
+                    >
+                        <i :class="tab.icon + ' me-2'"></i>{{ tab.label }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top 3 Podium -->
+            <div class="podium-section">
+                <div 
+                    v-for="user in topThree" 
+                    :key="user.rank"
+                    class="podium-card"
+                    :class="'rank-' + user.rank"
+                >
+                    <div class="podium-crown" v-if="user.rank === 1">👑</div>
+                    <img :src="user.avatar" :alt="user.name" class="podium-avatar">
+                    <div class="podium-rank">#{{ user.rank }}</div>
+                    <div class="podium-name">{{ user.name }}</div>
+                    <div class="podium-xp">{{ user.xp }} XP</div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Table -->
+            <div class="leaderboard-table">
+                <div 
+                    v-for="user in remainingUsers" 
+                    :key="user.rank"
+                    class="leaderboard-row"
+                    :class="{' current-user': user.rank === currentUser.rank}"
+                >
+                    <div class="row-rank">
+                        #{{ user.rank }}
+                        <span 
+                            v-if="user.rank <= 3" 
+                            class="badge-medal"
+                            :class="getMedalClass(user.rank)"
+                        ></span>
+                    </div>
+                    <img :src="user.avatar" :alt="user.name" class="row-avatar">
+                    <div class="row-info">
+                        <div class="row-name">
+                            {{ user.name }}
+                            <i v-if="user.rank === currentUser.rank" class="fas fa-star" style="color: #F47C26;"></i>
+                        </div>
+                        <div class="row-level">Level {{ user.level }} • {{ user.levelTitle }}</div>
+                    </div>
+                    <div class="row-stats">
+                        <div class="row-stat">
+                            <div class="row-stat-value">{{ user.streak }}</div>
+                            <div class="row-stat-label">Streak</div>
+                        </div>
+                        <div class="row-stat">
+                            <div class="row-stat-value">{{ user.lessons }}</div>
+                            <div class="row-stat-label">Bài học</div>
+                        </div>
+                    </div>
+                    <div class="row-xp">{{ user.xp }} XP</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeTab: 'week',
+                    tabs: [
+                        { value: 'week', label: 'Tuần này', icon: 'fas fa-calendar-week' },
+                        { value: 'month', label: 'Tháng này', icon: 'fas fa-calendar-alt' },
+                        { value: 'alltime', label: 'Mọi thời đại', icon: 'fas fa-infinity' },
+                        { value: 'friends', label: 'Bạn bè', icon: 'fas fa-user-friends' }
+                    ],
+                    currentUser: {
+                        rank: 8,
+                        name: 'Bạn',
+                        xp: 2450,
+                        streak: 15,
+                        lessons: 42,
+                        level: 12,
+                        levelTitle: 'Advanced Learner',
+                        avatar: 'https://ui-avatars.com/api/?name=You&background=F47C26&color=fff&size=200'
+                    },
+                    users: [
+                        {
+                            rank: 1,
+                            name: 'Nguyễn Văn A',
+                            xp: 5280,
+                            streak: 45,
+                            lessons: 128,
+                            level: 25,
+                            levelTitle: 'Master',
+                            avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+A&background=FFD700&color=fff&size=200'
+                        },
+                        {
+                            rank: 2,
+                            name: 'Trần Thị B',
+                            xp: 4850,
+                            streak: 38,
+                            lessons: 115,
+                            level: 22,
+                            levelTitle: 'Expert',
+                            avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+B&background=C0C0C0&color=fff&size=200'
+                        },
+                        {
+                            rank: 3,
+                            name: 'Lê Văn C',
+                            xp: 4320,
+                            streak: 32,
+                            lessons: 98,
+                            level: 20,
+                            levelTitle: 'Expert',
+                            avatar: 'https://ui-avatars.com/api/?name=Le+Van+C&background=CD7F32&color=fff&size=200'
+                        },
+                        {
+                            rank: 4,
+                            name: 'Phạm Thị D',
+                            xp: 3890,
+                            streak: 28,
+                            lessons: 87,
+                            level: 18,
+                            levelTitle: 'Advanced',
+                            avatar: 'https://ui-avatars.com/api/?name=Pham+Thi+D&background=3498DB&color=fff&size=200'
+                        },
+                        {
+                            rank: 5,
+                            name: 'Hoàng Văn E',
+                            xp: 3650,
+                            streak: 25,
+                            lessons: 79,
+                            level: 17,
+                            levelTitle: 'Advanced',
+                            avatar: 'https://ui-avatars.com/api/?name=Hoang+Van+E&background=2ECC71&color=fff&size=200'
+                        },
+                        {
+                            rank: 6,
+                            name: 'Vũ Thị F',
+                            xp: 3280,
+                            streak: 22,
+                            lessons: 71,
+                            level: 15,
+                            levelTitle: 'Advanced',
+                            avatar: 'https://ui-avatars.com/api/?name=Vu+Thi+F&background=9B59B6&color=fff&size=200'
+                        },
+                        {
+                            rank: 7,
+                            name: 'Đặng Văn G',
+                            xp: 2890,
+                            streak: 19,
+                            lessons: 58,
+                            level: 14,
+                            levelTitle: 'Intermediate',
+                            avatar: 'https://ui-avatars.com/api/?name=Dang+Van+G&background=E74C3C&color=fff&size=200'
+                        },
+                        {
+                            rank: 8,
+                            name: 'Bạn',
+                            xp: 2450,
+                            streak: 15,
+                            lessons: 42,
+                            level: 12,
+                            levelTitle: 'Advanced Learner',
+                            avatar: 'https://ui-avatars.com/api/?name=You&background=F47C26&color=fff&size=200'
+                        },
+                        {
+                            rank: 9,
+                            name: 'Bùi Thị H',
+                            xp: 2180,
+                            streak: 12,
+                            lessons: 38,
+                            level: 11,
+                            levelTitle: 'Intermediate',
+                            avatar: 'https://ui-avatars.com/api/?name=Bui+Thi+H&background=F39C12&color=fff&size=200'
+                        },
+                        {
+                            rank: 10,
+                            name: 'Đinh Văn I',
+                            xp: 1950,
+                            streak: 10,
+                            lessons: 32,
+                            level: 10,
+                            levelTitle: 'Intermediate',
+                            avatar: 'https://ui-avatars.com/api/?name=Dinh+Van+I&background=1ABC9C&color=fff&size=200'
+                        }
+                    ]
+                };
+            },
+            computed: {
+                topThree() {
+                    return this.users.slice(0, 3);
+                },
+                remainingUsers() {
+                    return this.users.slice(3);
+                }
+            },
+            methods: {
+                getMedalClass(rank) {
+                    if (rank === 1) return 'gold';
+                    if (rank === 2) return 'silver';
+                    if (rank === 3) return 'bronze';
+                    return '';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

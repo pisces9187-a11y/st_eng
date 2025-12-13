@@ -1,0 +1,123 @@
+{% load static %}
+<!-- Admin Sidebar -->
+<aside class="admin-sidebar" id="adminSidebar">
+    <!-- Logo -->
+    <div class="sidebar-header">
+        <a href="{% url 'admin_custom:dashboard' %}" class="sidebar-logo">
+            <img src="{% static 'images/logo-white.svg' %}" alt="EnglishMaster">
+        </a>
+        <button class="sidebar-toggle d-lg-none" @click="toggleSidebar">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <!-- Dashboard -->
+        <a href="{% url 'admin_custom:dashboard' %}" 
+           class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+        
+        <!-- Content Management -->
+        <div class="nav-section">
+            <span class="nav-section-title">Quản lý nội dung</span>
+        </div>
+        
+        <a href="{% url 'admin_custom:lessons' %}" 
+           class="nav-item {% if 'lessons' in request.path %}active{% endif %}">
+            <i class="fas fa-book"></i>
+            <span>Bài học</span>
+        </a>
+        
+        <a href="{% url 'admin_custom:questions' %}" 
+           class="nav-item {% if 'questions' in request.path %}active{% endif %}">
+            <i class="fas fa-question-circle"></i>
+            <span>Câu hỏi</span>
+        </a>
+        
+        <a href="{% url 'admin_custom:flashcards' %}" 
+           class="nav-item {% if 'flashcards' in request.path %}active{% endif %}">
+            <i class="fas fa-clone"></i>
+            <span>Flashcard</span>
+        </a>
+        
+        <!-- User Management -->
+        <div class="nav-section">
+            <span class="nav-section-title">Quản lý người dùng</span>
+        </div>
+        
+        <a href="{% url 'admin_custom:users' %}" 
+           class="nav-item {% if 'users' in request.path %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            <span>Người dùng</span>
+        </a>
+        
+        <a href="{% url 'admin_custom:teachers' %}" 
+           class="nav-item {% if 'teachers' in request.path %}active{% endif %}">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>Giáo viên</span>
+        </a>
+        
+        <!-- Finance -->
+        <div class="nav-section">
+            <span class="nav-section-title">Tài chính</span>
+        </div>
+        
+        <a href="{% url 'admin_custom:revenue' %}" 
+           class="nav-item {% if 'revenue' in request.path %}active{% endif %}">
+            <i class="fas fa-chart-line"></i>
+            <span>Doanh thu</span>
+        </a>
+        
+        <a href="{% url 'admin_custom:coupons' %}" 
+           class="nav-item {% if 'coupons' in request.path %}active{% endif %}">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Mã giảm giá</span>
+        </a>
+        
+        <!-- Reports -->
+        <div class="nav-section">
+            <span class="nav-section-title">Báo cáo</span>
+        </div>
+        
+        <a href="{% url 'admin_custom:analytics' %}" 
+           class="nav-item {% if 'analytics' in request.path %}active{% endif %}">
+            <i class="fas fa-chart-bar"></i>
+            <span>Thống kê</span>
+        </a>
+        
+        <a href="{% url 'admin_custom:reports' %}" 
+           class="nav-item {% if 'reports' in request.path %}active{% endif %}">
+            <i class="fas fa-file-alt"></i>
+            <span>Báo cáo</span>
+        </a>
+        
+        <!-- Settings -->
+        <div class="nav-section">
+            <span class="nav-section-title">Cài đặt</span>
+        </div>
+        
+        <a href="{% url 'admin_custom:settings' %}" 
+           class="nav-item {% if 'settings' in request.path %}active{% endif %}">
+            <i class="fas fa-cog"></i>
+            <span>Cài đặt hệ thống</span>
+        </a>
+    </nav>
+    
+    <!-- User Info at Bottom -->
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <img src="{{ request.user.profile.avatar_url|default:'/static/images/avatar-default.png' }}" 
+                 alt="Avatar" class="user-avatar">
+            <div class="user-details">
+                <span class="user-name">{{ request.user.get_full_name }}</span>
+                <span class="user-role">Admin</span>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Sidebar Overlay (Mobile) -->
+<div class="sidebar-overlay d-lg-none" @click="toggleSidebar"></div>

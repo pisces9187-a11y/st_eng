@@ -1,0 +1,63 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Diễn đàn cộng đồng - EnglishMaster{% endblock %}
+{% block meta_description %}Tham gia diễn đàn cộng đồng EnglishMaster để trao đổi, học hỏi cùng hàng ngàn người học tiếng Anh{% endblock %}
+
+{% block content %}
+<main class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="mb-3">
+                <i class="fas fa-comments text-primary me-2"></i>
+                Diễn đàn cộng đồng
+            </h1>
+            <p class="text-muted lead">Trao đổi, học hỏi cùng hàng ngàn người học tiếng Anh</p>
+        </div>
+    </div>
+    
+    <!-- Coming Soon Notice -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-tools text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="mb-3">Tính năng đang phát triển</h3>
+                    <p class="text-muted mb-4">
+                        Diễn đàn cộng đồng EnglishMaster sẽ sớm ra mắt với nhiều tính năng hấp dẫn:
+                    </p>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <i class="fas fa-question-circle text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6>Hỏi đáp</h6>
+                                <small class="text-muted">Đặt câu hỏi và nhận câu trả lời từ cộng đồng</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <i class="fas fa-book-reader text-success mb-2" style="font-size: 2rem;"></i>
+                                <h6>Chia sẻ kiến thức</h6>
+                                <small class="text-muted">Đăng bài viết chia sẻ kinh nghiệm học tập</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <i class="fas fa-users text-info mb-2" style="font-size: 2rem;"></i>
+                                <h6>Nhóm học tập</h6>
+                                <small class="text-muted">Tham gia các nhóm học theo chủ đề</small>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'users:home' %}" class="btn btn-primary-orange">
+                        <i class="fas fa-home me-2"></i>Về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

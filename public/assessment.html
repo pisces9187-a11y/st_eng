@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment - Bài kiểm tra Level A2</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        .max-w-800 {
+            max-width: 800px;
+        }
+        
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        
+        .question-nav-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+        }
+        
+        .question-nav-btn.answered {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="vh-100 d-flex flex-column">
+            <!-- Header with Timer -->
+            <header class="bg-secondary text-white p-3 d-flex justify-content-between align-items-center shadow">
+                <div class="fw-bold fs-5">
+                    <i class="fas fa-clipboard-check me-2"></i>Final Test: Level A2
+                </div>
+                <div class="badge bg-warning text-dark fs-5 font-monospace px-3 py-2">
+                    <i class="far fa-clock me-2"></i>{{ timeRemaining }}
+                </div>
+                <button class="btn btn-outline-light btn-sm" @click="confirmSubmit">
+                    <i class="fas fa-paper-plane me-2"></i>Nộp bài
+                </button>
+            </header>
+
+            <div class="container-fluid flex-grow-1 d-flex p-0">
+                <!-- Sidebar - Question Navigation (Desktop) -->
+                <aside class="bg-light border-end p-3 d-none d-md-block overflow-auto" style="width: 250px;">
+                    <h6 class="text-muted mb-3">
+                        <i class="fas fa-list me-2"></i>Danh sách câu hỏi
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button 
+                            v-for="(q, index) in questions" 
+                            :key="index"
+                            class="btn btn-sm question-nav-btn"
+                            :class="[
+                                currentQuestionIndex === index ? 'btn-primary' : 'btn-outline-secondary',
+                                q.answered ? 'answered' : ''
+                            ]"
+                            @click="goToQuestion(index)"
+                        >
+                            {{ index + 1 }}
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-white rounded shadow-sm">
+                        <div class="small text-muted mb-2">Tiến độ</div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" :style="{width: progressPercent + '%'}"></div>
+                        </div>
+                        <div class="text-center mt-2 fw-bold text-secondary">
+                            {{ answeredCount }}/{{ questions.length }}
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Content Area -->
+                <main class="flex-grow-1 p-5 overflow-auto bg-light">
+                    <div class="max-w-800 mx-auto">
+                        <span class="text-muted">Question {{ currentQuestionIndex + 1 }}/{{ questions.length }}</span>
+                        
+                        <h4 class="fw-bold mt-2 mb-4 lh-base text-secondary">
+                            {{ currentQuestion.question }}
+                        </h4>
+
+                        <!-- Multiple Choice Options -->
+                        <div class="list-group gap-3">
+                            <label 
+                                v-for="(option, index) in currentQuestion.options" 
+                                :key="index"
+                                class="list-group-item rounded border shadow-sm p-3 d-flex align-items-center cursor-pointer card-hover"
+                                :class="{'border-primary': currentQuestion.selected === index}"
+                            >
+                                <input 
+                                    class="form-check-input me-3 fs-5" 
+                                    type="radio" 
+                                    :name="'question-' + currentQuestionIndex"
+                                    :value="index"
+                                    v-model="currentQuestion.selected"
+                                    @change="markAsAnswered"
+                                >
+                                <span class="fs-5">{{ option }}</span>
+                            </label>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="d-flex justify-content-between mt-5">
+                            <button 
+                                class="btn btn-outline-secondary"
+                                @click="previousQuestion"
+                                :disabled="currentQuestionIndex === 0"
+                            >
+                                <i class="fas fa-arrow-left me-2"></i>Câu trước
+                            </button>
+                            
+                            <button 
+                                class="btn btn-primary"
+                                @click="nextQuestion"
+                            >
+                                {{ isLastQuestion ? 'Xem lại' : 'Câu tiếp' }}
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    currentQuestionIndex: 0,
+                    timeRemaining: '14:59',
+                    timerSeconds: 899,
+                    questions: [
+                        {
+                            question: 'Choose the correct sentence structure for a Compound Sentence:',
+                            options: [
+                                'IC, fanboys IC.',
+                                'IC DC.',
+                                'DC, IC.',
+                                'DC fanboys IC.'
+                            ],
+                            correctAnswer: 0,
+                            selected: null,
+                            answered: false
+                        },
+                        {
+                            question: 'What is the past simple form of "go"?',
+                            options: [
+                                'goed',
+                                'went',
+                                'gone',
+                                'going'
+                            ],
+                            correctAnswer: 1,
+                            selected: null,
+                            answered: false
+                        },
+                        {
+                            question: 'Which sentence is grammatically correct?',
+                            options: [
+                                'She don\'t like pizza.',
+                                'She doesn\'t likes pizza.',
+                                'She doesn\'t like pizza.',
+                                'She not like pizza.'
+                            ],
+                            correctAnswer: 2,
+                            selected: null,
+                            answered: false
+                        },
+                        {
+                            question: 'Identify the Independent Clause (IC) in: "I will go to the park if it is sunny."',
+                            options: [
+                                'I will go to the park',
+                                'if it is sunny',
+                                'to the park',
+                                'it is sunny'
+                            ],
+                            correctAnswer: 0,
+                            selected: null,
+                            answered: false
+                        },
+                        {
+                            question: 'What does FANBOYS stand for?',
+                            options: [
+                                'Fun, And, Nice, Beautiful, Or, Yes, So',
+                                'For, And, Nor, But, Or, Yet, So',
+                                'First, And, Next, Before, Or, Yes, Since',
+                                'From, And, Not, But, Only, Yes, So'
+                            ],
+                            correctAnswer: 1,
+                            selected: null,
+                            answered: false
+                        }
+                    ]
+                }
+            },
+            computed: {
+                currentQuestion() {
+                    return this.questions[this.currentQuestionIndex];
+                },
+                isLastQuestion() {
+                    return this.currentQuestionIndex === this.questions.length - 1;
+                },
+                answeredCount() {
+                    return this.questions.filter(q => q.answered).length;
+                },
+                progressPercent() {
+                    return (this.answeredCount / this.questions.length) * 100;
+                }
+            },
+            methods: {
+                nextQuestion() {
+                    if (this.currentQuestionIndex < this.questions.length - 1) {
+                        this.currentQuestionIndex++;
+                    } else {
+                        this.confirmSubmit();
+                    }
+                },
+                previousQuestion() {
+                    if (this.currentQuestionIndex > 0) {
+                        this.currentQuestionIndex--;
+                    }
+                },
+                goToQuestion(index) {
+                    this.currentQuestionIndex = index;
+                },
+                markAsAnswered() {
+                    this.currentQuestion.answered = true;
+                },
+                confirmSubmit() {
+                    const unanswered = this.questions.length - this.answeredCount;
+                    if (unanswered > 0) {
+                        if (!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài?`)) {
+                            return;
+                        }
+                    }
+                    this.submitExam();
+                },
+                submitExam() {
+                    // Calculate score
+                    let correct = 0;
+                    this.questions.forEach(q => {
+                        if (q.selected === q.correctAnswer) {
+                            correct++;
+                        }
+                    });
+                    
+                    const score = Math.round((correct / this.questions.length) * 100);
+                    
+                    // Redirect to result page with score
+                    window.location.href = `assessment-result.html?score=${score}&correct=${correct}&total=${this.questions.length}`;
+                },
+                startTimer() {
+                    setInterval(() => {
+                        if (this.timerSeconds > 0) {
+                            this.timerSeconds--;
+                            const minutes = Math.floor(this.timerSeconds / 60);
+                            const seconds = this.timerSeconds % 60;
+                            this.timeRemaining = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        } else {
+                            alert('Hết giờ! Bài thi sẽ được nộp tự động.');
+                            this.submitExam();
+                        }
+                    }, 1000);
+                }
+            },
+            mounted() {
+                this.startTimer();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

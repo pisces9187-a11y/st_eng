@@ -1,0 +1,602 @@
+/* ====================================
+   Onboarding Quiz Styles
+   ==================================== */
+
+:root {
+    --energetic-orange: #F47C26;
+    --navy-blue: #183B56;
+    --charcoal-gray: #4A4A4A;
+    --light-gray: #F9FAFC;
+    --border-gray: #E0E6ED;
+    --white: #FFFFFF;
+    --success-green: #10B981;
+    --error-red: #EF4444;
+    
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Open Sans', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--light-gray);
+    overflow-x: hidden;
+}
+
+/* ====================================
+   Progress Bar
+   ==================================== */
+.progress-bar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background-color: var(--border-gray);
+    z-index: 1000;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--energetic-orange);
+    transition: width 0.4s ease;
+    border-radius: 0 4px 4px 0;
+}
+
+/* ====================================
+   Screen Container
+   ==================================== */
+.screen-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ====================================
+   Welcome Screen (Screen 0)
+   ==================================== */
+.welcome-screen {
+    text-align: center;
+    max-width: 600px;
+    background: var(--white);
+    padding: 4rem 3rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-illustration {
+    margin-bottom: 2rem;
+}
+
+.animate-wave {
+    animation: wave 1.5s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(15deg);
+    }
+    75% {
+        transform: rotate(-15deg);
+    }
+}
+
+.welcome-title {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 1.5rem;
+}
+
+.welcome-description {
+    font-size: 1.1rem;
+    color: var(--charcoal-gray);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+}
+
+/* ====================================
+   Question Screen
+   ==================================== */
+.question-screen {
+    width: 100%;
+    max-width: 800px;
+    background: var(--white);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.question-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.question-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 1rem;
+}
+
+.question-image {
+    margin: 2rem 0;
+}
+
+.question-sentence {
+    font-size: 1.3rem;
+    color: var(--charcoal-gray);
+    font-style: italic;
+    margin-top: 1rem;
+}
+
+/* ====================================
+   Options Grid (2 columns)
+   ==================================== */
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.option-card {
+    background: var(--white);
+    border: 1px solid var(--border-gray);
+    border-radius: 15px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.option-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(244, 124, 38, 0.2);
+}
+
+.option-card.selected {
+    border: 2px solid var(--energetic-orange);
+    background-color: #FFF5F0;
+}
+
+.option-icon {
+    color: var(--energetic-orange);
+    margin-bottom: 1rem;
+}
+
+.option-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--charcoal-gray);
+    margin: 0;
+}
+
+.check-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: var(--energetic-orange);
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.option-card.selected .check-icon {
+    opacity: 1;
+}
+
+/* ====================================
+   Options List (Full width)
+   ==================================== */
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.option-card-horizontal {
+    background: var(--white);
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.option-card-horizontal:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 16px rgba(244, 124, 38, 0.2);
+}
+
+.option-card-horizontal.selected {
+    border: 2px solid var(--energetic-orange);
+    background-color: #FFF5F0;
+}
+
+.option-card-horizontal.correct {
+    border: 2px solid var(--success-green);
+    background-color: #F0FDF4;
+}
+
+.option-card-horizontal.incorrect {
+    border: 2px solid var(--error-red);
+    background-color: #FEF2F2;
+}
+
+.option-content {
+    flex: 1;
+}
+
+.option-title {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--navy-blue);
+    margin: 0;
+}
+
+.option-description {
+    font-size: 0.95rem;
+    color: var(--charcoal-gray);
+    margin: 0.5rem 0 0 0;
+}
+
+.option-card-horizontal .check-icon {
+    position: static;
+    opacity: 0;
+    font-size: 1.8rem;
+    transition: opacity 0.3s ease;
+}
+
+.option-card-horizontal.selected .check-icon {
+    opacity: 1;
+}
+
+/* ====================================
+   Feedback Message
+   ==================================== */
+.feedback-message {
+    background-color: #FFF5F0;
+    border-left: 4px solid var(--energetic-orange);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    color: var(--charcoal-gray);
+    display: flex;
+    align-items: center;
+}
+
+.feedback-message i {
+    color: var(--energetic-orange);
+    font-size: 1.3rem;
+}
+
+/* ====================================
+   Loader Screen (Screen 6)
+   ==================================== */
+.loader-screen {
+    background-color: var(--navy-blue);
+}
+
+.loader-content {
+    text-align: center;
+}
+
+.spinner-container {
+    margin-bottom: 2rem;
+}
+
+.spinner {
+    width: 80px;
+    height: 80px;
+    border: 6px solid rgba(255, 255, 255, 0.2);
+    border-top-color: var(--energetic-orange);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loader-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--white);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ====================================
+   Results Screen (Screen 7)
+   ==================================== */
+.results-screen {
+    width: 100%;
+    max-width: 900px;
+    background: var(--white);
+    padding: 4rem 3rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.results-title {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+}
+
+/* ====================================
+   Results Cards
+   ==================================== */
+.results-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.result-card {
+    background: var(--light-gray);
+    padding: 2rem 1.5rem;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid var(--border-gray);
+}
+
+.result-icon {
+    font-size: 2.5rem;
+    color: var(--energetic-orange);
+    margin-bottom: 1rem;
+}
+
+.result-card h5 {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--charcoal-gray);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.result-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin: 0;
+}
+
+/* ====================================
+   Promise Box
+   ==================================== */
+.promise-box {
+    background: linear-gradient(135deg, var(--energetic-orange) 0%, #FFA500 100%);
+    color: var(--white);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* ====================================
+   Lead Capture Form
+   ==================================== */
+.lead-capture-form {
+    text-align: center;
+}
+
+.form-title {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 2rem;
+}
+
+.email-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+}
+
+.email-input-group input {
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+    border: 2px solid var(--border-gray);
+    border-radius: 12px;
+}
+
+.email-input-group input:focus {
+    border-color: var(--energetic-orange);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(244, 124, 38, 0.1);
+}
+
+.skip-link {
+    display: inline-block;
+    color: var(--charcoal-gray);
+    text-decoration: underline;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    transition: color 0.3s ease;
+}
+
+.skip-link:hover {
+    color: var(--energetic-orange);
+}
+
+/* ====================================
+   Buttons
+   ==================================== */
+.btn {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-energetic-orange {
+    background-color: var(--energetic-orange);
+    color: var(--white);
+    box-shadow: 0 4px 16px rgba(244, 124, 38, 0.3);
+}
+
+.btn-energetic-orange:hover {
+    background-color: #E66D15;
+    color: var(--white);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(244, 124, 38, 0.4);
+}
+
+.btn-outline-primary-dark {
+    border: 2px solid var(--navy-blue);
+    color: var(--navy-blue);
+    background-color: transparent;
+}
+
+.btn-outline-primary-dark:hover {
+    background-color: var(--navy-blue);
+    color: var(--white);
+}
+
+/* ====================================
+   Responsive Design
+   ==================================== */
+@media (max-width: 991px) {
+    .results-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .question-screen {
+        padding: 2rem;
+    }
+    
+    .results-screen {
+        padding: 3rem 2rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .welcome-screen {
+        padding: 3rem 2rem;
+    }
+    
+    .welcome-title {
+        font-size: 1.5rem;
+    }
+    
+    .welcome-description {
+        font-size: 1rem;
+    }
+    
+    .question-title {
+        font-size: 1.2rem;
+    }
+    
+    .results-title {
+        font-size: 1.5rem;
+    }
+    
+    .form-title {
+        font-size: 1.1rem;
+    }
+    
+    .option-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .option-card-horizontal {
+        padding: 1rem 1.5rem;
+    }
+    
+    .screen-container {
+        padding: 1rem;
+    }
+}
+
+/* ====================================
+   Utility Classes
+   ==================================== */
+.text-energetic-orange {
+    color: var(--energetic-orange) !important;
+}
+
+.text-primary-dark {
+    color: var(--navy-blue) !important;
+}
+
+.text-charcoal-gray {
+    color: var(--charcoal-gray) !important;
+}

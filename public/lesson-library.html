@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thư viện bài học - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    
+    <style>
+        body {
+            background: var(--light-gray, #F9FAFC);
+            font-family: 'Open Sans', sans-serif;
+        }
+        
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+        }
+        
+        /* Level Tabs */
+        .level-tabs .nav-link {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #57606F;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 12px 24px;
+            margin-right: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .level-tabs .nav-link:hover {
+            color: #F47C26;
+            background: rgba(244, 124, 38, 0.1);
+        }
+        
+        .level-tabs .nav-link.active {
+            color: white;
+            background: #F47C26;
+            border-color: #F47C26;
+        }
+        
+        /* Lesson Card */
+        .lesson-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #E0E6ED;
+            height: 100%;
+        }
+        
+        .lesson-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+        
+        .lesson-thumbnail {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(135deg, #183B56 0%, #2E5F7F 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .lesson-thumbnail i {
+            font-size: 3rem;
+            color: rgba(255,255,255,0.3);
+        }
+        
+        .lesson-level-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #F47C26;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .lesson-duration {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .lesson-body {
+            padding: 20px;
+        }
+        
+        .lesson-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #183B56;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .lesson-description {
+            font-size: 0.875rem;
+            color: #57606F;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Progress Bar */
+        .lesson-progress {
+            margin-bottom: 12px;
+        }
+        
+        .lesson-progress .progress {
+            height: 6px;
+            background: #E0E6ED;
+            border-radius: 10px;
+        }
+        
+        .lesson-progress .progress-bar {
+            background: #2ECC71;
+            border-radius: 10px;
+        }
+        
+        .progress-text {
+            font-size: 0.75rem;
+            color: #95A5A6;
+            margin-top: 4px;
+        }
+        
+        /* Tags */
+        .lesson-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        
+        .lesson-tag {
+            background: #F9FAFC;
+            color: #57606F;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Stats */
+        .lesson-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid #E0E6ED;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+            color: #57606F;
+        }
+        
+        .stat-item i {
+            color: #F47C26;
+        }
+        
+        /* Action Button */
+        .btn-start-lesson {
+            width: 100%;
+            background: #F47C26;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+        
+        .btn-start-lesson:hover {
+            background: #D35400;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 124, 38, 0.3);
+        }
+        
+        .btn-continue {
+            background: #2ECC71;
+        }
+        
+        .btn-continue:hover {
+            background: #27AE60;
+        }
+        
+        .btn-locked {
+            background: #95A5A6;
+            cursor: not-allowed;
+        }
+        
+        .btn-locked:hover {
+            background: #95A5A6;
+            transform: none;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #E0E6ED;
+            margin-bottom: 24px;
+        }
+        
+        .empty-state h4 {
+            color: #183B56;
+            margin-bottom: 12px;
+        }
+        
+        .empty-state p {
+            color: #57606F;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="dashboard.html" style="color: #183B56;">
+                    <i class="fas fa-graduation-cap me-2" style="color: #F47C26;"></i>
+                    English Learning
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-home me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="lesson-library.html">
+                                <i class="fas fa-book me-1"></i>Thư viện bài học
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="profile.html">
+                                <i class="fas fa-user me-1"></i>Hồ sơ
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mt-5 mb-5">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="fw-bold mb-2" style="color: #183B56;">Thư viện bài học</h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-book-open me-2"></i>
+                        {{ filteredLessons.length }} bài học có sẵn
+                    </p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-2"></i>Tải lộ trình PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <!-- Level Filter -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold mb-3">
+                            <i class="fas fa-layer-group me-2" style="color: #F47C26;"></i>
+                            Lọc theo cấp độ
+                        </label>
+                        <ul class="nav level-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link" :class="{active: filterLevel === 'all'}" @click="filterLevel = 'all'" href="#">
+                                    Tất cả
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" :class="{active: filterLevel === 'A1'}" @click="filterLevel = 'A1'" href="#">
+                                    A1 - Beginner
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" :class="{active: filterLevel === 'A2'}" @click="filterLevel = 'A2'" href="#">
+                                    A2 - Elementary
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" :class="{active: filterLevel === 'B1'}" @click="filterLevel = 'B1'" href="#">
+                                    B1 - Intermediate
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" :class="{active: filterLevel === 'B2'}" @click="filterLevel = 'B2'" href="#">
+                                    B2 - Upper-Int
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" :class="{active: filterLevel === 'C1'}" @click="filterLevel = 'C1'" href="#">
+                                    C1 - Advanced
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Search & Topic Filter -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-search me-2" style="color: #F47C26;"></i>
+                            Tìm kiếm
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            placeholder="Tìm kiếm bài học..."
+                            v-model="searchQuery"
+                        >
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-tag me-2" style="color: #F47C26;"></i>
+                            Chủ đề
+                        </label>
+                        <select class="form-select" v-model="filterTopic">
+                            <option value="all">Tất cả chủ đề</option>
+                            <option value="daily-life">Daily Life</option>
+                            <option value="business">Business</option>
+                            <option value="travel">Travel</option>
+                            <option value="education">Education</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-sort me-2" style="color: #F47C26;"></i>
+                            Sắp xếp
+                        </label>
+                        <select class="form-select" v-model="sortBy">
+                            <option value="newest">Mới nhất</option>
+                            <option value="popular">Phổ biến nhất</option>
+                            <option value="progress">Tiến độ</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lessons Grid -->
+            <div class="row g-4" v-if="filteredLessons.length > 0">
+                <div class="col-lg-4 col-md-6" v-for="lesson in filteredLessons" :key="lesson.id">
+                    <div class="lesson-card">
+                        <!-- Thumbnail -->
+                        <div class="lesson-thumbnail">
+                            <i class="fas fa-book-open"></i>
+                            <span class="lesson-level-badge">{{ lesson.level }}</span>
+                            <span class="lesson-duration">
+                                <i class="far fa-clock me-1"></i>{{ lesson.duration }}
+                            </span>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="lesson-body">
+                            <h3 class="lesson-title">{{ lesson.title }}</h3>
+                            <p class="lesson-description">{{ lesson.description }}</p>
+
+                            <!-- Tags -->
+                            <div class="lesson-tags">
+                                <span class="lesson-tag" v-for="tag in lesson.tags" :key="tag">{{ tag }}</span>
+                            </div>
+
+                            <!-- Progress -->
+                            <div class="lesson-progress" v-if="lesson.progress > 0">
+                                <div class="progress">
+                                    <div class="progress-bar" :style="{width: lesson.progress + '%'}"></div>
+                                </div>
+                                <div class="progress-text">{{ lesson.progress }}% hoàn thành</div>
+                            </div>
+
+                            <!-- Stats -->
+                            <div class="lesson-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-video"></i>
+                                    <span>{{ lesson.videos }} videos</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>{{ lesson.exercises }} bài tập</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-users"></i>
+                                    <span>{{ lesson.students }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <button 
+                                class="btn-start-lesson" 
+                                :class="{
+                                    'btn-continue': lesson.progress > 0 && lesson.progress < 100,
+                                    'btn-locked': lesson.locked
+                                }"
+                                @click="startLesson(lesson)"
+                                :disabled="lesson.locked"
+                            >
+                                <i class="fas" :class="{
+                                    'fa-play': lesson.progress === 0,
+                                    'fa-redo': lesson.progress > 0 && lesson.progress < 100,
+                                    'fa-check': lesson.progress === 100,
+                                    'fa-lock': lesson.locked
+                                }"></i>
+                                {{ lesson.locked ? 'Đã khóa' : lesson.progress === 0 ? 'Bắt đầu học' : lesson.progress === 100 ? 'Ôn tập lại' : 'Tiếp tục học' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" v-else>
+                <i class="fas fa-inbox"></i>
+                <h4>Không tìm thấy bài học</h4>
+                <p>Thử thay đổi bộ lọc để xem thêm bài học</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    filterLevel: 'all',
+                    filterTopic: 'all',
+                    sortBy: 'newest',
+                    lessons: [
+                        {
+                            id: 1,
+                            title: 'Unit 1: Greetings and Introductions',
+                            description: 'Learn how to introduce yourself, greet people, and make small talk in English',
+                            level: 'A1',
+                            topic: 'daily-life',
+                            duration: '45 phút',
+                            videos: 5,
+                            exercises: 12,
+                            students: 1234,
+                            progress: 0,
+                            locked: false,
+                            tags: ['Greetings', 'Basic']
+                        },
+                        {
+                            id: 2,
+                            title: 'Unit 2: Family and Friends',
+                            description: 'Describe your family members and talk about relationships',
+                            level: 'A1',
+                            topic: 'daily-life',
+                            duration: '50 phút',
+                            videos: 6,
+                            exercises: 15,
+                            students: 1156,
+                            progress: 65,
+                            locked: false,
+                            tags: ['Family', 'Vocabulary']
+                        },
+                        {
+                            id: 3,
+                            title: 'Unit 3: Daily Routines',
+                            description: 'Talk about your daily activities and schedules',
+                            level: 'A1',
+                            topic: 'daily-life',
+                            duration: '40 phút',
+                            videos: 4,
+                            exercises: 10,
+                            students: 987,
+                            progress: 100,
+                            locked: false,
+                            tags: ['Routines', 'Present Simple']
+                        },
+                        {
+                            id: 4,
+                            title: 'Unit 4: Past Simple Tense',
+                            description: 'Learn how to talk about past events and experiences',
+                            level: 'A2',
+                            topic: 'education',
+                            duration: '55 phút',
+                            videos: 7,
+                            exercises: 18,
+                            students: 2341,
+                            progress: 0,
+                            locked: false,
+                            tags: ['Grammar', 'Past Tense']
+                        },
+                        {
+                            id: 5,
+                            title: 'Unit 5: Making Plans',
+                            description: 'Express future plans and intentions using will and going to',
+                            level: 'A2',
+                            topic: 'daily-life',
+                            duration: '48 phút',
+                            videos: 5,
+                            exercises: 14,
+                            students: 1876,
+                            progress: 0,
+                            locked: true,
+                            tags: ['Future', 'Planning']
+                        },
+                        {
+                            id: 6,
+                            title: 'Unit 6: Business Presentations',
+                            description: 'Professional presentation skills and business vocabulary',
+                            level: 'B1',
+                            topic: 'business',
+                            duration: '60 phút',
+                            videos: 8,
+                            exercises: 20,
+                            students: 3421,
+                            progress: 0,
+                            locked: true,
+                            tags: ['Business', 'Speaking']
+                        },
+                        {
+                            id: 7,
+                            title: 'Unit 7: Travel and Tourism',
+                            description: 'Useful phrases for traveling, booking hotels, and asking directions',
+                            level: 'B1',
+                            topic: 'travel',
+                            duration: '52 phút',
+                            videos: 6,
+                            exercises: 16,
+                            students: 2987,
+                            progress: 0,
+                            locked: true,
+                            tags: ['Travel', 'Conversation']
+                        },
+                        {
+                            id: 8,
+                            title: 'Unit 8: Conditional Sentences',
+                            description: 'Master first, second, and third conditional structures',
+                            level: 'B2',
+                            topic: 'education',
+                            duration: '65 phút',
+                            videos: 9,
+                            exercises: 25,
+                            students: 1654,
+                            progress: 0,
+                            locked: true,
+                            tags: ['Grammar', 'Advanced']
+                        },
+                        {
+                            id: 9,
+                            title: 'Unit 9: Academic Writing',
+                            description: 'Essay structure, formal writing, and critical thinking',
+                            level: 'C1',
+                            topic: 'education',
+                            duration: '75 phút',
+                            videos: 10,
+                            exercises: 30,
+                            students: 876,
+                            progress: 0,
+                            locked: true,
+                            tags: ['Writing', 'Academic']
+                        }
+                    ]
+                };
+            },
+            computed: {
+                filteredLessons() {
+                    let filtered = this.lessons;
+
+                    // Filter by level
+                    if (this.filterLevel !== 'all') {
+                        filtered = filtered.filter(lesson => lesson.level === this.filterLevel);
+                    }
+
+                    // Filter by topic
+                    if (this.filterTopic !== 'all') {
+                        filtered = filtered.filter(lesson => lesson.topic === this.filterTopic);
+                    }
+
+                    // Filter by search query
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(lesson => 
+                            lesson.title.toLowerCase().includes(query) ||
+                            lesson.description.toLowerCase().includes(query)
+                        );
+                    }
+
+                    // Sort
+                    if (this.sortBy === 'popular') {
+                        filtered = filtered.sort((a, b) => b.students - a.students);
+                    } else if (this.sortBy === 'progress') {
+                        filtered = filtered.sort((a, b) => b.progress - a.progress);
+                    }
+
+                    return filtered;
+                }
+            },
+            methods: {
+                startLesson(lesson) {
+                    if (!lesson.locked) {
+                        window.location.href = `lesson-player.html?id=${lesson.id}`;
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

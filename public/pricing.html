@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng giá khóa học - English Study A1-C1</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Pricing Card Styles */
+        .transform-scale-105 {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .pricing-card {
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .best-seller-badge {
+            animation: pulse-orange 2s infinite;
+        }
+        
+        /* Check icon styling */
+        .feature-list li {
+            padding-left: 0;
+            margin-bottom: 12px;
+        }
+        
+        .feature-list {
+            padding-left: 0;
+        }
+        
+        /* Price styling */
+        .price-old {
+            font-size: 1.2rem;
+        }
+        
+        .price-current {
+            font-size: 3rem;
+            line-height: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .transform-scale-105 {
+                transform: scale(1);
+            }
+            
+            .price-current {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-primary" href="index.html">
+                    <i class="fas fa-graduation-cap me-2"></i>English Study
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="pricing.html">Bảng giá</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="profile.html">Hồ sơ</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h1 class="fw-bold text-secondary mb-3">Đầu tư cho tương lai của bạn</h1>
+                <p class="text-muted fs-5">Chọn lộ trình phù hợp và bắt đầu ngay hôm nay.</p>
+                
+                <!-- Money Back Guarantee Badge -->
+                <div class="d-inline-block mt-3">
+                    <span class="badge bg-success px-4 py-2 fs-6">
+                        <i class="fas fa-shield-alt me-2"></i>Hoàn tiền 100% trong 7 ngày
+                    </span>
+                </div>
+            </div>
+
+            <!-- Pricing Cards -->
+            <div class="row justify-content-center align-items-stretch g-4">
+                <!-- Free Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-0 shadow-sm pricing-card">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="text-center mb-4">
+                                <h5 class="fw-bold text-muted mb-3">Trải nghiệm</h5>
+                                <h2 class="fw-bold text-secondary mb-0">Miễn phí</h2>
+                                <p class="text-muted small">Không cần thẻ tín dụng</p>
+                            </div>
+                            
+                            <ul class="list-unstyled feature-list mb-4 flex-grow-1">
+                                <li><i class="fas fa-check text-success me-2"></i> Học thử 3 bài đầu tiên</li>
+                                <li><i class="fas fa-check text-success me-2"></i> Test trình độ đầu vào</li>
+                                <li><i class="fas fa-check text-success me-2"></i> Truy cập Grammar Wiki</li>
+                                <li><i class="fas fa-times text-muted me-2"></i> <span class="text-muted">Phân tích IC/DC</span></li>
+                                <li><i class="fas fa-times text-muted me-2"></i> <span class="text-muted">SRS Flashcard</span></li>
+                            </ul>
+                            
+                            <button class="btn btn-outline-secondary rounded-pill w-100" disabled>
+                                <i class="fas fa-check me-2"></i>Đang sử dụng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Plan (Best Seller) -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-primary border-3 shadow-lg pricing-card transform-scale-105 position-relative">
+                        <!-- Best Seller Badge -->
+                        <div class="position-absolute top-0 start-50 translate-middle">
+                            <span class="badge bg-danger rounded-pill px-4 py-2 shadow best-seller-badge" style="font-size: 0.9rem;">
+                                🔥 PHỔ BIẾN NHẤT
+                            </span>
+                        </div>
+                        
+                        <div class="card-body p-4 d-flex flex-column pt-5">
+                            <div class="text-center mb-4">
+                                <h5 class="fw-bold text-primary mb-3">Pro Mastery</h5>
+                                <div class="mb-2">
+                                    <span class="text-muted text-decoration-line-through price-old">2.400.000đ</span>
+                                </div>
+                                <h2 class="fw-bold text-secondary price-current mb-0">1.200.000đ</h2>
+                                <p class="text-muted small">Trọn gói 1 năm</p>
+                                
+                                <!-- Discount Badge -->
+                                <span class="badge bg-warning text-dark px-3 py-1">
+                                    Tiết kiệm 50%
+                                </span>
+                            </div>
+                            
+                            <ul class="list-unstyled feature-list mb-4 flex-grow-1">
+                                <li><i class="fas fa-check-circle text-primary me-2"></i> <strong>Mở khóa toàn bộ A1-C1</strong></li>
+                                <li><i class="fas fa-check-circle text-primary me-2"></i> Tính năng SRS (Flashcard)</li>
+                                <li><i class="fas fa-check-circle text-primary me-2"></i> Phân tích ngữ pháp IC/DC</li>
+                                <li><i class="fas fa-check-circle text-primary me-2"></i> Nghe chép chính tả</li>
+                                <li><i class="fas fa-check-circle text-primary me-2"></i> Shadowing & Recording</li>
+                                <li><i class="fas fa-check-circle text-primary me-2"></i> Cấp chứng chỉ hoàn thành</li>
+                                <li><i class="fas fa-check-circle text-primary me-2"></i> Hỗ trợ ưu tiên 24/7</li>
+                            </ul>
+                            
+                            <button class="btn btn-primary btn-lg rounded-pill w-100 shadow pulse-animation" @click="goToCheckout('pro')">
+                                <i class="fas fa-rocket me-2"></i>NÂNG CẤP NGAY
+                            </button>
+                            
+                            <p class="text-center text-muted small mt-3 mb-0">
+                                <i class="fas fa-users me-1"></i>1,247 học viên đã chọn
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lifetime VIP Plan -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-0 shadow-sm pricing-card">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="text-center mb-4">
+                                <h5 class="fw-bold text-secondary mb-3">Lifetime VIP</h5>
+                                <h2 class="fw-bold text-secondary mb-0">2.900.000đ</h2>
+                                <p class="text-muted small">Thanh toán 1 lần, học mãi mãi</p>
+                            </div>
+                            
+                            <ul class="list-unstyled feature-list mb-4 flex-grow-1">
+                                <li><i class="fas fa-crown text-warning me-2"></i> <strong>Tất cả tính năng Pro</strong></li>
+                                <li><i class="fas fa-infinity text-primary me-2"></i> Truy cập trọn đời</li>
+                                <li><i class="fas fa-star text-warning me-2"></i> Nội dung mới miễn phí</li>
+                                <li><i class="fas fa-gift text-danger me-2"></i> Tặng 3 tháng cho bạn bè</li>
+                                <li><i class="fas fa-medal text-success me-2"></i> Huy hiệu VIP độc quyền</li>
+                                <li><i class="fas fa-headset text-info me-2"></i> Mentor 1-1 (2 buổi/tháng)</li>
+                            </ul>
+                            
+                            <button class="btn btn-outline-primary rounded-pill w-100" @click="goToCheckout('lifetime')">
+                                <i class="fas fa-gem me-2"></i>Chọn gói VIP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="row justify-content-center mt-5">
+                <div class="col-lg-8">
+                    <h3 class="text-center fw-bold text-secondary mb-4">Câu hỏi thường gặp</h3>
+                    
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item border-0 shadow-sm mb-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Tôi có thể hủy bất cứ lúc nào không?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Có! Bạn có thể yêu cầu hoàn tiền 100% trong vòng 7 ngày đầu tiên. Sau đó, bạn có thể hủy đăng ký bất cứ lúc nào mà không mất phí.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0 shadow-sm mb-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Phương thức thanh toán nào được chấp nhận?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Chúng tôi chấp nhận: Chuyển khoản ngân hàng (QR Code), Ví Momo, và Thẻ quốc tế (Visa/Mastercard qua Stripe).
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Chứng chỉ có được công nhận không?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Chứng chỉ của chúng tôi xác nhận bạn đã hoàn thành khóa học. Nếu cần chứng chỉ quốc tế (TOEIC, IELTS), chúng tôi khuyên bạn nên thi chính thức sau khi hoàn thành khóa học.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="text-center mt-5 pt-5">
+                <h3 class="fw-bold text-secondary mb-3">Vẫn còn băn khoăn?</h3>
+                <p class="text-muted mb-4">Hãy thử học miễn phí hoặc liên hệ với chúng tôi</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="dashboard.html" class="btn btn-outline-secondary btn-lg rounded-pill px-4">
+                        <i class="fas fa-play me-2"></i>Học thử miễn phí
+                    </a>
+                    <a href="mailto:support@englishstudy.com" class="btn btn-outline-primary btn-lg rounded-pill px-4">
+                        <i class="fas fa-envelope me-2"></i>Liên hệ tư vấn
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    selectedPlan: null
+                };
+            },
+            methods: {
+                goToCheckout(plan) {
+                    // Store selected plan and redirect to checkout
+                    localStorage.setItem('selectedPlan', plan);
+                    window.location.href = `checkout.html?plan=${plan}`;
+                }
+            },
+            mounted() {
+                // Initialize Bootstrap tooltips
+                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

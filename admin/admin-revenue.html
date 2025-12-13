@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Management - Admin Panel</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Admin Layout */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #183B56 0%, #0F2538 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar .logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-sidebar .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-item.active {
+            background: rgba(244, 124, 38, 0.2);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-icon {
+            width: 25px;
+            display: inline-block;
+        }
+        
+        .admin-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #F9FAFC;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+        
+        /* Transaction Item */
+        .transaction-item {
+            border-left: 3px solid;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .transaction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .transaction-item.success {
+            border-left-color: #27AE60;
+        }
+        
+        .transaction-item.pending {
+            border-left-color: #F39C12;
+        }
+        
+        .transaction-item.failed {
+            border-left-color: #E74C3C;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="logo">
+                <h4 class="fw-bold mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span>Admin Panel</span>
+                </h4>
+            </div>
+            
+            <nav class="mt-3">
+                <div class="nav-item" @click="goTo('admin-dashboard.html')">
+                    <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-lesson-editor.html')">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span>
+                    <span>Quản lý bài học</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-flashcard.html')">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span>Flashcard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-users.html')">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    <span>Học viên</span>
+                </div>
+                <div class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <span>Doanh thu</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-settings.html')">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span>Cài đặt</span>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.1);">
+                
+                <div class="nav-item" @click="logout">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span>Đăng xuất</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-secondary mb-1">Quản lý Doanh thu</h2>
+                    <p class="text-muted mb-0">Tháng {{ currentMonth }}/{{ currentYear }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <select class="form-select" v-model="selectedPeriod" style="width: auto;">
+                        <option value="today">Hôm nay</option>
+                        <option value="week">7 ngày qua</option>
+                        <option value="month">Tháng này</option>
+                        <option value="year">Năm nay</option>
+                    </select>
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-2"></i>Xuất báo cáo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Revenue Stats -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #27AE60;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Doanh thu tháng</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.monthRevenue.toLocaleString('vi-VN') }}đ</h3>
+                                    <span class="badge bg-success mt-2">
+                                        <i class="fas fa-arrow-up me-1"></i>+{{ stats.monthGrowth }}%
+                                    </span>
+                                </div>
+                                <div class="bg-success bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-chart-line fa-2x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #3498DB;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Giao dịch thành công</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.successTransactions }}</h3>
+                                    <span class="badge bg-info mt-2">
+                                        Tỷ lệ: {{ stats.successRate }}%
+                                    </span>
+                                </div>
+                                <div class="bg-info bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-check-circle fa-2x text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #F39C12;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Đang chờ xác nhận</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.pendingTransactions }}</h3>
+                                    <span class="badge bg-warning text-dark mt-2">
+                                        {{ stats.pendingAmount.toLocaleString('vi-VN') }}đ
+                                    </span>
+                                </div>
+                                <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-clock fa-2x text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #9B59B6;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-muted mb-1">Doanh thu trung bình</p>
+                                    <h3 class="fw-bold mb-0">{{ stats.avgRevenue.toLocaleString('vi-VN') }}đ</h3>
+                                    <span class="badge bg-secondary mt-2">
+                                        /giao dịch
+                                    </span>
+                                </div>
+                                <div class="bg-secondary bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-calculator fa-2x text-secondary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-chart-area me-2 text-primary"></i>Biểu đồ doanh thu
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-percentage me-2 text-primary"></i>Theo gói
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="planChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-list me-2 text-primary"></i>Giao dịch gần đây
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" @click="filterStatus = ''">
+                            Tất cả
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" @click="filterStatus = 'success'">
+                            Thành công
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" @click="filterStatus = 'pending'">
+                            Chờ xác nhận
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    <div 
+                        v-for="transaction in filteredTransactions" 
+                        :key="transaction.id"
+                        class="transaction-item"
+                        :class="transaction.status"
+                    >
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <h6 class="fw-bold mb-0">{{ transaction.customerName }}</h6>
+                                    <span class="badge" :class="{
+                                        'bg-success': transaction.status === 'success',
+                                        'bg-warning text-dark': transaction.status === 'pending',
+                                        'bg-danger': transaction.status === 'failed'
+                                    }">
+                                        {{ transaction.statusLabel }}
+                                    </span>
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="fas fa-envelope me-1"></i>{{ transaction.email }}
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="fas fa-box me-1"></i>{{ transaction.plan }} - 
+                                    <i class="fas fa-credit-card me-1"></i>{{ transaction.paymentMethod }}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <h5 class="fw-bold mb-1 text-success">{{ transaction.amount.toLocaleString('vi-VN') }}đ</h5>
+                                <small class="text-muted">{{ transaction.date }}</small>
+                                <div class="mt-2" v-if="transaction.status === 'pending'">
+                                    <button class="btn btn-sm btn-success me-1" @click="approveTransaction(transaction)">
+                                        <i class="fas fa-check"></i> Xác nhận
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentMonth: new Date().getMonth() + 1,
+                    currentYear: new Date().getFullYear(),
+                    selectedPeriod: 'month',
+                    filterStatus: '',
+                    stats: {
+                        monthRevenue: 142500000,
+                        monthGrowth: 18.5,
+                        successTransactions: 125,
+                        successRate: 95.4,
+                        pendingTransactions: 8,
+                        pendingAmount: 9600000,
+                        avgRevenue: 1140000
+                    },
+                    transactions: [
+                        { id: 1, customerName: 'Nguyễn Văn A', email: 'nguyenvana@gmail.com', plan: 'Pro Mastery', amount: 1200000, paymentMethod: 'VietQR', status: 'success', statusLabel: 'Thành công', date: '07/12/2024 14:30' },
+                        { id: 2, customerName: 'Trần Thị B', email: 'tranthib@gmail.com', plan: 'Lifetime VIP', amount: 2900000, paymentMethod: 'Momo', status: 'success', statusLabel: 'Thành công', date: '07/12/2024 12:15' },
+                        { id: 3, customerName: 'Lê Văn C', email: 'levanc@gmail.com', plan: 'Pro Mastery', amount: 1200000, paymentMethod: 'Bank Transfer', status: 'pending', statusLabel: 'Chờ xác nhận', date: '07/12/2024 10:20' },
+                        { id: 4, customerName: 'Phạm Thị D', email: 'phamthid@gmail.com', plan: 'Pro Mastery', amount: 1200000, paymentMethod: 'Stripe', status: 'success', statusLabel: 'Thành công', date: '06/12/2024 18:45' },
+                        { id: 5, customerName: 'Hoàng Văn E', email: 'hoangvane@gmail.com', plan: 'Lifetime VIP', amount: 2900000, paymentMethod: 'VietQR', status: 'pending', statusLabel: 'Chờ xác nhận', date: '06/12/2024 16:30' }
+                    ]
+                };
+            },
+            computed: {
+                filteredTransactions() {
+                    if (!this.filterStatus) return this.transactions;
+                    return this.transactions.filter(t => t.status === this.filterStatus);
+                }
+            },
+            methods: {
+                goTo(page) {
+                    window.location.href = page;
+                },
+                logout() {
+                    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                        window.location.href = 'logout.html';
+                    }
+                },
+                approveTransaction(transaction) {
+                    if (confirm(`Xác nhận giao dịch ${transaction.amount.toLocaleString('vi-VN')}đ từ ${transaction.customerName}?`)) {
+                        transaction.status = 'success';
+                        transaction.statusLabel = 'Thành công';
+                        this.stats.pendingTransactions--;
+                        this.stats.successTransactions++;
+                        alert('Đã xác nhận giao dịch thành công!');
+                    }
+                }
+            },
+            mounted() {
+                // Revenue Chart
+                const revenueCtx = document.getElementById('revenueChart');
+                new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+                        datasets: [{
+                            label: 'Doanh thu (triệu đồng)',
+                            data: [95, 108, 122, 135, 118, 142, 156, 148, 138, 145, 152, 142],
+                            borderColor: '#27AE60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + 'M';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Plan Distribution Chart
+                const planCtx = document.getElementById('planChart');
+                new Chart(planCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pro Mastery', 'Lifetime VIP', 'Free'],
+                        datasets: [{
+                            data: [65, 28, 7],
+                            backgroundColor: ['#27AE60', '#F39C12', '#95A5A6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+{% load static %}
+<!-- Public Footer - Dark Theme -->
+<footer class="site-footer bg-primary-dark text-light py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Brand Column -->
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                <h3 class="h4 fw-bold mb-4">
+                    <span class="text-white">English</span><span class="text-energetic-orange">Master</span>
+                </h3>
+                <p class="text-light opacity-75 mb-4">
+                    Nền tảng học Tiếng Anh trực tuyến hàng đầu Việt Nam. 
+                    Phương pháp học tập hiện đại, hiệu quả vượt trội.
+                </p>
+                <div class="social-links d-flex gap-2">
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;" title="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;" title="YouTube">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;" title="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;" title="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Khóa học -->
+            <div class="col-lg-2 col-md-6">
+                <h5 class="fw-bold text-white mb-4">Khóa học</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/lessons/" class="text-light opacity-75 text-decoration-none hover-orange">Giao tiếp cơ bản</a></li>
+                    <li class="mb-2"><a href="/lessons/" class="text-light opacity-75 text-decoration-none hover-orange">Tiếng Anh công sở</a></li>
+                    <li class="mb-2"><a href="/lessons/" class="text-light opacity-75 text-decoration-none hover-orange">IELTS</a></li>
+                    <li class="mb-2"><a href="/lessons/" class="text-light opacity-75 text-decoration-none hover-orange">TOEIC</a></li>
+                </ul>
+            </div>
+            
+            <!-- Về chúng tôi -->
+            <div class="col-lg-2 col-md-6">
+                <h5 class="fw-bold text-white mb-4">Về chúng tôi</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/about/" class="text-light opacity-75 text-decoration-none hover-orange">Giới thiệu</a></li>
+                    <li class="mb-2"><a href="/teachers/" class="text-light opacity-75 text-decoration-none hover-orange">Giáo viên</a></li>
+                    <li class="mb-2"><a href="/blog/" class="text-light opacity-75 text-decoration-none hover-orange">Blog</a></li>
+                    <li class="mb-2"><a href="/careers/" class="text-light opacity-75 text-decoration-none hover-orange">Tuyển dụng</a></li>
+                </ul>
+            </div>
+            
+            <!-- Hỗ trợ -->
+            <div class="col-lg-2 col-md-6">
+                <h5 class="fw-bold text-white mb-4">Hỗ trợ</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/help/" class="text-light opacity-75 text-decoration-none hover-orange">Trung tâm trợ giúp</a></li>
+                    <li class="mb-2"><a href="/contact/" class="text-light opacity-75 text-decoration-none hover-orange">Liên hệ</a></li>
+                    <li class="mb-2"><a href="/privacy/" class="text-light opacity-75 text-decoration-none hover-orange">Chính sách bảo mật</a></li>
+                    <li class="mb-2"><a href="/terms/" class="text-light opacity-75 text-decoration-none hover-orange">Điều khoản dịch vụ</a></li>
+                </ul>
+            </div>
+            
+            <!-- Liên hệ -->
+            <div class="col-lg-2 col-md-6">
+                <h5 class="fw-bold text-white mb-4">Liên hệ</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-3 text-light opacity-75">
+                        <i class="fas fa-phone me-2 text-energetic-orange"></i>
+                        1900-xxxx
+                    </li>
+                    <li class="mb-3 text-light opacity-75">
+                        <i class="fas fa-envelope me-2 text-energetic-orange"></i>
+                        info@englishmaster.vn
+                    </li>
+                    <li class="mb-3 text-light opacity-75">
+                        <i class="fas fa-map-marker-alt me-2 text-energetic-orange"></i>
+                        Hà Nội, Việt Nam
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Bottom Bar -->
+        <hr class="my-4 opacity-25">
+        <div class="row align-items-center">
+            <div class="col-12 text-center">
+                <p class="text-light opacity-75 mb-0">
+                    © {% now "Y" %} EnglishMaster. All rights reserved. Made with 
+                    <i class="fas fa-heart text-energetic-orange"></i> in Vietnam
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .hover-orange:hover {
+        color: #F47C26 !important;
+        opacity: 1 !important;
+    }
+    .bg-primary-dark {
+        background-color: #183B56 !important;
+    }
+    .text-energetic-orange {
+        color: #F47C26 !important;
+    }
+</style>

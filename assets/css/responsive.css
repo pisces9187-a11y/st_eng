@@ -1,0 +1,843 @@
+/* ====================================
+   PHASE 1: MOBILE RESPONSIVE OPTIMIZATION
+   English Learning Platform
+   Created: 08/12/2025
+   ==================================== */
+
+/* ====================================
+   CSS Custom Properties for Responsive
+   ==================================== */
+:root {
+    /* Breakpoints Reference (Bootstrap 5) */
+    /* xs: 0px - 575px (Mobile) */
+    /* sm: 576px - 767px (Large Mobile) */
+    /* md: 768px - 991px (Tablet) */
+    /* lg: 992px - 1199px (Desktop) */
+    /* xl: 1200px - 1399px (Large Desktop) */
+    /* xxl: 1400px+ (Extra Large) */
+    
+    /* Mobile-first spacing */
+    --spacing-mobile: 16px;
+    --spacing-tablet: 24px;
+    --spacing-desktop: 32px;
+    
+    /* Touch-friendly sizing */
+    --touch-target-min: 44px;
+    --button-height-mobile: 48px;
+    --input-height-mobile: 48px;
+}
+
+/* ====================================
+   Base Mobile Styles (Mobile First)
+   ==================================== */
+
+/* Ensure proper box sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Prevent horizontal scroll */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Touch-friendly tap highlight */
+* {
+    -webkit-tap-highlight-color: rgba(244, 124, 38, 0.2);
+}
+
+/* Better touch scrolling */
+.scrollable {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}
+
+/* ====================================
+   Typography Responsive
+   ==================================== */
+
+/* Mobile base font sizes */
+html {
+    font-size: 14px;
+}
+
+h1, .h1 { font-size: 1.75rem; }
+h2, .h2 { font-size: 1.5rem; }
+h3, .h3 { font-size: 1.25rem; }
+h4, .h4 { font-size: 1.125rem; }
+h5, .h5 { font-size: 1rem; }
+h6, .h6 { font-size: 0.875rem; }
+
+/* Display classes mobile */
+.display-1 { font-size: 2.5rem; }
+.display-2 { font-size: 2.25rem; }
+.display-3 { font-size: 2rem; }
+.display-4 { font-size: 1.75rem; }
+.display-5 { font-size: 1.5rem; }
+.display-6 { font-size: 1.25rem; }
+
+/* ====================================
+   Navigation Mobile
+   ==================================== */
+
+/* Mobile hamburger menu */
+.navbar-toggler {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+    outline: 2px solid var(--energetic-orange);
+}
+
+/* Mobile nav menu */
+.navbar-collapse {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 85%;
+    max-width: 800px;
+    height: 100vh;
+    background: #fff;
+    z-index: 1050;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.navbar-collapse.show {
+    left: 0;
+}
+
+/* Mobile nav overlay */
+.nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.nav-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile nav items */
+.navbar-nav .nav-link {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1rem;
+}
+
+/* ====================================
+   Buttons Mobile
+   ==================================== */
+
+/* Touch-friendly buttons */
+.btn {
+    min-height: var(--button-height-mobile);
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    touch-action: manipulation;
+}
+
+/* Full-width buttons on mobile */
+.btn-block-mobile {
+    width: 100%;
+    display: block;
+}
+
+/* Button group stacking */
+.btn-group-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-group-mobile .btn {
+    width: 100%;
+}
+
+/* ====================================
+   Forms Mobile
+   ==================================== */
+
+/* Touch-friendly inputs */
+.form-control,
+.form-select {
+    min-height: var(--input-height-mobile);
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* Better checkbox/radio touch targets */
+.form-check {
+    padding-left: 2rem;
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+}
+
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0;
+}
+
+/* ====================================
+   Cards Mobile
+   ==================================== */
+
+.card {
+    margin-bottom: var(--spacing-mobile);
+}
+
+.card-body {
+    padding: var(--spacing-mobile);
+}
+
+/* Horizontal scroll for card groups */
+.cards-scroll-mobile {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+    padding-bottom: 16px;
+}
+
+.cards-scroll-mobile > .card {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+}
+
+/* Hide scrollbar but keep functionality */
+.cards-scroll-mobile::-webkit-scrollbar {
+    display: none;
+}
+
+.cards-scroll-mobile {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ====================================
+   Tables Mobile
+   ==================================== */
+
+/* Responsive table wrapper */
+.table-responsive-mobile {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Card-style table on mobile */
+.table-card-mobile {
+    display: block;
+}
+
+.table-card-mobile thead {
+    display: none;
+}
+
+.table-card-mobile tbody tr {
+    display: block;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.table-card-mobile tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table-card-mobile tbody td:last-child {
+    border-bottom: none;
+}
+
+.table-card-mobile tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #183B56;
+}
+
+/* ====================================
+   Modals Mobile
+   ==================================== */
+
+.modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    height: 100%;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 0;
+    height: 100%;
+}
+
+.modal-fullscreen-mobile .modal-dialog {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+.modal-fullscreen-mobile .modal-content {
+    border-radius: 0;
+    min-height: 100vh;
+}
+
+/* Bottom sheet modal */
+.modal-bottom-sheet .modal-dialog {
+    margin: auto 0 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.modal-bottom-sheet .modal-content {
+    border-radius: 20px 20px 0 0;
+    height: auto;
+    max-height: 90vh;
+}
+
+/* ====================================
+   Dashboard Mobile
+   ==================================== */
+
+/* Stats grid */
+.stats-grid-mobile {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.stats-grid-mobile .stat-card {
+    padding: 16px;
+    text-align: center;
+}
+
+.stats-grid-mobile .stat-number {
+    font-size: 1.5rem;
+}
+
+/* Learning path mobile */
+.learning-path-mobile {
+    padding: 0 16px;
+}
+
+.learning-path-mobile .path-line {
+    left: 30px;
+}
+
+.learning-path-mobile .lesson-node {
+    padding-left: 60px;
+}
+
+/* ====================================
+   Flashcard Mobile
+   ==================================== */
+
+.flashcard-container-mobile {
+    width: 100%;
+    height: 250px;
+    margin: 0 auto;
+}
+
+.flashcard-swipe {
+    touch-action: pan-y;
+}
+
+/* Swipe gesture hint */
+.swipe-hint {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px 0;
+    color: #999;
+    font-size: 0.875rem;
+}
+
+.swipe-hint i {
+    animation: swipeHint 2s ease-in-out infinite;
+}
+
+@keyframes swipeHint {
+    0%, 100% { transform: translateX(0); opacity: 0.5; }
+    50% { transform: translateX(10px); opacity: 1; }
+}
+
+/* ====================================
+   Practice Pages Mobile
+   ==================================== */
+
+/* Speaking practice */
+.record-btn-mobile {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+/* Writing practice */
+.editor-mobile {
+    min-height: 200px;
+}
+
+/* Dictation */
+.audio-controls-mobile {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+    background: #fff;
+    position: sticky;
+    bottom: 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+/* ====================================
+   Bottom Navigation (Mobile App Feel)
+   ==================================== */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #fff;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 1030;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    color: #999;
+    text-decoration: none;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.bottom-nav-item i {
+    font-size: 1.25rem;
+}
+
+.bottom-nav-item.active {
+    color: #F47C26;
+}
+
+.bottom-nav-item:hover {
+    color: #F47C26;
+}
+
+/* Add padding to body when bottom nav is present */
+.has-bottom-nav {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+/* ====================================
+   Pull to Refresh
+   ==================================== */
+
+.pull-to-refresh {
+    position: relative;
+}
+
+.pull-to-refresh-indicator {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: top 0.3s ease;
+}
+
+.pull-to-refresh-indicator.visible {
+    top: 20px;
+}
+
+.pull-to-refresh-indicator i {
+    color: #F47C26;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ====================================
+   Safe Area (iPhone X+ notch)
+   ==================================== */
+
+.safe-area-top {
+    padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+    padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+    padding-right: env(safe-area-inset-right);
+}
+
+/* ====================================
+   Tablet Styles (768px+)
+   ==================================== */
+
+@media (min-width: 768px) {
+    html {
+        font-size: 15px;
+    }
+    
+    h1, .h1 { font-size: 2rem; }
+    h2, .h2 { font-size: 1.75rem; }
+    h3, .h3 { font-size: 1.5rem; }
+    
+    .display-1 { font-size: 3rem; }
+    .display-2 { font-size: 2.75rem; }
+    .display-3 { font-size: 2.5rem; }
+    .display-4 { font-size: 2rem; }
+    .display-5 { font-size: 1.75rem; }
+    
+    /* Reset navbar to default */
+    .navbar-collapse {
+        position: static;
+        width: auto;
+        height: auto;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 8px 16px !important;
+        border-bottom: none;
+    }
+    
+    /* Modal tablet adjustments */
+    .modal-dialog {
+        margin: 1.75rem auto;
+        max-width: 500px;
+        height: auto;
+    }
+    
+    .modal-content {
+        border-radius: 12px;
+        height: auto;
+    }
+    
+    /* Stats grid tablet */
+    .stats-grid-mobile {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Flashcard tablet */
+    .flashcard-container-mobile {
+        width: 400px;
+        height: 300px;
+    }
+    
+    /* Hide bottom nav on tablet+ */
+    .bottom-nav {
+        display: none;
+    }
+    
+    .has-bottom-nav {
+        padding-bottom: 0;
+    }
+    
+    /* Button group horizontal on tablet */
+    .btn-group-mobile {
+        flex-direction: row;
+    }
+    
+    .btn-group-mobile .btn {
+        width: auto;
+    }
+    
+    /* Card scroll reset */
+    .cards-scroll-mobile {
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+    
+    .cards-scroll-mobile > .card {
+        flex: 0 0 calc(50% - 8px);
+    }
+}
+
+/* ====================================
+   Desktop Styles (992px+)
+   ==================================== */
+
+@media (min-width: 992px) {
+    html {
+        font-size: 16px;
+    }
+    
+    h1, .h1 { font-size: 2.5rem; }
+    h2, .h2 { font-size: 2rem; }
+    h3, .h3 { font-size: 1.75rem; }
+    
+    .display-1 { font-size: 4rem; }
+    .display-2 { font-size: 3.5rem; }
+    .display-3 { font-size: 3rem; }
+    .display-4 { font-size: 2.5rem; }
+    .display-5 { font-size: 2rem; }
+    
+    /* Card scroll reset */
+    .cards-scroll-mobile > .card {
+        flex: 0 0 calc(33.333% - 11px);
+    }
+    
+    /* Table reset */
+    .table-card-mobile {
+        display: table;
+    }
+    
+    .table-card-mobile thead {
+        display: table-header-group;
+    }
+    
+    .table-card-mobile tbody tr {
+        display: table-row;
+        margin-bottom: 0;
+        padding: 0;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .table-card-mobile tbody td {
+        display: table-cell;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .table-card-mobile tbody td::before {
+        content: none;
+    }
+}
+
+/* ====================================
+   Large Desktop (1200px+)
+   ==================================== */
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+    
+    .cards-scroll-mobile > .card {
+        flex: 0 0 calc(25% - 12px);
+    }
+}
+
+/* ====================================
+   Print Styles
+   ==================================== */
+
+@media print {
+    .bottom-nav,
+    .navbar,
+    .btn,
+    .no-print {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    body {
+        font-size: 12pt;
+        color: #000;
+    }
+}
+
+/* ====================================
+   Reduced Motion (Accessibility)
+   ==================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ====================================
+   Dark Mode Support (Optional)
+   ==================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --text-primary: #eaeaea;
+        --text-secondary: #b0b0b0;
+    }
+    
+    /* Dark mode styles would go here */
+    /* Uncomment and customize as needed */
+    /*
+    body.dark-mode {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+    }
+    */
+}
+
+/* ====================================
+   Landscape Orientation
+   ==================================== */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    /* Compact layout for landscape mobile */
+    .navbar {
+        padding: 0.5rem 0;
+    }
+    
+    .hero-section {
+        padding: 20px 0;
+    }
+    
+    .bottom-nav {
+        height: 48px;
+    }
+    
+    .bottom-nav-item {
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .bottom-nav-item span {
+        display: inline;
+    }
+}
+
+/* ====================================
+   Touch Device Optimizations
+   ==================================== */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects on touch devices */
+    .btn:hover {
+        transform: none;
+    }
+    
+    .card:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Larger touch targets */
+    .clickable {
+        min-height: var(--touch-target-min);
+        min-width: var(--touch-target-min);
+    }
+}
+
+/* ====================================
+   Utility Classes
+   ==================================== */
+
+/* Hide on mobile */
+.d-mobile-none {
+    display: none !important;
+}
+
+@media (min-width: 768px) {
+    .d-mobile-none {
+        display: block !important;
+    }
+}
+
+/* Show only on mobile */
+.d-mobile-only {
+    display: block !important;
+}
+
+@media (min-width: 768px) {
+    .d-mobile-only {
+        display: none !important;
+    }
+}
+
+/* Text alignment mobile */
+.text-mobile-center {
+    text-align: center !important;
+}
+
+@media (min-width: 768px) {
+    .text-mobile-center {
+        text-align: left !important;
+    }
+}
+
+/* Padding utilities mobile */
+.p-mobile-0 { padding: 0 !important; }
+.p-mobile-1 { padding: 0.25rem !important; }
+.p-mobile-2 { padding: 0.5rem !important; }
+.p-mobile-3 { padding: 1rem !important; }
+.p-mobile-4 { padding: 1.5rem !important; }
+
+/* Margin utilities mobile */
+.m-mobile-0 { margin: 0 !important; }
+.m-mobile-auto { margin: auto !important; }
+.mb-mobile-3 { margin-bottom: 1rem !important; }
+.mt-mobile-3 { margin-top: 1rem !important; }
+
+@media (min-width: 768px) {
+    .p-mobile-0, .p-mobile-1, .p-mobile-2, .p-mobile-3, .p-mobile-4 {
+        padding: inherit !important;
+    }
+    .m-mobile-0, .m-mobile-auto, .mb-mobile-3, .mt-mobile-3 {
+        margin: inherit !important;
+    }
+}

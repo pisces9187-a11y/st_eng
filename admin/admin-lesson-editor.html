@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Editor - Admin Panel</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Sortable.js for drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Admin Layout (Same as dashboard) */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #183B56 0%, #0F2538 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar .logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-sidebar .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-item.active {
+            background: rgba(244, 124, 38, 0.2);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-icon {
+            width: 25px;
+            display: inline-block;
+        }
+        
+        .admin-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #F9FAFC;
+        }
+        
+        /* Sentence List */
+        .sentence-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .sentence-item {
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        
+        .sentence-item:hover {
+            background-color: rgba(244, 124, 38, 0.05);
+        }
+        
+        .sentence-item.active {
+            background-color: rgba(244, 124, 38, 0.1);
+            border-left-color: var(--bs-primary) !important;
+        }
+        
+        /* Grammar Highlighter */
+        .highlightable-text {
+            min-height: 100px;
+            line-height: 2;
+            font-size: 1.1rem;
+            user-select: text;
+        }
+        
+        .grammar-highlight {
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .grammar-highlight.ic {
+            background-color: rgba(24, 59, 86, 0.15);
+            border-bottom: 2px solid #183B56;
+        }
+        
+        .grammar-highlight.dc {
+            background-color: rgba(244, 124, 38, 0.15);
+            border-bottom: 2px solid #F47C26;
+        }
+        
+        .grammar-highlight.link {
+            background-color: rgba(52, 152, 219, 0.15);
+            border-bottom: 2px solid #3498DB;
+        }
+        
+        /* Toolbar */
+        .grammar-toolbar {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+            padding: 10px;
+            border-bottom: 2px solid #E0E6ED;
+        }
+        
+        /* Audio Player Styling */
+        audio {
+            width: 100%;
+            height: 35px;
+        }
+        
+        /* JSON Preview */
+        .json-preview {
+            background: #2C3E50;
+            color: #ECF0F1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="logo">
+                <h4 class="fw-bold mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span>Admin Panel</span>
+                </h4>
+            </div>
+            
+            <nav class="mt-3">
+                <div class="nav-item" @click="goTo('admin-dashboard.html')">
+                    <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span>
+                    <span>Quản lý bài học</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span>Flashcard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-users.html')">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    <span>Học viên</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <span>Doanh thu</span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span>Cài đặt</span>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.1);">
+                
+                <div class="nav-item" @click="logout">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span>Đăng xuất</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-secondary mb-1">Biên tập: {{ currentLesson.title }}</h3>
+                    <p class="text-muted mb-0">Level {{ currentLesson.level }} - Unit {{ currentLesson.unit }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" @click="previewLesson">
+                        <i class="fas fa-eye me-2"></i>Xem trước
+                    </button>
+                    <button class="btn btn-success" @click="saveLesson">
+                        <i class="fas fa-save me-2"></i>Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Sentence List -->
+                <div class="col-md-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                            <span>Danh sách câu</span>
+                            <span class="badge bg-primary">{{ sentences.length }}</span>
+                        </div>
+                        <div class="list-group list-group-flush sentence-list" id="sentenceList">
+                            <div 
+                                v-for="(sentence, index) in sentences" 
+                                :key="sentence.id"
+                                class="list-group-item list-group-item-action sentence-item border-start border-3"
+                                :class="{ 'active': selectedSentenceIndex === index }"
+                                @click="selectSentence(index)"
+                            >
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold mb-1">{{ index + 1 }}. {{ sentence.text.substring(0, 25) }}...</div>
+                                        <small class="text-muted">{{ sentence.duration || '0:00' }}</small>
+                                    </div>
+                                    <div class="d-flex flex-column gap-1">
+                                        <span v-if="sentence.audioFile" class="badge bg-success" style="font-size: 0.7rem;">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                        <span v-if="sentence.grammarAnalysis" class="badge bg-info" style="font-size: 0.7rem;">
+                                            <i class="fas fa-highlighter"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <button class="btn btn-light w-100 text-primary" @click="addNewSentence">
+                                <i class="fas fa-plus me-2"></i>Thêm câu mới
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Editor -->
+                <div class="col-md-9">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="text-secondary border-bottom pb-2 mb-4">
+                                Chỉnh sửa Câu #{{ selectedSentenceIndex + 1 }}
+                            </h5>
+
+                            <!-- Basic Info -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-microphone me-2 text-danger"></i>Audio File
+                                    </label>
+                                    <input 
+                                        type="file" 
+                                        class="form-control mb-2" 
+                                        accept="audio/*"
+                                        @change="handleAudioUpload"
+                                    >
+                                    <audio v-if="currentSentence.audioFile" controls class="mt-2">
+                                        <source :src="currentSentence.audioFile" type="audio/mpeg">
+                                    </audio>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-language me-2 text-primary"></i>Phiên âm IPA
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control font-monospace" 
+                                        v-model="currentSentence.ipa"
+                                        placeholder="/aɪ dɪˈsaɪdɪd/"
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Grammar Analysis Section -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold d-flex justify-content-between align-items-center mb-3">
+                                    <span>
+                                        <i class="fas fa-highlighter me-2 text-warning"></i>Phân tích Cấu trúc (Tô màu ngữ pháp)
+                                    </span>
+                                    <small class="text-muted fw-normal">Bôi đen văn bản để gán thẻ</small>
+                                </label>
+                                
+                                <!-- Grammar Toolbar -->
+                                <div class="grammar-toolbar rounded mb-2">
+                                    <div class="btn-group" role="group">
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-secondary" 
+                                            :class="{ 'active': selectedGrammarType === 'ic' }"
+                                            @click="setGrammarType('ic')"
+                                        >
+                                            <i class="fas fa-highlighter me-1"></i>IC (Xanh)
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-primary"
+                                            :class="{ 'active': selectedGrammarType === 'dc' }"
+                                            @click="setGrammarType('dc')"
+                                        >
+                                            <i class="fas fa-highlighter me-1"></i>DC (Cam)
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-info"
+                                            :class="{ 'active': selectedGrammarType === 'link' }"
+                                            @click="setGrammarType('link')"
+                                        >
+                                            <i class="fas fa-link me-1"></i>Linking
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-danger"
+                                            @click="clearHighlight"
+                                        >
+                                            <i class="fas fa-eraser me-1"></i>Xóa
+                                        </button>
+                                    </div>
+                                    
+                                    <button class="btn btn-sm btn-outline-success ms-2" @click="applyHighlight">
+                                        <i class="fas fa-check me-1"></i>Áp dụng
+                                    </button>
+                                </div>
+
+                                <!-- Editable Text Area -->
+                                <div 
+                                    class="form-control highlightable-text p-3"
+                                    contenteditable="true"
+                                    @mouseup="handleTextSelection"
+                                    @input="updateSentenceText"
+                                    ref="editableText"
+                                    v-html="renderHighlightedText"
+                                >
+                                </div>
+                                
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Bôi đen văn bản → Chọn loại (IC/DC/Link) → Nhấn "Áp dụng"
+                                </small>
+                            </div>
+
+                            <!-- Vietnamese Translation -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-flag me-2 text-danger"></i>Dịch nghĩa tiếng Việt
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    v-model="currentSentence.translation"
+                                    placeholder="Tôi quyết định học tiếng Anh vì tôi muốn đi du lịch."
+                                >
+                            </div>
+
+                            <!-- Grammar Notes -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-book-open me-2 text-info"></i>Ghi chú ngữ pháp
+                                </label>
+                                <textarea 
+                                    class="form-control" 
+                                    rows="3"
+                                    v-model="currentSentence.grammarNotes"
+                                    placeholder="Ví dụ: 'Decided' là động từ quá khứ bất quy tắc..."
+                                ></textarea>
+                            </div>
+
+                            <!-- JSON Preview -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-code me-2"></i>JSON Output (Preview)
+                                </label>
+                                <div class="json-preview">
+                                    <pre>{{ JSON.stringify(currentSentence, null, 2) }}</pre>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" @click="saveSentence">
+                                    <i class="fas fa-save me-2"></i>Lưu câu này
+                                </button>
+                                <button class="btn btn-outline-danger" @click="deleteSentence">
+                                    <i class="fas fa-trash me-2"></i>Xóa câu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentLesson: {
+                        title: 'Unit 5: Past Simple',
+                        level: 'A2',
+                        unit: 5
+                    },
+                    sentences: [
+                        {
+                            id: 1,
+                            text: 'I decided to learn English because I want to travel the world.',
+                            ipa: '/aɪ dɪˈsaɪdɪd tuː lɜːn ˈɪŋɡlɪʃ bɪˈkɒz aɪ wɒnt tuː ˈtrævl ðə wɜːld/',
+                            audioFile: null,
+                            translation: 'Tôi quyết định học tiếng Anh vì tôi muốn đi du lịch thế giới.',
+                            grammarNotes: '"Decided" là động từ quá khứ. "Because" giới thiệu mệnh đề phụ chỉ lý do.',
+                            grammarAnalysis: {
+                                highlights: [
+                                    { type: 'ic', start: 0, end: 28 },
+                                    { type: 'dc', start: 29, end: 62 }
+                                ]
+                            },
+                            duration: '0:04'
+                        }
+                    ],
+                    selectedSentenceIndex: 0,
+                    selectedGrammarType: null,
+                    selectedRange: null
+                };
+            },
+            computed: {
+                currentSentence() {
+                    return this.sentences[this.selectedSentenceIndex] || {};
+                },
+                renderHighlightedText() {
+                    const sentence = this.currentSentence;
+                    if (!sentence.grammarAnalysis || !sentence.grammarAnalysis.highlights) {
+                        return sentence.text || '';
+                    }
+                    
+                    let result = sentence.text;
+                    const highlights = [...sentence.grammarAnalysis.highlights].sort((a, b) => b.start - a.start);
+                    
+                    highlights.forEach(highlight => {
+                        const before = result.substring(0, highlight.start);
+                        const marked = result.substring(highlight.start, highlight.end);
+                        const after = result.substring(highlight.end);
+                        result = `${before}<span class="grammar-highlight ${highlight.type}">${marked}</span>${after}`;
+                    });
+                    
+                    return result;
+                }
+            },
+            methods: {
+                goTo(page) {
+                    window.location.href = page;
+                },
+                logout() {
+                    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                        window.location.href = 'login.html';
+                    }
+                },
+                selectSentence(index) {
+                    this.selectedSentenceIndex = index;
+                },
+                addNewSentence() {
+                    const newSentence = {
+                        id: this.sentences.length + 1,
+                        text: 'New sentence here...',
+                        ipa: '',
+                        audioFile: null,
+                        translation: '',
+                        grammarNotes: '',
+                        grammarAnalysis: { highlights: [] },
+                        duration: '0:00'
+                    };
+                    this.sentences.push(newSentence);
+                    this.selectedSentenceIndex = this.sentences.length - 1;
+                },
+                setGrammarType(type) {
+                    this.selectedGrammarType = type;
+                },
+                handleTextSelection() {
+                    const selection = window.getSelection();
+                    if (selection.rangeCount > 0) {
+                        this.selectedRange = selection.getRangeAt(0);
+                    }
+                },
+                applyHighlight() {
+                    if (!this.selectedGrammarType || !this.selectedRange) {
+                        alert('Vui lòng chọn văn bản và loại highlight');
+                        return;
+                    }
+                    
+                    const text = this.selectedRange.toString();
+                    const fullText = this.currentSentence.text;
+                    const start = fullText.indexOf(text);
+                    const end = start + text.length;
+                    
+                    if (start !== -1) {
+                        if (!this.currentSentence.grammarAnalysis) {
+                            this.currentSentence.grammarAnalysis = { highlights: [] };
+                        }
+                        
+                        this.currentSentence.grammarAnalysis.highlights.push({
+                            type: this.selectedGrammarType,
+                            start: start,
+                            end: end
+                        });
+                        
+                        alert('Đã áp dụng highlight!');
+                    }
+                },
+                clearHighlight() {
+                    if (confirm('Xóa tất cả highlight?')) {
+                        this.currentSentence.grammarAnalysis = { highlights: [] };
+                    }
+                },
+                updateSentenceText(event) {
+                    this.currentSentence.text = event.target.innerText;
+                },
+                handleAudioUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // In production, upload to server and get URL
+                        const url = URL.createObjectURL(file);
+                        this.currentSentence.audioFile = url;
+                    }
+                },
+                saveSentence() {
+                    alert('Câu đã được lưu!');
+                },
+                deleteSentence() {
+                    if (confirm('Xóa câu này?')) {
+                        this.sentences.splice(this.selectedSentenceIndex, 1);
+                        this.selectedSentenceIndex = Math.max(0, this.selectedSentenceIndex - 1);
+                    }
+                },
+                previewLesson() {
+                    window.open('lesson-player.html', '_blank');
+                },
+                saveLesson() {
+                    alert('Đã lưu tất cả thay đổi!');
+                    console.log('Lesson data:', {
+                        lesson: this.currentLesson,
+                        sentences: this.sentences
+                    });
+                }
+            },
+            mounted() {
+                // Initialize Sortable for drag & drop
+                const el = document.getElementById('sentenceList');
+                Sortable.create(el, {
+                    animation: 150,
+                    onEnd: (evt) => {
+                        const item = this.sentences.splice(evt.oldIndex, 1)[0];
+                        this.sentences.splice(evt.newIndex, 0, item);
+                    }
+                });
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

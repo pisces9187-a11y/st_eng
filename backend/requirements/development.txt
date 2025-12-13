@@ -1,0 +1,19 @@
+# requirements/development.txt
+-r base.txt
+
+# Development tools
+django-debug-toolbar>=4.2.0
+ipython>=8.18.0
+pytest-django>=4.7.0
+pytest-cov>=4.1.0
+factory-boy>=3.3.0
+faker>=20.1.0
+
+# Code quality
+black>=23.11.0
+isort>=5.12.0
+flake8>=6.1.0
+pre-commit>=3.6.0
+
+# Hot reload
+watchdog>=3.0.0

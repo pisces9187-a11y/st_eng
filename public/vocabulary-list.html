@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách từ vựng - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    
+    <style>
+        body {
+            background: #F9FAFC;
+            font-family: 'Open Sans', sans-serif;
+        }
+        
+        .vocab-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Section */
+        .vocab-header {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+        }
+        
+        .vocab-header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #183B56;
+            margin-bottom: 16px;
+        }
+        
+        .vocab-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+        
+        .stat-card {
+            background: #F9FAFC;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #F47C26;
+        }
+        
+        .stat-label {
+            color: #57606F;
+            font-size: 0.875rem;
+            margin-top: 8px;
+        }
+        
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #E0E6ED;
+            background: white;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #57606F;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            border-color: #F47C26;
+            color: #F47C26;
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 48px 12px 20px;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #F47C26;
+        }
+        
+        .search-box i {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #57606F;
+        }
+        
+        /* Vocabulary Table */
+        .vocab-table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .vocab-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .vocab-table thead {
+            background: #183B56;
+            color: white;
+        }
+        
+        .vocab-table th {
+            padding: 16px;
+            text-align: left;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .vocab-table tbody tr {
+            border-bottom: 1px solid #E0E6ED;
+            transition: all 0.3s ease;
+        }
+        
+        .vocab-table tbody tr:hover {
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        .vocab-table td {
+            padding: 20px 16px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .word-column {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            font-size: 1.125rem;
+        }
+        
+        .phonetic {
+            color: #F47C26;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-left: 8px;
+        }
+        
+        .meaning {
+            color: #2C3E50;
+        }
+        
+        .example {
+            color: #57606F;
+            font-style: italic;
+            margin-top: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .mastery-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .mastery-high {
+            background: #EAFAF1;
+            color: #27AE60;
+        }
+        
+        .mastery-medium {
+            background: #FFF4E5;
+            color: #F39C12;
+        }
+        
+        .mastery-low {
+            background: #FADBD8;
+            color: #E74C3C;
+        }
+        
+        .level-badge {
+            background: #183B56;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+        
+        .topic-tag {
+            background: rgba(244, 124, 38, 0.1);
+            color: #F47C26;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        
+        /* Action Icons */
+        .action-icon {
+            cursor: pointer;
+            font-size: 1.125rem;
+            margin: 0 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .action-icon.sound:hover {
+            color: #F47C26;
+        }
+        
+        .action-icon.star {
+            color: #E0E6ED;
+        }
+        
+        .action-icon.star.active {
+            color: #F39C12;
+        }
+        
+        .action-icon.star:hover {
+            color: #F39C12;
+        }
+        
+        .action-icon.note:hover {
+            color: #3498DB;
+        }
+        
+        /* Export Button */
+        .btn-export {
+            background: #2ECC71;
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-export:hover {
+            background: #27AE60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #E0E6ED;
+            margin-bottom: 24px;
+        }
+        
+        .empty-state h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #57606F;
+            margin-bottom: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .vocab-table {
+                font-size: 0.875rem;
+            }
+            
+            .vocab-table th, .vocab-table td {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="vocab-container">
+            <!-- Header -->
+            <div class="vocab-header">
+                <h1><i class="fas fa-book-open me-3"></i>Danh sách từ vựng</h1>
+                <p class="text-muted mb-0">Quản lý và ôn tập tất cả từ vựng đã học</p>
+                
+                <div class="vocab-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ totalWords }}</div>
+                        <div class="stat-label">Tổng từ vựng</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ masteredWords }}</div>
+                        <div class="stat-label">Đã thành thạo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ difficultWords }}</div>
+                        <div class="stat-label">Từ khó</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ reviewToday }}</div>
+                        <div class="stat-label">Cần ôn hôm nay</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="filter-group mb-3">
+                    <label class="fw-bold me-2" style="color: #183B56;">Cấp độ:</label>
+                    <button 
+                        v-for="level in levels" 
+                        :key="level"
+                        class="filter-btn"
+                        :class="{active: selectedLevel === level}"
+                        @click="selectedLevel = level"
+                    >
+                        {{ level }}
+                    </button>
+                </div>
+                
+                <div class="filter-group mb-3">
+                    <label class="fw-bold me-2" style="color: #183B56;">Chủ đề:</label>
+                    <button 
+                        v-for="topic in topics" 
+                        :key="topic"
+                        class="filter-btn"
+                        :class="{active: selectedTopic === topic}"
+                        @click="selectedTopic = topic"
+                    >
+                        {{ topic }}
+                    </button>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="fw-bold me-2" style="color: #183B56;">Mức độ thành thạo:</label>
+                    <button 
+                        v-for="mastery in masteryLevels" 
+                        :key="mastery.value"
+                        class="filter-btn"
+                        :class="{active: selectedMastery === mastery.value}"
+                        @click="selectedMastery = mastery.value"
+                    >
+                        {{ mastery.label }}
+                    </button>
+                </div>
+                
+                <div class="filter-group mt-3">
+                    <div class="search-box">
+                        <input 
+                            type="text" 
+                            placeholder="Tìm kiếm từ vựng..."
+                            v-model="searchQuery"
+                        >
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <button class="btn-export" @click="exportPDF">
+                        <i class="fas fa-file-pdf me-2"></i>Xuất PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vocabulary Table -->
+            <div class="vocab-table-wrapper">
+                <table class="vocab-table" v-if="filteredWords.length > 0">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Từ vựng</th>
+                            <th style="width: 35%;">Nghĩa & Ví dụ</th>
+                            <th style="width: 10%;">Cấp độ</th>
+                            <th style="width: 12%;">Chủ đề</th>
+                            <th style="width: 12%;">Mức thành thạo</th>
+                            <th style="width: 6%;" class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="word in filteredWords" :key="word.id">
+                            <td class="word-column">
+                                {{ word.word }}
+                                <span class="phonetic">{{ word.phonetic }}</span>
+                            </td>
+                            <td>
+                                <div class="meaning">{{ word.meaning }}</div>
+                                <div class="example">{{ word.example }}</div>
+                            </td>
+                            <td>
+                                <span class="level-badge">{{ word.level }}</span>
+                            </td>
+                            <td>
+                                <span class="topic-tag">{{ word.topic }}</span>
+                            </td>
+                            <td>
+                                <span class="mastery-badge" :class="'mastery-' + word.masteryLevel">
+                                    {{ getMasteryLabel(word.masteryLevel) }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <i class="fas fa-volume-up action-icon sound" @click="playSound(word)" title="Phát âm"></i>
+                                <i 
+                                    class="fas fa-star action-icon star" 
+                                    :class="{active: word.isDifficult}"
+                                    @click="toggleDifficult(word)"
+                                    title="Đánh dấu khó"
+                                ></i>
+                                <i class="fas fa-sticky-note action-icon note" @click="addNote(word)" title="Ghi chú"></i>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div v-else class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>Không tìm thấy từ vựng</h3>
+                    <p class="text-muted">Thử điều chỉnh bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    selectedLevel: 'Tất cả',
+                    selectedTopic: 'Tất cả',
+                    selectedMastery: 'all',
+                    levels: ['Tất cả', 'A1', 'A2', 'B1', 'B2', 'C1'],
+                    topics: ['Tất cả', 'Daily Life', 'Business', 'Travel', 'Education', 'Technology'],
+                    masteryLevels: [
+                        { value: 'all', label: 'Tất cả' },
+                        { value: 'high', label: 'Thành thạo' },
+                        { value: 'medium', label: 'Trung bình' },
+                        { value: 'low', label: 'Chưa thuộc' }
+                    ],
+                    words: [
+                        {
+                            id: 1,
+                            word: 'accomplish',
+                            phonetic: '/əˈkʌmplɪʃ/',
+                            meaning: 'Hoàn thành, đạt được',
+                            example: 'She accomplished her goal of learning English in one year.',
+                            level: 'B1',
+                            topic: 'Daily Life',
+                            masteryLevel: 'high',
+                            isDifficult: false
+                        },
+                        {
+                            id: 2,
+                            word: 'entrepreneur',
+                            phonetic: '/ˌɒntrəprəˈnɜːr/',
+                            meaning: 'Doanh nhân',
+                            example: 'He became a successful entrepreneur at age 25.',
+                            level: 'B2',
+                            topic: 'Business',
+                            masteryLevel: 'medium',
+                            isDifficult: true
+                        },
+                        {
+                            id: 3,
+                            word: 'destination',
+                            phonetic: '/ˌdestɪˈneɪʃn/',
+                            meaning: 'Điểm đến',
+                            example: 'Paris is a popular travel destination.',
+                            level: 'A2',
+                            topic: 'Travel',
+                            masteryLevel: 'high',
+                            isDifficult: false
+                        },
+                        {
+                            id: 4,
+                            word: 'algorithm',
+                            phonetic: '/ˈælɡərɪðəm/',
+                            meaning: 'Thuật toán',
+                            example: 'The algorithm sorts data efficiently.',
+                            level: 'C1',
+                            topic: 'Technology',
+                            masteryLevel: 'low',
+                            isDifficult: true
+                        },
+                        {
+                            id: 5,
+                            word: 'assignment',
+                            phonetic: '/əˈsaɪnmənt/',
+                            meaning: 'Bài tập, nhiệm vụ',
+                            example: 'I have to complete this assignment by Friday.',
+                            level: 'B1',
+                            topic: 'Education',
+                            masteryLevel: 'high',
+                            isDifficult: false
+                        },
+                        {
+                            id: 6,
+                            word: 'grateful',
+                            phonetic: '/ˈɡreɪtfl/',
+                            meaning: 'Biết ơn',
+                            example: 'I am grateful for your help.',
+                            level: 'A2',
+                            topic: 'Daily Life',
+                            masteryLevel: 'medium',
+                            isDifficult: false
+                        },
+                        {
+                            id: 7,
+                            word: 'negotiate',
+                            phonetic: '/nɪˈɡəʊʃieɪt/',
+                            meaning: 'Đàm phán, thương lượng',
+                            example: 'They negotiated a better price for the contract.',
+                            level: 'B2',
+                            topic: 'Business',
+                            masteryLevel: 'medium',
+                            isDifficult: true
+                        },
+                        {
+                            id: 8,
+                            word: 'itinerary',
+                            phonetic: '/aɪˈtɪnərəri/',
+                            meaning: 'Lịch trình',
+                            example: 'Our travel itinerary includes 5 cities.',
+                            level: 'B2',
+                            topic: 'Travel',
+                            masteryLevel: 'low',
+                            isDifficult: true
+                        },
+                        {
+                            id: 9,
+                            word: 'essential',
+                            phonetic: '/ɪˈsenʃl/',
+                            meaning: 'Cần thiết, thiết yếu',
+                            example: 'Water is essential for life.',
+                            level: 'A2',
+                            topic: 'Daily Life',
+                            masteryLevel: 'high',
+                            isDifficult: false
+                        },
+                        {
+                            id: 10,
+                            word: 'implement',
+                            phonetic: '/ˈɪmplɪment/',
+                            meaning: 'Thực hiện, triển khai',
+                            example: 'We need to implement this new system immediately.',
+                            level: 'B2',
+                            topic: 'Technology',
+                            masteryLevel: 'medium',
+                            isDifficult: false
+                        }
+                    ]
+                };
+            },
+            computed: {
+                filteredWords() {
+                    return this.words.filter(word => {
+                        const matchLevel = this.selectedLevel === 'Tất cả' || word.level === this.selectedLevel;
+                        const matchTopic = this.selectedTopic === 'Tất cả' || word.topic === this.selectedTopic;
+                        const matchMastery = this.selectedMastery === 'all' || word.masteryLevel === this.selectedMastery;
+                        const matchSearch = !this.searchQuery || 
+                            word.word.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                            word.meaning.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        
+                        return matchLevel && matchTopic && matchMastery && matchSearch;
+                    });
+                },
+                totalWords() {
+                    return this.words.length;
+                },
+                masteredWords() {
+                    return this.words.filter(w => w.masteryLevel === 'high').length;
+                },
+                difficultWords() {
+                    return this.words.filter(w => w.isDifficult).length;
+                },
+                reviewToday() {
+                    return this.words.filter(w => w.masteryLevel === 'low' || w.masteryLevel === 'medium').length;
+                }
+            },
+            methods: {
+                getMasteryLabel(level) {
+                    const labels = {
+                        high: 'Thành thạo',
+                        medium: 'Trung bình',
+                        low: 'Chưa thuộc'
+                    };
+                    return labels[level] || level;
+                },
+                playSound(word) {
+                    // Web Speech API
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(word.word);
+                        utterance.lang = 'en-US';
+                        utterance.rate = 0.8;
+                        window.speechSynthesis.speak(utterance);
+                    } else {
+                        alert('Trình duyệt không hỗ trợ phát âm');
+                    }
+                },
+                toggleDifficult(word) {
+                    word.isDifficult = !word.isDifficult;
+                },
+                addNote(word) {
+                    const note = prompt(`Thêm ghi chú cho từ "${word.word}":`);
+                    if (note) {
+                        alert(`Đã lưu ghi chú: ${note}`);
+                        // In production: Save to backend
+                    }
+                },
+                exportPDF() {
+                    alert('Chức năng xuất PDF đang được phát triển. Sẽ xuất ' + this.filteredWords.length + ' từ vựng.');
+                    // In production: Generate PDF using jsPDF or backend API
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1429 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Luyện phát âm IPA - EnglishMaster{% endblock %}
+{% block meta_description %}Học phát âm tiếng Anh chuẩn IPA với hệ thống bài học tương tác từ nguyên âm đến phụ âm{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --ipa-primary: #F47C26;
+        --ipa-secondary: #183B56;
+        --ipa-light: #F9FAFC;
+    }
+    
+    /* Hero Section */
+    .pronunciation-hero {
+        background: linear-gradient(135deg, var(--ipa-secondary) 0%, #2E5F7F 100%);
+        padding: 4rem 0;
+        color: white;
+    }
+    
+    .ipa-chart-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    
+    .ipa-symbol-badge {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        transition: all 0.3s ease;
+    }
+    
+    .ipa-symbol-badge:hover {
+        background: var(--ipa-primary);
+        transform: scale(1.1);
+    }
+    
+    /* Part Tabs */
+    .part-tabs {
+        background: white;
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .part-tab {
+        padding: 1rem 2rem;
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        color: #6c757d;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .part-tab:hover {
+        background: rgba(244, 124, 38, 0.1);
+        color: var(--ipa-primary);
+    }
+    
+    .part-tab.active {
+        background: var(--ipa-primary);
+        color: white;
+    }
+    
+    /* Category Section */
+    .category-section {
+        margin-bottom: 3rem;
+    }
+    
+    .category-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--ipa-primary), #FF9A56);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .category-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ipa-secondary);
+        margin: 0;
+    }
+    
+    .category-subtitle {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    /* Lesson Card */
+    .lesson-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+    }
+    
+    .lesson-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        border-color: var(--ipa-primary);
+    }
+    
+    .lesson-card.completed {
+        border-color: #2ECC71;
+    }
+    
+    .lesson-card.locked {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .lesson-number {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--ipa-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: var(--ipa-secondary);
+    }
+    
+    .lesson-card.completed .lesson-number {
+        background: #2ECC71;
+        color: white;
+    }
+    
+    .lesson-phonemes {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding-top: 2rem;
+    }
+    
+    .phoneme-display {
+        font-size: 2.5rem;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        color: var(--ipa-secondary);
+        font-weight: 600;
+    }
+    
+    .phoneme-vs {
+        font-size: 1rem;
+        color: #6c757d;
+        align-self: center;
+    }
+    
+    .lesson-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ipa-secondary);
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .lesson-desc {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .lesson-meta {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .lesson-progress {
+        height: 6px;
+        background: #E0E6ED;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    
+    .lesson-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2ECC71, #27AE60);
+        border-radius: 10px;
+    }
+    
+    .btn-start-lesson {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    
+    /* Progress Stats */
+    .progress-stats {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--ipa-secondary);
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    /* IPA Chart Quick Reference */
+    .ipa-chart-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .ipa-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .ipa-item {
+        aspect-ratio: 1;
+        border-radius: 8px;
+        background: var(--ipa-light);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .ipa-item:hover {
+        background: var(--ipa-primary);
+        color: white;
+    }
+    
+    .ipa-item.playing {
+        background: var(--ipa-primary);
+        color: white;
+        animation: pulse 0.5s ease infinite;
+    }
+    
+    .ipa-item.voiced {
+        border-left: 3px solid #2ECC71;
+    }
+    
+    .ipa-item .play-icon {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        font-size: 0.625rem;
+        animation: bounce 0.5s ease infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-2px); }
+    }
+    
+    .ipa-item .symbol {
+        font-size: 1.25rem;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        font-weight: 600;
+    }
+    
+    .ipa-item .approx {
+        font-size: 0.625rem;
+        opacity: 0.7;
+    }
+    
+    /* Roadmap Path */
+    .roadmap-connector {
+        position: relative;
+    }
+    
+    .roadmap-connector::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        width: 2px;
+        height: 20px;
+        background: #E0E6ED;
+        transform: translateX(-50%);
+    }
+    
+    .roadmap-connector.completed::after {
+        background: #2ECC71;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="pronunciation-library">
+    <!-- Hero Section -->
+    <section class="pronunciation-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <span class="badge bg-warning text-dark mb-3">
+                        <i class="fas fa-volume-up me-1"></i> Luyện phát âm
+                    </span>
+                    <h1 class="display-5 fw-bold mb-3">Cẩm Nang Phát Âm IPA</h1>
+                    <p class="lead opacity-75 mb-4">
+                        Học phát âm tiếng Anh chuẩn quốc tế với 44 âm vị IPA. 
+                        Từ nguyên âm đến phụ âm, từ cơ bản đến nâng cao.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="#lessons" class="btn btn-warning btn-lg">
+                            <i class="fas fa-play me-2"></i>Bắt đầu học
+                        </a>
+                        <button class="btn btn-outline-light btn-lg" @click="showIPAChart = true">
+                            <i class="fas fa-th me-2"></i>Bảng IPA
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="ipa-chart-preview">
+                        <div class="ipa-symbol-badge" v-for="symbol in previewSymbols" :key="symbol">
+                            /[[ symbol ]]/
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <main class="container py-5" id="lessons">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Progress Stats -->
+                <div class="progress-stats">
+                    <div class="row g-4">
+                        <div class="col-3">
+                            <div class="stat-item">
+                                <div class="stat-value text-success">[[ completedLessons ]]</div>
+                                <div class="stat-label">Đã hoàn thành</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="stat-item">
+                                <div class="stat-value text-primary">[[ totalLessons ]]</div>
+                                <div class="stat-label">Tổng bài học</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="stat-item">
+                                <div class="stat-value text-warning">[[ totalXP ]]</div>
+                                <div class="stat-label">XP kiếm được</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="stat-item">
+                                <div class="stat-value text-info">[[ accuracy ]]%</div>
+                                <div class="stat-label">Độ chính xác</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Part Tabs -->
+                <div class="part-tabs">
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <button 
+                            class="part-tab" 
+                            :class="{ active: selectedPart === 'all' }"
+                            @click="selectedPart = 'all'"
+                        >
+                            <i class="fas fa-globe me-2"></i>Tất cả
+                        </button>
+                        <button 
+                            class="part-tab" 
+                            :class="{ active: selectedPart === 'intro' }"
+                            @click="selectedPart = 'intro'"
+                        >
+                            <i class="fas fa-book-open me-2"></i>Giới thiệu
+                        </button>
+                        <button 
+                            class="part-tab" 
+                            :class="{ active: selectedPart === 'vowels' }"
+                            @click="selectedPart = 'vowels'"
+                        >
+                            <i class="fas fa-circle me-2"></i>Nguyên âm
+                        </button>
+                        <button 
+                            class="part-tab" 
+                            :class="{ active: selectedPart === 'diphthongs' }"
+                            @click="selectedPart = 'diphthongs'"
+                        >
+                            <i class="fas fa-exchange-alt me-2"></i>Nguyên âm đôi
+                        </button>
+                        <button 
+                            class="part-tab" 
+                            :class="{ active: selectedPart === 'consonants' }"
+                            @click="selectedPart = 'consonants'"
+                        >
+                            <i class="fas fa-square me-2"></i>Phụ âm
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Part 0: Introduction -->
+                <section class="category-section" v-if="selectedPart === 'all' || selectedPart === 'intro'">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-info"></i>
+                        </div>
+                        <div>
+                            <h2 class="category-title">Phần 0: Tổng quan IPA</h2>
+                            <p class="category-subtitle">Hiểu nguyên lý cốt lõi của hệ thống phát âm</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-4" v-for="lesson in introLessons" :key="lesson.id">
+                            <div class="lesson-card" :class="{ completed: lesson.completed, locked: lesson.locked }">
+                                <span class="lesson-number">
+                                    <i class="fas fa-check" v-if="lesson.completed"></i>
+                                    <span v-else>[[ lesson.order ]]</span>
+                                </span>
+                                
+                                <div class="lesson-phonemes">
+                                    <i :class="lesson.icon" class="phoneme-display" style="font-size: 2rem;"></i>
+                                </div>
+                                
+                                <h3 class="lesson-title">[[ lesson.title_vi ]]</h3>
+                                <p class="lesson-desc">[[ lesson.description_vi ]]</p>
+                                
+                                <div class="lesson-meta">
+                                    <span><i class="fas fa-clock me-1"></i>[[ lesson.duration ]] phút</span>
+                                    <span><i class="fas fa-star me-1"></i>[[ lesson.xp ]] XP</span>
+                                </div>
+                                
+                                <div class="lesson-progress" v-if="lesson.progress > 0">
+                                    <div class="lesson-progress-fill" :style="{ width: lesson.progress + '%' }"></div>
+                                </div>
+                                
+                                <a :href="'/pronunciation/lesson/' + lesson.slug + '/'" class="btn btn-primary-orange btn-start-lesson">
+                                    <span v-if="lesson.completed">Học lại</span>
+                                    <span v-else-if="lesson.progress > 0">Tiếp tục</span>
+                                    <span v-else>Bắt đầu</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Part 1: Monophthongs (Vowels) -->
+                <section class="category-section" v-if="selectedPart === 'all' || selectedPart === 'vowels'">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                        <div>
+                            <h2 class="category-title">Phần 1: Nguyên âm đơn (Monophthongs)</h2>
+                            <p class="category-subtitle">12 nguyên âm - Học theo cặp Ngắn vs Dài</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-4" v-for="lesson in vowelLessons" :key="lesson.id">
+                            <div class="lesson-card" :class="{ completed: lesson.completed, locked: lesson.locked }">
+                                <span class="lesson-number">
+                                    <i class="fas fa-check" v-if="lesson.completed"></i>
+                                    <i class="fas fa-lock" v-else-if="lesson.locked"></i>
+                                    <span v-else>[[ lesson.order ]]</span>
+                                </span>
+                                
+                                <div class="lesson-phonemes">
+                                    <span class="phoneme-display">/[[ lesson.phoneme1 ]]/</span>
+                                    <span class="phoneme-vs" v-if="lesson.phoneme2">vs</span>
+                                    <span class="phoneme-display" v-if="lesson.phoneme2">/[[ lesson.phoneme2 ]]/</span>
+                                </div>
+                                
+                                <h3 class="lesson-title">[[ lesson.title_vi ]]</h3>
+                                <p class="lesson-desc">[[ lesson.description_vi ]]</p>
+                                
+                                <div class="lesson-meta">
+                                    <span><i class="fas fa-clock me-1"></i>[[ lesson.duration ]] phút</span>
+                                    <span><i class="fas fa-star me-1"></i>[[ lesson.xp ]] XP</span>
+                                </div>
+                                
+                                <div class="lesson-progress" v-if="lesson.progress > 0">
+                                    <div class="lesson-progress-fill" :style="{ width: lesson.progress + '%' }"></div>
+                                </div>
+                                
+                                <a :href="'/pronunciation/lesson/' + lesson.slug + '/'" class="btn btn-primary-orange btn-start-lesson" :class="{ disabled: lesson.locked }">
+                                    <span v-if="lesson.locked"><i class="fas fa-lock me-1"></i>Khóa</span>
+                                    <span v-else-if="lesson.completed">Học lại</span>
+                                    <span v-else-if="lesson.progress > 0">Tiếp tục</span>
+                                    <span v-else>Bắt đầu</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Part 2: Diphthongs -->
+                <section class="category-section" v-if="selectedPart === 'all' || selectedPart === 'diphthongs'">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div>
+                            <h2 class="category-title">Phần 2: Nguyên âm đôi (Diphthongs)</h2>
+                            <p class="category-subtitle">8 nguyên âm đôi - Sự trượt âm mượt mà</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-4" v-for="lesson in diphthongLessons" :key="lesson.id">
+                            <div class="lesson-card" :class="{ completed: lesson.completed, locked: lesson.locked }">
+                                <span class="lesson-number">
+                                    <i class="fas fa-check" v-if="lesson.completed"></i>
+                                    <i class="fas fa-lock" v-else-if="lesson.locked"></i>
+                                    <span v-else>[[ lesson.order ]]</span>
+                                </span>
+                                
+                                <div class="lesson-phonemes">
+                                    <span class="phoneme-display">/[[ lesson.phoneme1 ]]/</span>
+                                </div>
+                                
+                                <h3 class="lesson-title">[[ lesson.title_vi ]]</h3>
+                                <p class="lesson-desc">[[ lesson.description_vi ]]</p>
+                                
+                                <div class="lesson-meta">
+                                    <span><i class="fas fa-clock me-1"></i>[[ lesson.duration ]] phút</span>
+                                    <span><i class="fas fa-star me-1"></i>[[ lesson.xp ]] XP</span>
+                                </div>
+                                
+                                <a :href="'/pronunciation/lesson/' + lesson.slug + '/'" class="btn btn-primary-orange btn-start-lesson" :class="{ disabled: lesson.locked }">
+                                    <span v-if="lesson.locked"><i class="fas fa-lock me-1"></i>Khóa</span>
+                                    <span v-else>Bắt đầu</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Part 3: Consonants -->
+                <section class="category-section" v-if="selectedPart === 'all' || selectedPart === 'consonants'">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-square"></i>
+                        </div>
+                        <div>
+                            <h2 class="category-title">Phần 3: Phụ âm (Consonants)</h2>
+                            <p class="category-subtitle">24 phụ âm - Vô thanh vs Hữu thanh</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-4" v-for="lesson in consonantLessons" :key="lesson.id">
+                            <div class="lesson-card" :class="{ completed: lesson.completed, locked: lesson.locked }">
+                                <span class="lesson-number">
+                                    <i class="fas fa-check" v-if="lesson.completed"></i>
+                                    <i class="fas fa-lock" v-else-if="lesson.locked"></i>
+                                    <span v-else>[[ lesson.order ]]</span>
+                                </span>
+                                
+                                <div class="lesson-phonemes">
+                                    <span class="phoneme-display">/[[ lesson.phoneme1 ]]/</span>
+                                    <span class="phoneme-vs" v-if="lesson.phoneme2">vs</span>
+                                    <span class="phoneme-display" v-if="lesson.phoneme2">/[[ lesson.phoneme2 ]]/</span>
+                                </div>
+                                
+                                <h3 class="lesson-title">[[ lesson.title_vi ]]</h3>
+                                <p class="lesson-desc">[[ lesson.description_vi ]]</p>
+                                
+                                <div class="lesson-meta">
+                                    <span><i class="fas fa-clock me-1"></i>[[ lesson.duration ]] phút</span>
+                                    <span><i class="fas fa-star me-1"></i>[[ lesson.xp ]] XP</span>
+                                </div>
+                                
+                                <a :href="'/pronunciation/lesson/' + lesson.slug + '/'" class="btn btn-primary-orange btn-start-lesson" :class="{ disabled: lesson.locked }">
+                                    <span v-if="lesson.locked"><i class="fas fa-lock me-1"></i>Khóa</span>
+                                    <span v-else>Bắt đầu</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick IPA Reference -->
+                <div class="ipa-chart-card mb-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-th me-2 text-primary-orange"></i>
+                        Bảng IPA nhanh
+                        <span class="badge bg-success ms-2" v-if="ttsAvailable">
+                            <i class="fas fa-volume-up"></i> TTS
+                        </span>
+                    </h5>
+                    
+                    <!-- Nguyên âm đơn -->
+                    <h6 class="text-muted small mb-2">Nguyên âm đơn (Monophthongs)</h6>
+                    <div class="ipa-grid mb-3">
+                        <div 
+                            class="ipa-item" 
+                            v-for="v in vowelSymbols" 
+                            :key="v.symbol" 
+                            @click="playSound(v.symbol, v.examples[0])"
+                            :class="{ 'playing': currentPlayingSymbol === v.symbol }"
+                            :title="v.tip + ' | Ví dụ: ' + v.examples.join(', ')"
+                        >
+                            <span class="symbol">[[ v.symbol ]]</span>
+                            <span class="approx">[[ v.approx ]]</span>
+                            <i class="fas fa-volume-up play-icon" v-if="currentPlayingSymbol === v.symbol"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Nguyên âm đôi -->
+                    <h6 class="text-muted small mb-2">Nguyên âm đôi (Diphthongs)</h6>
+                    <div class="ipa-grid mb-3">
+                        <div 
+                            class="ipa-item" 
+                            v-for="d in diphthongSymbols" 
+                            :key="d.symbol" 
+                            @click="playSound(d.symbol, d.examples[0])"
+                            :class="{ 'playing': currentPlayingSymbol === d.symbol }"
+                            :title="d.tip + ' | Ví dụ: ' + d.examples.join(', ')"
+                        >
+                            <span class="symbol">[[ d.symbol ]]</span>
+                            <span class="approx">[[ d.approx ]]</span>
+                            <i class="fas fa-volume-up play-icon" v-if="currentPlayingSymbol === d.symbol"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Phụ âm -->
+                    <h6 class="text-muted small mb-2">Phụ âm (Consonants)</h6>
+                    <div class="ipa-grid">
+                        <div 
+                            class="ipa-item" 
+                            v-for="c in consonantSymbols" 
+                            :key="c.symbol" 
+                            @click="playSound(c.symbol, c.examples[0])"
+                            :class="{ 'playing': currentPlayingSymbol === c.symbol, 'voiced': c.voiced }"
+                            :title="c.tip + ' | Ví dụ: ' + c.examples.join(', ')"
+                        >
+                            <span class="symbol">[[ c.symbol ]]</span>
+                            <span class="approx">[[ c.approx ]]</span>
+                            <i class="fas fa-volume-up play-icon" v-if="currentPlayingSymbol === c.symbol"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-mouse-pointer me-1"></i>
+                            Click vào âm để nghe phát âm
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Learning Tips -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-lightbulb me-2 text-warning"></i>
+                            Mẹo học phát âm
+                        </h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-3 d-flex">
+                                <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                <span>Học theo <strong>cặp đối lập</strong> (short/long, voiced/voiceless)</span>
+                            </li>
+                            <li class="mb-3 d-flex">
+                                <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                <span>Đặt tay lên <strong>cổ họng</strong> để cảm nhận rung/không rung</span>
+                            </li>
+                            <li class="mb-3 d-flex">
+                                <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                <span>Dùng <strong>gương</strong> để quan sát khẩu hình</span>
+                            </li>
+                            <li class="d-flex">
+                                <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                <span><strong>Ghi âm</strong> và so sánh với mẫu</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            selectedPart: 'all',
+            showIPAChart: false,
+            isPlaying: false,
+            currentPlayingSymbol: null,
+            audioCache: {},
+            
+            // TTS Settings
+            ttsVoice: 'en-US-AriaNeural',
+            ttsAvailable: true,
+            
+            // Stats
+            completedLessons: 2,
+            totalLessons: 15,
+            totalXP: 45,
+            accuracy: 85,
+            
+            // Preview symbols
+            previewSymbols: ['iː', 'ɪ', 'e', 'æ', 'ɑː', 'ɒ', 'ɔː', 'ʊ', 'uː', 'ʌ', 'ɜː', 'ə'],
+            
+            // ================================================================
+            // NGUYÊN ÂM ĐƠN (Monophthongs) - 12 âm
+            // ================================================================
+            vowelSymbols: [
+                { 
+                    symbol: 'iː', 
+                    approx: 'ii dài',
+                    tip: 'Miệng hơi mỉm cười, kéo dài',
+                    examples: ['Feet', 'See', 'Sheep', 'Tea', 'Please']
+                },
+                { 
+                    symbol: 'ɪ', 
+                    approx: 'i ngắn',
+                    tip: 'Đọc "i" ngắn, dứt khoát',
+                    examples: ['Ship', 'Fit', 'Sit', 'This', 'Give']
+                },
+                { 
+                    symbol: 'e', 
+                    approx: 'e',
+                    tip: 'Như "e" bình thường',
+                    examples: ['Bed', 'Ten', 'Let', 'Get', 'End']
+                },
+                { 
+                    symbol: 'æ', 
+                    approx: 'a-e',
+                    tip: 'Miệng mở rộng, lai a+e',
+                    examples: ['Bad', 'Hat', 'Cat', 'Apple', 'Can']
+                },
+                { 
+                    symbol: 'ɑː', 
+                    approx: 'a dài',
+                    tip: 'Hạ hàm, kéo dài',
+                    examples: ['Far', 'Car', 'Arm', 'Farm', 'Park']
+                },
+                { 
+                    symbol: 'ɒ', 
+                    approx: 'o',
+                    tip: 'Như "o" TV dứt khoát',
+                    examples: ['Not', 'On', 'Hot', 'Stop', 'Got']
+                },
+                { 
+                    symbol: 'ɔː', 
+                    approx: 'o dài',
+                    tip: 'Kéo dài "oo"',
+                    examples: ['Saw', 'Talk', 'Door', 'Fall', 'Call']
+                },
+                { 
+                    symbol: 'ʊ', 
+                    approx: 'u ngắn',
+                    tip: 'Thả lỏng miệng, "u" dứt khoát',
+                    examples: ['Foot', 'Put', 'Book', 'Look', 'Good']
+                },
+                { 
+                    symbol: 'uː', 
+                    approx: 'uu dài',
+                    tip: 'Chu môi, kéo dài "uu"',
+                    examples: ['Food', 'Too', 'Cool', 'Moon', 'Blue']
+                },
+                { 
+                    symbol: 'ʌ', 
+                    approx: 'ớ',
+                    tip: 'Đọc "ớ", nhấn trọng âm',
+                    examples: ['Up', 'Bus', 'Must', 'Come', 'Love']
+                },
+                { 
+                    symbol: 'ɜː', 
+                    approx: 'ơ dài',
+                    tip: 'Âm "ơơ" cong lưỡi, nặng',
+                    examples: ['Bird', 'Nurse', 'Her', 'Work', 'First']
+                },
+                { 
+                    symbol: 'ə', 
+                    approx: 'ờ (schwa)',
+                    tip: 'Âm "ờ" nhanh, không nhấn',
+                    examples: ['About', 'Teacher', 'Never', 'Ago', 'Sofa']
+                },
+            ],
+            
+            // ================================================================
+            // NGUYÊN ÂM ĐÔI (Diphthongs) - 8 âm
+            // ================================================================
+            diphthongSymbols: [
+                { 
+                    symbol: 'eɪ', 
+                    approx: 'ây',
+                    tip: 'Trượt từ e sang i',
+                    examples: ['Stay', 'Day', 'Say', 'Late', 'Make']
+                },
+                { 
+                    symbol: 'aɪ', 
+                    approx: 'ai',
+                    tip: 'Trượt từ a sang i',
+                    examples: ['Five', 'Sky', 'Time', 'My', 'High']
+                },
+                { 
+                    symbol: 'ɔɪ', 
+                    approx: 'oi',
+                    tip: 'Trượt từ o sang i',
+                    examples: ['Boy', 'Toy', 'Oil', 'Choice', 'Voice']
+                },
+                { 
+                    symbol: 'əʊ', 
+                    approx: 'âu',
+                    tip: 'Trượt từ ơ sang u',
+                    examples: ['Show', 'Home', 'Go', 'Know', 'So']
+                },
+                { 
+                    symbol: 'aʊ', 
+                    approx: 'ao',
+                    tip: 'Trượt từ a sang u',
+                    examples: ['Cow', 'Now', 'House', 'Down', 'Out']
+                },
+                { 
+                    symbol: 'ɪə', 
+                    approx: 'ia',
+                    tip: 'Trượt từ i sang ơ',
+                    examples: ['Here', 'Near', 'Beer', 'Fear', 'Clear']
+                },
+                { 
+                    symbol: 'eə', 
+                    approx: 'eơ',
+                    tip: 'Trượt từ e sang ơ',
+                    examples: ['Hair', 'Care', 'There', 'Where', 'Fair']
+                },
+                { 
+                    symbol: 'ʊə', 
+                    approx: 'ua',
+                    tip: 'Trượt từ u sang ơ',
+                    examples: ['Tourist', 'Tour', 'Sure', 'Pure', 'Cure']
+                },
+            ],
+            
+            // ================================================================
+            // PHỤ ÂM (Consonants) - 24 âm
+            // ================================================================
+            consonantSymbols: [
+                // Plosives (Bật hơi)
+                { 
+                    symbol: 'p', 
+                    approx: 'p (vô thanh)',
+                    tip: 'Mím môi, bật hơi mạnh',
+                    examples: ['Pen', 'Soup', 'Pop', 'Apple', 'Stop'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'b', 
+                    approx: 'b (hữu thanh)',
+                    tip: 'Mím môi, rung cổ họng',
+                    examples: ['Bad', 'Web', 'Boat', 'Bob', 'Book'],
+                    voiced: true
+                },
+                { 
+                    symbol: 't', 
+                    approx: 't (vô thanh)',
+                    tip: 'Lưỡi chạm răng, bật hơi',
+                    examples: ['Tea', 'Time', 'Total', 'Talk', 'Cat'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'd', 
+                    approx: 'd (hữu thanh)',
+                    tip: 'Lưỡi chạm răng, rung',
+                    examples: ['Did', 'Day', 'Down', 'Do', 'Dog'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'k', 
+                    approx: 'k (vô thanh)',
+                    tip: 'Cuống lưỡi nâng, bật hơi',
+                    examples: ['Cat', 'Desk', 'Car', 'Cook', 'Like'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'g', 
+                    approx: 'g (hữu thanh)',
+                    tip: 'Cuống lưỡi nâng, rung',
+                    examples: ['Bag', 'Go', 'Game', 'Good', 'Girl'],
+                    voiced: true
+                },
+                // Fricatives (Xát)
+                { 
+                    symbol: 'f', 
+                    approx: 'f (vô thanh)',
+                    tip: 'Răng cắn môi, thổi hơi',
+                    examples: ['Fall', 'Safe', 'Five', 'Food', 'Face'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'v', 
+                    approx: 'v (hữu thanh)',
+                    tip: 'Răng cắn môi, rung',
+                    examples: ['Voice', 'Wave', 'Love', 'Video', 'Give'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'θ', 
+                    approx: 'th (vô thanh)',
+                    tip: 'Lưỡi thè giữa răng, thổi',
+                    examples: ['Thank', 'Think', 'Thin', 'Math', 'Tooth'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'ð', 
+                    approx: 'th (hữu thanh)',
+                    tip: 'Lưỡi thè giữa răng, rung',
+                    examples: ['That', 'This', 'The', 'There', 'Mother'],
+                    voiced: true
+                },
+                { 
+                    symbol: 's', 
+                    approx: 's (vô thanh)',
+                    tip: 'Âm xì, phát hơi gió',
+                    examples: ['Rice', 'So', 'See', 'Stop', 'Class'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'z', 
+                    approx: 'z (hữu thanh)',
+                    tip: 'Như /s/ nhưng rung',
+                    examples: ['Zoo', 'Rose', 'Cheese', 'Is', 'Does'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'ʃ', 
+                    approx: 'sh (vô thanh)',
+                    tip: 'Chu môi, như im lặng',
+                    examples: ['She', 'Wash', 'Ship', 'Fish', 'English'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'ʒ', 
+                    approx: 'zh (hữu thanh)',
+                    tip: 'Như /ʃ/ nhưng rung',
+                    examples: ['Measure', 'Vision', 'Television', 'Beige', 'Garage'],
+                    voiced: true
+                },
+                // Affricates (Tắc xát)
+                { 
+                    symbol: 'tʃ', 
+                    approx: 'ch (vô thanh)',
+                    tip: 'Chu môi, bật hơi mạnh',
+                    examples: ['Much', 'Match', 'Cheese', 'Teacher', 'Watch'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'dʒ', 
+                    approx: 'j (hữu thanh)',
+                    tip: 'Như /tʃ/ nhưng rung',
+                    examples: ['June', 'Page', 'Job', 'Bridge', 'Jacket'],
+                    voiced: true
+                },
+                // Others
+                { 
+                    symbol: 'h', 
+                    approx: 'h',
+                    tip: 'Thở hơi ra, không âm',
+                    examples: ['How', 'Hat', 'Home', 'Help', 'House'],
+                    voiced: false
+                },
+                { 
+                    symbol: 'm', 
+                    approx: 'm',
+                    tip: 'Mím môi, rung mũi',
+                    examples: ['Man', 'Some', 'Money', 'Time', 'Come'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'n', 
+                    approx: 'n',
+                    tip: 'Lưỡi chạm lợi, rung mũi',
+                    examples: ['No', 'None', 'Now', 'Nine', 'Name'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'ŋ', 
+                    approx: 'ng',
+                    tip: 'Cuống họng, rung mũi',
+                    examples: ['Singer', 'Tongue', 'Sing', 'Think', 'Long'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'l', 
+                    approx: 'l',
+                    tip: 'Lưỡi chạm lợi, hơi qua 2 bên',
+                    examples: ['Leg', 'Lip', 'Love', 'Little', 'Call'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'r', 
+                    approx: 'r',
+                    tip: 'Chu môi, lưỡi uốn lại',
+                    examples: ['Red', 'Rain', 'Run', 'Rice', 'Car'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'j', 
+                    approx: 'y',
+                    tip: 'Đọc "i" rồi trượt sang "ơ"',
+                    examples: ['Yes', 'You', 'Menu', 'Music', 'Yesterday'],
+                    voiced: true
+                },
+                { 
+                    symbol: 'w', 
+                    approx: 'w',
+                    tip: 'Đọc "guờ" liền, nhanh',
+                    examples: ['Wet', 'Why', 'Work', 'Will', 'Window'],
+                    voiced: true
+                },
+            ],
+            
+            // Intro lessons
+            introLessons: [
+                {
+                    id: 0,
+                    order: 0,
+                    slug: 'ipa-introduction',
+                    icon: 'fas fa-book-open',
+                    title_vi: 'Giới thiệu IPA',
+                    description_vi: 'Tổng quan về hệ thống phiên âm quốc tế',
+                    duration: 5,
+                    xp: 10,
+                    progress: 100,
+                    completed: true,
+                    locked: false
+                }
+            ],
+            
+            // Vowel lessons (Part 1)
+            vowelLessons: [
+                {
+                    id: 1,
+                    order: 1,
+                    slug: 'vowel-i-long-short',
+                    phoneme1: 'iː',
+                    phoneme2: 'ɪ',
+                    title_vi: 'Cặp âm "I"',
+                    description_vi: 'Sheep vs Ship - Âm dài vs ngắn',
+                    duration: 10,
+                    xp: 15,
+                    progress: 60,
+                    completed: false,
+                    locked: false
+                },
+                {
+                    id: 2,
+                    order: 2,
+                    slug: 'vowel-u-long-short',
+                    phoneme1: 'uː',
+                    phoneme2: 'ʊ',
+                    title_vi: 'Cặp âm "U"',
+                    description_vi: 'Food vs Foot - Chu môi vs thả lỏng',
+                    duration: 10,
+                    xp: 15,
+                    progress: 0,
+                    completed: false,
+                    locked: false
+                },
+                {
+                    id: 3,
+                    order: 3,
+                    slug: 'vowel-schwa',
+                    phoneme1: 'ɜː',
+                    phoneme2: 'ə',
+                    title_vi: 'Cặp âm "Ơ"',
+                    description_vi: 'Bird vs Teacher - Âm quan trọng nhất',
+                    duration: 12,
+                    xp: 20,
+                    progress: 0,
+                    completed: false,
+                    locked: false
+                },
+                {
+                    id: 4,
+                    order: 4,
+                    slug: 'vowel-a-sounds',
+                    phoneme1: 'æ',
+                    phoneme2: 'ʌ',
+                    title_vi: 'Các âm "A"',
+                    description_vi: 'Cat vs Cut - Mở rộng vs bật nhanh',
+                    duration: 10,
+                    xp: 15,
+                    progress: 0,
+                    completed: false,
+                    locked: true
+                }
+            ],
+            
+            // Diphthong lessons (Part 2)
+            diphthongLessons: [
+                {
+                    id: 5,
+                    order: 5,
+                    slug: 'diphthong-ending-i',
+                    phoneme1: 'eɪ',
+                    title_vi: 'Nhóm kết thúc /ɪ/',
+                    description_vi: '/eɪ/, /aɪ/, /ɔɪ/ - Stay, Five, Boy',
+                    duration: 12,
+                    xp: 20,
+                    progress: 0,
+                    completed: false,
+                    locked: true
+                },
+                {
+                    id: 6,
+                    order: 6,
+                    slug: 'diphthong-ending-u',
+                    phoneme1: 'əʊ',
+                    title_vi: 'Nhóm kết thúc /ʊ/',
+                    description_vi: '/əʊ/, /aʊ/ - Show, Cow',
+                    duration: 10,
+                    xp: 15,
+                    progress: 0,
+                    completed: false,
+                    locked: true
+                }
+            ],
+            
+            // Consonant lessons (Part 3)
+            consonantLessons: [
+                {
+                    id: 7,
+                    order: 7,
+                    slug: 'consonant-p-b',
+                    phoneme1: 'p',
+                    phoneme2: 'b',
+                    title_vi: 'Âm bật hơi /p/ vs /b/',
+                    description_vi: 'Plosives - Mím môi bật hơi',
+                    duration: 10,
+                    xp: 15,
+                    progress: 0,
+                    completed: false,
+                    locked: true
+                },
+                {
+                    id: 8,
+                    order: 8,
+                    slug: 'consonant-t-d',
+                    phoneme1: 't',
+                    phoneme2: 'd',
+                    title_vi: 'Âm bật hơi /t/ vs /d/',
+                    description_vi: 'Đầu lưỡi chạm răng',
+                    duration: 10,
+                    xp: 15,
+                    progress: 0,
+                    completed: false,
+                    locked: true
+                },
+                {
+                    id: 9,
+                    order: 9,
+                    slug: 'consonant-th-sounds',
+                    phoneme1: 'θ',
+                    phoneme2: 'ð',
+                    title_vi: 'Âm "TH" thè lưỡi',
+                    description_vi: 'Thank vs This - Lưỡi kẹp giữa răng',
+                    duration: 15,
+                    xp: 25,
+                    progress: 0,
+                    completed: false,
+                    locked: true
+                },
+                {
+                    id: 10,
+                    order: 10,
+                    slug: 'consonant-s-z-sh',
+                    phoneme1: 's',
+                    phoneme2: 'z',
+                    title_vi: 'Âm xì và chu môi',
+                    description_vi: '/s/, /z/, /ʃ/, /ʒ/ - See, Zoo, She',
+                    duration: 12,
+                    xp: 20,
+                    progress: 0,
+                    completed: false,
+                    locked: true
+                }
+            ]
+        };
+    },
+    
+    methods: {
+        // =================================================================
+        // TTS Functions using Edge-TTS API
+        // =================================================================
+        
+        async playSound(symbol, exampleWord = null) {
+            if (this.isPlaying) return;
+            
+            this.isPlaying = true;
+            this.currentPlayingSymbol = symbol;
+            
+            try {
+                // Nếu có từ ví dụ, đọc từ đó
+                const textToSpeak = exampleWord || this.getPronouncableText(symbol);
+                
+                // Gọi TTS API
+                const response = await fetch('/api/v1/tts/speak/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: textToSpeak,
+                        voice: this.ttsVoice,
+                        slow: false
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.audio_url) {
+                    await this.playAudio(data.audio_url);
+                } else {
+                    // Fallback to browser TTS
+                    this.playBrowserTTS(textToSpeak);
+                }
+            } catch (error) {
+                console.error('TTS Error:', error);
+                // Fallback to browser TTS
+                this.playBrowserTTS(this.getPronouncableText(symbol));
+            } finally {
+                this.isPlaying = false;
+                this.currentPlayingSymbol = null;
+            }
+        },
+        
+        async playExamples(symbolObj) {
+            if (!symbolObj.examples || symbolObj.examples.length === 0) return;
+            
+            this.isPlaying = true;
+            this.currentPlayingSymbol = symbolObj.symbol;
+            
+            try {
+                // Đọc từng từ ví dụ
+                for (const word of symbolObj.examples.slice(0, 3)) {
+                    const response = await fetch('/api/v1/tts/speak/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: word,
+                            voice: this.ttsVoice,
+                            slow: true
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.audio_url) {
+                        await this.playAudio(data.audio_url);
+                        // Chờ 500ms giữa các từ
+                        await this.sleep(500);
+                    }
+                }
+            } catch (error) {
+                console.error('TTS Error:', error);
+            } finally {
+                this.isPlaying = false;
+                this.currentPlayingSymbol = null;
+            }
+        },
+        
+        playAudio(url) {
+            return new Promise((resolve, reject) => {
+                const audio = new Audio(url);
+                audio.onended = resolve;
+                audio.onerror = reject;
+                audio.play().catch(reject);
+            });
+        },
+        
+        playBrowserTTS(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.7;
+                speechSynthesis.speak(utterance);
+            }
+        },
+        
+        getPronouncableText(symbol) {
+            // Map IPA symbols to pronounceable text
+            const ipaMap = {
+                // Vowels
+                'iː': 'ee',
+                'ɪ': 'ih',
+                'e': 'eh',
+                'æ': 'ah',
+                'ɑː': 'ah',
+                'ɒ': 'o',
+                'ɔː': 'aw',
+                'ʊ': 'oo',
+                'uː': 'oo',
+                'ʌ': 'uh',
+                'ɜː': 'er',
+                'ə': 'uh',
+                // Diphthongs
+                'eɪ': 'ay',
+                'aɪ': 'eye',
+                'ɔɪ': 'oy',
+                'əʊ': 'oh',
+                'aʊ': 'ow',
+                'ɪə': 'ear',
+                'eə': 'air',
+                'ʊə': 'oor',
+                // Consonants
+                'p': 'p',
+                'b': 'b',
+                't': 't',
+                'd': 'd',
+                'k': 'k',
+                'g': 'g',
+                'f': 'f',
+                'v': 'v',
+                'θ': 'th',
+                'ð': 'th',
+                's': 's',
+                'z': 'z',
+                'ʃ': 'sh',
+                'ʒ': 'zh',
+                'tʃ': 'ch',
+                'dʒ': 'j',
+                'h': 'h',
+                'm': 'm',
+                'n': 'n',
+                'ŋ': 'ng',
+                'l': 'l',
+                'r': 'r',
+                'j': 'y',
+                'w': 'w'
+            };
+            return ipaMap[symbol] || symbol;
+        },
+        
+        sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
+        
+        // Get tooltip content for IPA symbol
+        getTooltip(symbolObj) {
+            let tip = `<strong>/${symbolObj.symbol}/</strong><br>`;
+            tip += `${symbolObj.tip}<br><br>`;
+            tip += `<strong>Ví dụ:</strong> ${symbolObj.examples.join(', ')}`;
+            return tip;
+        }
+    },
+    
+    mounted() {
+        // Check TTS availability
+        fetch('/api/v1/tts/status/')
+            .then(res => res.json())
+            .then(data => {
+                this.ttsAvailable = data.available;
+            })
+            .catch(() => {
+                this.ttsAvailable = false;
+            });
+    }
+}).mount('#pronunciation-library');
+</script>
+{% endblock %}

@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo & Phân Tích - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(135deg, #183B56 0%, #0F2233 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h4 {
+            color: #F47C26;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .nav-section {
+            padding: 16px 0;
+        }
+
+        .nav-section-title {
+            padding: 0 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding-left: 28px;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, rgba(244,124,38,0.2) 0%, transparent 100%);
+            color: #F47C26;
+            border-left: 3px solid #F47C26;
+        }
+
+        .nav-link i {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 32px;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #183B56;
+            font-weight: 800;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F47C26, #FF9A56);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Content Card */
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #ECF0F1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: #183B56;
+            font-weight: 700;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* Report Grid */
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .report-card {
+            background: linear-gradient(135deg, #F9FAFC 0%, #ECF0F1 100%);
+            border-radius: 12px;
+            padding: 24px;
+            border-left: 4px solid;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .report-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+        }
+
+        .report-card.primary { border-color: #F47C26; }
+        .report-card.success { border-color: #2ECC71; }
+        .report-card.info { border-color: #3498DB; }
+        .report-card.warning { border-color: #F39C12; }
+        .report-card.purple { border-color: #9B59B6; }
+        .report-card.danger { border-color: #E74C3C; }
+
+        .report-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .report-card.primary .report-icon {
+            background: rgba(244,124,38,0.1);
+            color: #F47C26;
+        }
+
+        .report-card.success .report-icon {
+            background: rgba(46,204,113,0.1);
+            color: #2ECC71;
+        }
+
+        .report-card.info .report-icon {
+            background: rgba(52,152,219,0.1);
+            color: #3498DB;
+        }
+
+        .report-card.warning .report-icon {
+            background: rgba(243,156,18,0.1);
+            color: #F39C12;
+        }
+
+        .report-card.purple .report-icon {
+            background: rgba(155,89,182,0.1);
+            color: #9B59B6;
+        }
+
+        .report-card.danger .report-icon {
+            background: rgba(231,76,60,0.1);
+            color: #E74C3C;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+
+        .report-description {
+            color: #7F8C8D;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #F47C26 0%, #FF9A56 100%);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244,124,38,0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #7F8C8D;
+            border: 2px solid #ECF0F1;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            border-color: #F47C26;
+            color: #F47C26;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #ECF0F1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #183B56;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #ECF0F1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #F47C26;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #183B56;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ECF0F1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #F47C26;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #ECF0F1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Scheduled Reports Table */
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .report-table th {
+            background: #F9FAFC;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 700;
+            color: #183B56;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #ECF0F1;
+        }
+
+        .report-table td {
+            padding: 16px;
+            border-bottom: 1px solid #ECF0F1;
+            color: #2C3E50;
+        }
+
+        .report-table tr:hover {
+            background: #F9FAFC;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: rgba(46,204,113,0.1);
+            color: #2ECC71;
+        }
+
+        .badge-warning {
+            background: rgba(243,156,18,0.1);
+            color: #F39C12;
+        }
+
+        .badge-info {
+            background: rgba(52,152,219,0.1);
+            color: #3498DB;
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            background: #F9FAFC;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: #F47C26;
+            margin-bottom: 4px;
+        }
+
+        .stat-text {
+            color: #7F8C8D;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h4><i class="fas fa-graduation-cap"></i> ADMIN PANEL</h4>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Dashboard</div>
+                <a href="admin-dashboard.html" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Tổng Quan</span>
+                </a>
+                <a href="admin-analytics.html" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Phân Tích</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Nội Dung</div>
+                <a href="admin-lesson-editor.html" class="nav-link">
+                    <i class="fas fa-book"></i>
+                    <span>Bài Học</span>
+                </a>
+                <a href="admin-flashcard.html" class="nav-link">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Flashcards</span>
+                </a>
+                <a href="admin-questions.html" class="nav-link">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Câu Hỏi</span>
+                </a>
+                <a href="admin-assessments.html" class="nav-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Bài Kiểm Tra</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Người Dùng</div>
+                <a href="admin-users.html" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    <span>Học Viên</span>
+                </a>
+                <a href="admin-teachers.html" class="nav-link">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Giáo Viên</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Tài Chính</div>
+                <a href="admin-revenue.html" class="nav-link">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>Doanh Thu</span>
+                </a>
+                <a href="admin-coupons.html" class="nav-link">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Mã Giảm Giá</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Marketing</div>
+                <a href="admin-email-campaigns.html" class="nav-link">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email Campaigns</span>
+                </a>
+                <a href="admin-notifications.html" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Thông Báo</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Hỗ Trợ</div>
+                <a href="admin-support-tickets.html" class="nav-link">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Support Tickets</span>
+                </a>
+                <a href="admin-reports.html" class="nav-link active">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Báo Cáo</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Hệ Thống</div>
+                <a href="admin-settings.html" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Cài Đặt</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h1 class="page-title">
+                    <i class="fas fa-chart-bar"></i> Báo Cáo & Phân Tích
+                </h1>
+                <div class="admin-info">
+                    <div class="admin-avatar">AD</div>
+                    <div>
+                        <div style="font-weight: 700; color: #183B56;">Admin</div>
+                        <div style="font-size: 12px; color: #7F8C8D;">Super Admin</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.totalReports }}</div>
+                    <div class="stat-text">Báo Cáo Đã Tạo</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.scheduledReports }}</div>
+                    <div class="stat-text">Báo Cáo Định Kỳ</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.lastGenerated }}</div>
+                    <div class="stat-text">Lần Tạo Cuối</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.autoEmailReports }}</div>
+                    <div class="stat-text">Gửi Email Tự Động</div>
+                </div>
+            </div>
+
+            <!-- Report Templates -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">Mẫu Báo Cáo</h2>
+                    <button class="btn-primary" @click="openCustomReportModal">
+                        <i class="fas fa-plus"></i> Tạo Báo Cáo Tùy Chỉnh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="report-grid">
+                        <div v-for="report in reportTemplates" :key="report.id" 
+                             :class="['report-card', report.color]">
+                            <div class="report-icon">
+                                <i :class="report.icon"></i>
+                            </div>
+                            <div class="report-title">{{ report.title }}</div>
+                            <div class="report-description">{{ report.description }}</div>
+                            <div class="report-actions">
+                                <button class="btn-primary btn-sm" @click="generateReport(report)">
+                                    <i class="fas fa-download"></i> Tạo Ngay
+                                </button>
+                                <button class="btn-secondary btn-sm" @click="scheduleReport(report)">
+                                    <i class="fas fa-clock"></i> Lên Lịch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduled Reports -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">Báo Cáo Định Kỳ</h2>
+                </div>
+                <div class="card-body">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Tên Báo Cáo</th>
+                                <th>Tần Suất</th>
+                                <th>Định Dạng</th>
+                                <th>Email Nhận</th>
+                                <th>Lần Gửi Tiếp</th>
+                                <th>Trạng Thái</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="scheduled in scheduledReports" :key="scheduled.id">
+                                <td><strong>{{ scheduled.name }}</strong></td>
+                                <td>{{ scheduled.frequency }}</td>
+                                <td>
+                                    <span v-for="format in scheduled.formats" :key="format" 
+                                          style="margin-right: 4px;">
+                                        <i :class="getFormatIcon(format)"></i> {{ format.toUpperCase() }}
+                                    </span>
+                                </td>
+                                <td>{{ scheduled.recipients }}</td>
+                                <td>{{ scheduled.nextRun }}</td>
+                                <td>
+                                    <span :class="['badge', 'badge-' + scheduled.statusColor]">
+                                        {{ scheduled.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn-secondary btn-sm" @click="editScheduled(scheduled)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-secondary btn-sm" @click="deleteScheduled(scheduled.id)" 
+                                            style="margin-left: 4px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Custom Report -->
+        <div class="modal-overlay" :class="{active: showCustomModal}" @click.self="closeCustomModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Tạo Báo Cáo Tùy Chỉnh</h3>
+                    <button class="close-btn" @click="closeCustomModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Tên Báo Cáo *</label>
+                        <input type="text" class="form-control" v-model="customForm.name" 
+                               placeholder="VD: Báo cáo doanh thu tháng 1/2025">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Từ Ngày *</label>
+                            <input type="date" class="form-control" v-model="customForm.startDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Đến Ngày *</label>
+                            <input type="date" class="form-control" v-model="customForm.endDate">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Chọn Dữ Liệu Báo Cáo *</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="customForm.includeUsers">
+                                <span>Người dùng & Đăng ký</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="customForm.includeRevenue">
+                                <span>Doanh thu & Giao dịch</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="customForm.includeCourses">
+                                <span>Khóa học & Hoàn thành</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="customForm.includeEngagement">
+                                <span>Mức độ tương tác</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Định Dạng Xuất *</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="customForm.formatPDF">
+                                <span><i class="fas fa-file-pdf"></i> PDF</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="customForm.formatExcel">
+                                <span><i class="fas fa-file-excel"></i> Excel</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="customForm.formatCSV">
+                                <span><i class="fas fa-file-csv"></i> CSV</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Nhận (Tùy chọn)</label>
+                        <input type="email" class="form-control" v-model="customForm.email" 
+                               placeholder="admin@example.com">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" @click="closeCustomModal">Hủy</button>
+                    <button class="btn-primary" @click="createCustomReport">
+                        <i class="fas fa-file-download"></i> Tạo Báo Cáo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Schedule Report -->
+        <div class="modal-overlay" :class="{active: showScheduleModal}" @click.self="closeScheduleModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Lên Lịch Báo Cáo Định Kỳ</h3>
+                    <button class="close-btn" @click="closeScheduleModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Loại Báo Cáo</label>
+                        <input type="text" class="form-control" v-model="scheduleForm.reportName" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tần Suất *</label>
+                        <select class="form-control" v-model="scheduleForm.frequency">
+                            <option value="daily">Hàng ngày</option>
+                            <option value="weekly">Hàng tuần</option>
+                            <option value="monthly">Hàng tháng</option>
+                            <option value="quarterly">Hàng quý</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Ngày Bắt Đầu *</label>
+                            <input type="date" class="form-control" v-model="scheduleForm.startDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Giờ Gửi *</label>
+                            <input type="time" class="form-control" v-model="scheduleForm.time">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Nhận *</label>
+                        <input type="email" class="form-control" v-model="scheduleForm.recipients" 
+                               placeholder="admin@example.com, manager@example.com">
+                        <small style="color: #7F8C8D;">Phân cách nhiều email bằng dấu phẩy</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Định Dạng *</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="scheduleForm.formatPDF">
+                                <span><i class="fas fa-file-pdf"></i> PDF</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="scheduleForm.formatExcel">
+                                <span><i class="fas fa-file-excel"></i> Excel</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" @click="closeScheduleModal">Hủy</button>
+                    <button class="btn-primary" @click="saveScheduledReport">
+                        <i class="fas fa-save"></i> Lưu Lịch
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    stats: {
+                        totalReports: 127,
+                        scheduledReports: 8,
+                        lastGenerated: '2h trước',
+                        autoEmailReports: 5
+                    },
+                    showCustomModal: false,
+                    showScheduleModal: false,
+                    customForm: {
+                        name: '',
+                        startDate: '',
+                        endDate: '',
+                        includeUsers: true,
+                        includeRevenue: true,
+                        includeCourses: false,
+                        includeEngagement: false,
+                        formatPDF: true,
+                        formatExcel: false,
+                        formatCSV: false,
+                        email: ''
+                    },
+                    scheduleForm: {
+                        reportName: '',
+                        frequency: 'weekly',
+                        startDate: '',
+                        time: '08:00',
+                        recipients: '',
+                        formatPDF: true,
+                        formatExcel: false
+                    },
+                    reportTemplates: [
+                        {
+                            id: 1,
+                            title: 'Báo Cáo Doanh Thu',
+                            description: 'Tổng quan doanh thu, giao dịch, refund theo thời gian',
+                            icon: 'fas fa-dollar-sign',
+                            color: 'success'
+                        },
+                        {
+                            id: 2,
+                            title: 'Báo Cáo Người Dùng',
+                            description: 'Số lượng đăng ký mới, active users, churn rate',
+                            icon: 'fas fa-users',
+                            color: 'info'
+                        },
+                        {
+                            id: 3,
+                            title: 'Báo Cáo Khóa Học',
+                            description: 'Tỷ lệ hoàn thành, lessons phổ biến, điểm trung bình',
+                            icon: 'fas fa-graduation-cap',
+                            color: 'primary'
+                        },
+                        {
+                            id: 4,
+                            title: 'Báo Cáo Marketing',
+                            description: 'Campaign performance, email open rate, conversions',
+                            icon: 'fas fa-chart-line',
+                            color: 'warning'
+                        },
+                        {
+                            id: 5,
+                            title: 'Báo Cáo Engagement',
+                            description: 'Thời gian học, streak users, forum activity',
+                            icon: 'fas fa-fire',
+                            color: 'danger'
+                        },
+                        {
+                            id: 6,
+                            title: 'Báo Cáo Support',
+                            description: 'Tickets resolved, response time, satisfaction rate',
+                            icon: 'fas fa-headset',
+                            color: 'purple'
+                        }
+                    ],
+                    scheduledReports: [
+                        {
+                            id: 1,
+                            name: 'Báo Cáo Doanh Thu Tuần',
+                            frequency: 'Hàng tuần (Thứ 2)',
+                            formats: ['pdf', 'excel'],
+                            recipients: 'admin@example.com',
+                            nextRun: '2025-01-20 08:00',
+                            status: 'Hoạt động',
+                            statusColor: 'success'
+                        },
+                        {
+                            id: 2,
+                            name: 'Báo Cáo Người Dùng Tháng',
+                            frequency: 'Hàng tháng (Ngày 1)',
+                            formats: ['pdf'],
+                            recipients: 'manager@example.com',
+                            nextRun: '2025-02-01 09:00',
+                            status: 'Hoạt động',
+                            statusColor: 'success'
+                        },
+                        {
+                            id: 3,
+                            name: 'Báo Cáo Engagement Ngày',
+                            frequency: 'Hàng ngày',
+                            formats: ['excel'],
+                            recipients: 'admin@example.com',
+                            nextRun: '2025-01-16 07:00',
+                            status: 'Tạm dừng',
+                            statusColor: 'warning'
+                        }
+                    ]
+                };
+            },
+            methods: {
+                openCustomReportModal() {
+                    this.resetCustomForm();
+                    this.showCustomModal = true;
+                },
+                closeCustomModal() {
+                    this.showCustomModal = false;
+                },
+                resetCustomForm() {
+                    this.customForm = {
+                        name: '',
+                        startDate: '',
+                        endDate: '',
+                        includeUsers: true,
+                        includeRevenue: true,
+                        includeCourses: false,
+                        includeEngagement: false,
+                        formatPDF: true,
+                        formatExcel: false,
+                        formatCSV: false,
+                        email: ''
+                    };
+                },
+                createCustomReport() {
+                    if (!this.customForm.name || !this.customForm.startDate || !this.customForm.endDate) {
+                        alert('Vui lòng điền đầy đủ thông tin!');
+                        return;
+                    }
+
+                    if (!this.customForm.formatPDF && !this.customForm.formatExcel && !this.customForm.formatCSV) {
+                        alert('Vui lòng chọn ít nhất một định dạng!');
+                        return;
+                    }
+
+                    alert('Đang tạo báo cáo... Báo cáo sẽ được tải xuống khi hoàn tất.');
+                    this.stats.totalReports++;
+                    this.closeCustomModal();
+                },
+                generateReport(report) {
+                    alert(`Đang tạo báo cáo "${report.title}"... Báo cáo sẽ được tải xuống trong giây lát.`);
+                    this.stats.totalReports++;
+                },
+                scheduleReport(report) {
+                    this.scheduleForm.reportName = report.title;
+                    this.showScheduleModal = true;
+                },
+                closeScheduleModal() {
+                    this.showScheduleModal = false;
+                },
+                saveScheduledReport() {
+                    if (!this.scheduleForm.startDate || !this.scheduleForm.recipients) {
+                        alert('Vui lòng điền đầy đủ thông tin!');
+                        return;
+                    }
+
+                    if (!this.scheduleForm.formatPDF && !this.scheduleForm.formatExcel) {
+                        alert('Vui lòng chọn ít nhất một định dạng!');
+                        return;
+                    }
+
+                    const newScheduled = {
+                        id: Date.now(),
+                        name: this.scheduleForm.reportName,
+                        frequency: this.getFrequencyText(this.scheduleForm.frequency),
+                        formats: [],
+                        recipients: this.scheduleForm.recipients,
+                        nextRun: `${this.scheduleForm.startDate} ${this.scheduleForm.time}`,
+                        status: 'Hoạt động',
+                        statusColor: 'success'
+                    };
+
+                    if (this.scheduleForm.formatPDF) newScheduled.formats.push('pdf');
+                    if (this.scheduleForm.formatExcel) newScheduled.formats.push('excel');
+
+                    this.scheduledReports.unshift(newScheduled);
+                    this.stats.scheduledReports++;
+                    if (this.scheduleForm.recipients) this.stats.autoEmailReports++;
+
+                    alert('Đã lưu lịch báo cáo thành công!');
+                    this.closeScheduleModal();
+                },
+                getFrequencyText(freq) {
+                    const map = {
+                        daily: 'Hàng ngày',
+                        weekly: 'Hàng tuần',
+                        monthly: 'Hàng tháng',
+                        quarterly: 'Hàng quý'
+                    };
+                    return map[freq] || freq;
+                },
+                getFormatIcon(format) {
+                    const icons = {
+                        pdf: 'fas fa-file-pdf',
+                        excel: 'fas fa-file-excel',
+                        csv: 'fas fa-file-csv'
+                    };
+                    return icons[format] || 'fas fa-file';
+                },
+                editScheduled(scheduled) {
+                    alert(`Chỉnh sửa lịch báo cáo "${scheduled.name}"`);
+                },
+                deleteScheduled(id) {
+                    if (confirm('Bạn có chắc muốn xóa lịch báo cáo này?')) {
+                        const index = this.scheduledReports.findIndex(s => s.id === id);
+                        if (index !== -1) {
+                            this.scheduledReports.splice(index, 1);
+                            this.stats.scheduledReports--;
+                        }
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý bài kiểm tra - Admin Panel</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    
+    <style>
+        body {
+            background: #F9FAFC;
+            font-family: 'Open Sans', sans-serif;
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .page-header {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .page-header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #183B56;
+            margin: 0;
+        }
+        
+        .btn-create-test {
+            background: #F47C26;
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-create-test:hover {
+            background: #D35400;
+            transform: translateY(-2px);
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-icon.tests {
+            background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+        }
+        
+        .stat-icon.active {
+            background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+        }
+        
+        .stat-icon.completed {
+            background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+        }
+        
+        .stat-icon.avg {
+            background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+        }
+        
+        .stat-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: #183B56;
+        }
+        
+        .stat-label {
+            color: #57606F;
+            font-size: 0.875rem;
+        }
+        
+        /* Filters */
+        .filters-bar {
+            background: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 40px 10px 16px;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #F47C26;
+        }
+        
+        .search-box i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #57606F;
+        }
+        
+        .filter-select {
+            padding: 10px 16px;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        /* Tests Grid */
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .test-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #183B56 0%, #2C5F8D 100%);
+            color: white;
+            padding: 24px;
+        }
+        
+        .test-level-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .test-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+        
+        .test-description {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .test-body {
+            padding: 24px;
+        }
+        
+        .test-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .test-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: #57606F;
+        }
+        
+        .test-stat i {
+            color: #F47C26;
+        }
+        
+        .test-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .meta-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            background: #EAFAF1;
+            color: #27AE60;
+        }
+        
+        .status-badge.draft {
+            background: #FFF4E5;
+            color: #F39C12;
+        }
+        
+        .status-badge.archived {
+            background: #FADBD8;
+            color: #E74C3C;
+        }
+        
+        .difficulty-badge {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+        
+        .test-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view {
+            background: #3498DB;
+            color: white;
+        }
+        
+        .btn-edit {
+            background: #2ECC71;
+            color: white;
+        }
+        
+        .btn-delete {
+            background: #E74C3C;
+            color: white;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 48px;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .modal-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #183B56;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #F47C26;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .question-selector {
+            background: #F9FAFC;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .available-questions {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            padding: 12px;
+            background: white;
+        }
+        
+        .question-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: white;
+            border: 2px solid #E0E6ED;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .question-item:hover {
+            border-color: #F47C26;
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        .question-item.selected {
+            border-color: #2ECC71;
+            background: #EAFAF1;
+        }
+        
+        .selected-count {
+            margin-top: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #F47C26;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+        
+        .btn-cancel {
+            background: #E0E6ED;
+            color: #57606F;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-submit {
+            background: #F47C26;
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tests-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="admin-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1><i class="fas fa-clipboard-list me-3"></i>Quản lý bài kiểm tra</h1>
+                <button class="btn-create-test" @click="showCreateModal = true">
+                    <i class="fas fa-plus me-2"></i>Tạo bài kiểm tra
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon tests">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="stat-number">{{ totalTests }}</div>
+                    <div class="stat-label">Tổng bài kiểm tra</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon active">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">{{ activeTests }}</div>
+                    <div class="stat-label">Đang hoạt động</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon completed">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">{{ totalAttempts }}</div>
+                    <div class="stat-label">Lượt làm bài</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon avg">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-number">{{ avgScore }}%</div>
+                    <div class="stat-label">Điểm trung bình</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <div class="search-box">
+                    <input type="text" placeholder="Tìm kiếm bài kiểm tra..." v-model="searchQuery">
+                    <i class="fas fa-search"></i>
+                </div>
+                
+                <select class="filter-select" v-model="levelFilter">
+                    <option value="">Tất cả cấp độ</option>
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="B1">B1</option>
+                    <option value="B2">B2</option>
+                    <option value="C1">C1</option>
+                </select>
+                
+                <select class="filter-select" v-model="statusFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="active">Hoạt động</option>
+                    <option value="draft">Bản nháp</option>
+                    <option value="archived">Lưu trữ</option>
+                </select>
+            </div>
+
+            <!-- Tests Grid -->
+            <div class="tests-grid">
+                <div 
+                    v-for="test in filteredTests" 
+                    :key="test.id"
+                    class="test-card"
+                >
+                    <div class="test-header">
+                        <div class="test-level-badge">{{ test.level }}</div>
+                        <div class="test-title">{{ test.title }}</div>
+                        <div class="test-description">{{ test.description }}</div>
+                    </div>
+                    
+                    <div class="test-body">
+                        <div class="test-stats">
+                            <div class="test-stat">
+                                <i class="fas fa-question-circle"></i>
+                                <span>{{ test.questionCount }} câu hỏi</span>
+                            </div>
+                            <div class="test-stat">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ test.duration }} phút</span>
+                            </div>
+                            <div class="test-stat">
+                                <i class="fas fa-users"></i>
+                                <span>{{ test.attempts }} lượt làm</span>
+                            </div>
+                            <div class="test-stat">
+                                <i class="fas fa-chart-line"></i>
+                                <span>{{ test.passRate }}% qua</span>
+                            </div>
+                        </div>
+                        
+                        <div class="test-meta">
+                            <span class="meta-badge status-badge" :class="test.status">
+                                {{ getStatusLabel(test.status) }}
+                            </span>
+                            <span class="meta-badge difficulty-badge">
+                                Điểm đạt: {{ test.passingScore }}/{{ test.maxScore }}
+                            </span>
+                        </div>
+                        
+                        <div class="test-actions">
+                            <button class="btn-action btn-view" @click="viewResults(test)">
+                                <i class="fas fa-chart-bar me-1"></i>Kết quả
+                            </button>
+                            <button class="btn-action btn-edit" @click="editTest(test)">
+                                <i class="fas fa-edit me-1"></i>Sửa
+                            </button>
+                            <button class="btn-action btn-delete" @click="deleteTest(test)">
+                                <i class="fas fa-trash me-1"></i>Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create/Edit Modal -->
+        <div v-if="showCreateModal" class="modal-overlay" @click.self="showCreateModal = false">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>{{ editingTest ? 'Chỉnh sửa bài kiểm tra' : 'Tạo bài kiểm tra mới' }}</h2>
+                    <button class="btn-close-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;" @click="showCreateModal = false">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form @submit.prevent="saveTest">
+                    <div class="form-group">
+                        <label>Tên bài kiểm tra *</label>
+                        <input type="text" v-model="formData.title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mô tả</label>
+                        <textarea v-model="formData.description" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cấp độ *</label>
+                            <select v-model="formData.level" required>
+                                <option value="">Chọn cấp độ</option>
+                                <option value="A1">A1 - Beginner</option>
+                                <option value="A2">A2 - Elementary</option>
+                                <option value="B1">B1 - Intermediate</option>
+                                <option value="B2">B2 - Upper-Intermediate</option>
+                                <option value="C1">C1 - Advanced</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Thời gian (phút) *</label>
+                            <input type="number" v-model="formData.duration" min="5" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Điểm tối đa *</label>
+                            <input type="number" v-model="formData.maxScore" min="1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Điểm đạt *</label>
+                            <input type="number" v-model="formData.passingScore" min="1" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <select v-model="formData.status">
+                            <option value="active">Hoạt động</option>
+                            <option value="draft">Bản nháp</option>
+                            <option value="archived">Lưu trữ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="question-selector">
+                        <label>Chọn câu hỏi</label>
+                        <div class="available-questions">
+                            <div 
+                                v-for="question in availableQuestions" 
+                                :key="question.id"
+                                class="question-item"
+                                :class="{selected: selectedQuestions.includes(question.id)}"
+                                @click="toggleQuestion(question.id)"
+                            >
+                                <strong>[{{ question.level }}]</strong> {{ question.text }}
+                            </div>
+                        </div>
+                        <div class="selected-count">
+                            Đã chọn: {{ selectedQuestions.length }} câu hỏi
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" @click="showCreateModal = false">
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-save me-2"></i>Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    levelFilter: '',
+                    statusFilter: '',
+                    showCreateModal: false,
+                    editingTest: null,
+                    selectedQuestions: [],
+                    formData: {
+                        title: '',
+                        description: '',
+                        level: '',
+                        duration: 30,
+                        maxScore: 100,
+                        passingScore: 70,
+                        status: 'draft'
+                    },
+                    tests: [
+                        {
+                            id: 1,
+                            title: 'Grammar Test - Present Simple',
+                            description: 'Kiểm tra kiến thức về thì hiện tại đơn',
+                            level: 'A2',
+                            questionCount: 20,
+                            duration: 30,
+                            attempts: 245,
+                            passRate: 78,
+                            maxScore: 100,
+                            passingScore: 70,
+                            status: 'active'
+                        },
+                        {
+                            id: 2,
+                            title: 'Vocabulary Test - Daily Life',
+                            description: 'Từ vựng về cuộc sống hàng ngày',
+                            level: 'A1',
+                            questionCount: 15,
+                            duration: 20,
+                            attempts: 189,
+                            passRate: 82,
+                            maxScore: 100,
+                            passingScore: 60,
+                            status: 'active'
+                        },
+                        {
+                            id: 3,
+                            title: 'IELTS Reading Practice',
+                            description: 'Luyện đọc hiểu IELTS',
+                            level: 'B2',
+                            questionCount: 30,
+                            duration: 60,
+                            attempts: 156,
+                            passRate: 65,
+                            maxScore: 100,
+                            passingScore: 75,
+                            status: 'active'
+                        },
+                        {
+                            id: 4,
+                            title: 'Business English Test',
+                            description: 'Tiếng Anh thương mại cơ bản',
+                            level: 'B1',
+                            questionCount: 25,
+                            duration: 45,
+                            attempts: 98,
+                            passRate: 71,
+                            maxScore: 100,
+                            passingScore: 70,
+                            status: 'draft'
+                        }
+                    ],
+                    availableQuestions: [
+                        { id: 1, level: 'A1', text: 'I ___ a student.' },
+                        { id: 2, level: 'A2', text: 'She ___ to school every day.' },
+                        { id: 3, level: 'B1', text: 'What is the synonym of "happy"?' },
+                        { id: 4, level: 'B2', text: 'Complete: If I ___ you, I would study harder.' },
+                        { id: 5, level: 'A1', text: 'Choose the correct article: ___ apple' }
+                    ]
+                };
+            },
+            computed: {
+                filteredTests() {
+                    return this.tests.filter(test => {
+                        const matchSearch = !this.searchQuery || 
+                            test.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchLevel = !this.levelFilter || test.level === this.levelFilter;
+                        const matchStatus = !this.statusFilter || test.status === this.statusFilter;
+                        
+                        return matchSearch && matchLevel && matchStatus;
+                    });
+                },
+                totalTests() {
+                    return this.tests.length;
+                },
+                activeTests() {
+                    return this.tests.filter(t => t.status === 'active').length;
+                },
+                totalAttempts() {
+                    return this.tests.reduce((sum, t) => sum + t.attempts, 0);
+                },
+                avgScore() {
+                    const avgPassRate = this.tests.reduce((sum, t) => sum + t.passRate, 0) / this.tests.length;
+                    return Math.round(avgPassRate);
+                }
+            },
+            methods: {
+                getStatusLabel(status) {
+                    const labels = {
+                        active: 'Hoạt động',
+                        draft: 'Bản nháp',
+                        archived: 'Lưu trữ'
+                    };
+                    return labels[status] || status;
+                },
+                viewResults(test) {
+                    alert('Xem kết quả bài kiểm tra: ' + test.title);
+                },
+                editTest(test) {
+                    this.editingTest = test;
+                    this.formData = { ...test };
+                    this.showCreateModal = true;
+                },
+                deleteTest(test) {
+                    if (confirm('Bạn có chắc muốn xóa bài kiểm tra: ' + test.title + '?')) {
+                        this.tests = this.tests.filter(t => t.id !== test.id);
+                    }
+                },
+                toggleQuestion(questionId) {
+                    const index = this.selectedQuestions.indexOf(questionId);
+                    if (index > -1) {
+                        this.selectedQuestions.splice(index, 1);
+                    } else {
+                        this.selectedQuestions.push(questionId);
+                    }
+                },
+                saveTest() {
+                    if (this.editingTest) {
+                        Object.assign(this.editingTest, this.formData);
+                    } else {
+                        this.tests.push({
+                            id: Date.now(),
+                            ...this.formData,
+                            questionCount: this.selectedQuestions.length,
+                            attempts: 0,
+                            passRate: 0
+                        });
+                    }
+                    this.showCreateModal = false;
+                    this.resetForm();
+                },
+                resetForm() {
+                    this.editingTest = null;
+                    this.selectedQuestions = [];
+                    this.formData = {
+                        title: '',
+                        description: '',
+                        level: '',
+                        duration: 30,
+                        maxScore: 100,
+                        passingScore: 70,
+                        status: 'draft'
+                    };
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

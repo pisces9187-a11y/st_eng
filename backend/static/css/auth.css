@@ -1,0 +1,704 @@
+/* ============================================
+   AUTH.CSS - Authentication Pages Styles
+   Login, Signup, Password Reset, Email Verification
+   ============================================ */
+
+/* ============================================
+   AUTH LAYOUT
+   ============================================ */
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+}
+
+/* Left Side - Branding */
+.auth-branding {
+    flex: 0 0 45%;
+    max-width: 45%;
+    background: linear-gradient(135deg, #183B56 0%, #2C5282 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-branding::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: rgba(44, 82, 130, 0.6);
+    border-radius: 50%;
+    top: 50%;
+    right: -100px;
+    transform: translateY(-50%);
+}
+
+.auth-branding::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(44, 82, 130, 0.4);
+    border-radius: 50%;
+    top: 30%;
+    right: 50px;
+    transform: translateY(-50%);
+}
+
+.branding-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: #fff;
+}
+
+.brand-logo {
+    display: inline-block;
+    margin-bottom: 2rem;
+}
+
+.brand-logo .logo-img {
+    height: 50px;
+}
+
+.brand-logo .logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.brand-slogan {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.3;
+    margin-bottom: 1.5rem;
+    color: #fff;
+}
+
+.brand-illustration {
+    margin-top: 2rem;
+}
+
+.brand-illustration img {
+    max-width: 300px;
+    opacity: 0.9;
+}
+
+/* Right Side - Form Container */
+.auth-form-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    background: #fff;
+    overflow-y: auto;
+}
+
+.auth-form-wrapper {
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-mobile-logo {
+    display: none;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-mobile-logo img {
+    height: 48px;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-title {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    font-style: italic;
+    color: #F47C26;
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    color: #6C757D;
+    font-size: 1rem;
+}
+
+/* ============================================
+   AUTH FORMS
+   ============================================ */
+
+.auth-form {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.auth-form .form-label {
+    display: block;
+    font-weight: 500;
+    color: #2C2C2C;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-form .form-control,
+.auth-form .custom-input {
+    width: 100%;
+    height: 50px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    color: #2C2C2C;
+    background-color: #F8F9FA;
+    border: 2px solid #E8ECF0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.auth-form .form-control:focus,
+.auth-form .custom-input:focus {
+    background-color: #fff;
+    border-color: #F47C26;
+    box-shadow: 0 0 0 3px rgba(244, 124, 38, 0.15);
+    outline: none;
+}
+
+.auth-form .form-control::placeholder {
+    color: #ADB5BD;
+}
+
+.auth-form .form-control.is-invalid {
+    border-color: #DC3545;
+}
+
+/* Password Input with Toggle */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #ADB5BD;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 1rem;
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: #F47C26;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    margin-top: 0.5rem;
+}
+
+.strength-bar {
+    height: 4px;
+    background: #E8ECF0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0;
+    transition: all 0.3s ease;
+}
+
+.strength-fill.weak {
+    width: 25%;
+    background: #DC3545;
+}
+
+.strength-fill.fair {
+    width: 50%;
+    background: #FFC107;
+}
+
+.strength-fill.good {
+    width: 75%;
+    background: #17A2B8;
+}
+
+.strength-fill.strong {
+    width: 100%;
+    background: #28A745;
+}
+
+.strength-text {
+    font-size: 0.75rem;
+    color: #6C757D;
+}
+
+/* Remember & Forgot */
+.auth-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.remember-me input {
+    width: 18px;
+    height: 18px;
+    accent-color: #F47C26;
+    cursor: pointer;
+}
+
+.remember-me label {
+    font-size: 0.875rem;
+    color: #4A4A4A;
+    margin: 0;
+    cursor: pointer;
+}
+
+.forgot-password {
+    font-size: 0.875rem;
+    color: #F47C26;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+    color: #E06B1F;
+}
+
+/* Submit Button */
+.auth-submit,
+.btn-primary-orange {
+    width: 100%;
+    height: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #F47C26;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auth-submit:hover,
+.btn-primary-orange:hover {
+    background: #E06B1F;
+    box-shadow: 0 4px 16px rgba(244, 124, 38, 0.4);
+    transform: translateY(-1px);
+}
+
+.auth-submit:active,
+.btn-primary-orange:active {
+    transform: translateY(0);
+}
+
+/* Social Login */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: #6C757D;
+    font-size: 0.875rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #E8ECF0;
+}
+
+.auth-divider span {
+    padding: 0 1rem;
+}
+
+.social-login {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.social-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 50px;
+    border: 2px solid #E8ECF0;
+    border-radius: 10px;
+    background: #fff;
+    color: #4A4A4A;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.social-btn:hover {
+    background: #F8F9FA;
+    border-color: #D0D5DD;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.social-btn img {
+    height: 22px;
+    width: 22px;
+}
+
+/* Auth Footer */
+.auth-footer {
+    text-align: center;
+    padding-top: 1rem;
+}
+
+.auth-footer p {
+    color: #6C757D;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.auth-footer a {
+    color: #F47C26;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   STEP INDICATOR (Signup)
+   ============================================ */
+
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2rem;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    background: #E8ECF0;
+    color: #ADB5BD;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-circle {
+    background: #F47C26;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(244, 124, 38, 0.3);
+}
+
+.step.completed .step-circle {
+    background: #28A745;
+    color: #fff;
+}
+
+.step-line {
+    width: 50px;
+    height: 3px;
+    background: #E8ECF0;
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.step.completed + .step .step-line,
+.step.active .step-line {
+    background: #F47C26;
+}
+
+/* ============================================
+   VERIFICATION & RESET PAGES
+   ============================================ */
+
+.verification-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.verification-icon.pending {
+    background: rgba(244, 124, 38, 0.1);
+    color: #F47C26;
+}
+
+.verification-icon.success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28A745;
+}
+
+.verification-icon.error {
+    background: rgba(220, 53, 69, 0.1);
+    color: #DC3545;
+}
+
+.resend-code {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.resend-code button {
+    background: none;
+    border: none;
+    color: #F47C26;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+}
+
+.resend-code button:disabled {
+    color: #ADB5BD;
+    cursor: not-allowed;
+}
+
+/* OTP Input */
+.otp-inputs {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.otp-input {
+    width: 54px;
+    height: 64px;
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    border: 2px solid #E8ECF0;
+    border-radius: 10px;
+    background: #F8F9FA;
+    transition: all 0.2s ease;
+}
+
+.otp-input:focus {
+    border-color: #F47C26;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(244, 124, 38, 0.15);
+    outline: none;
+}
+
+.otp-input.filled {
+    border-color: #F47C26;
+    background: rgba(244, 124, 38, 0.05);
+}
+
+/* ============================================
+   SUCCESS/ERROR STATES
+   ============================================ */
+
+.auth-success-page,
+.auth-error-page {
+    text-align: center;
+}
+
+.success-checkmark {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1.5rem;
+    background: #28A745;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 3rem;
+    animation: checkmark-pop 0.4s ease;
+}
+
+@keyframes checkmark-pop {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* ============================================
+   CUSTOM ALERTS
+   ============================================ */
+
+.custom-alert {
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border: none;
+}
+
+.custom-alert.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #DC3545;
+}
+
+.custom-alert.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28A745;
+}
+
+.custom-alert.alert-warning {
+    background: rgba(255, 193, 7, 0.15);
+    color: #856404;
+}
+
+.custom-alert.alert-info {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17A2B8;
+}
+
+.alert-icon {
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 991.98px) {
+    .auth-branding {
+        display: none;
+    }
+    
+    .auth-form-container {
+        padding: 2rem 1.5rem;
+    }
+    
+    .auth-mobile-logo {
+        display: block;
+    }
+    
+    .auth-form-wrapper {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .auth-form-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .auth-title {
+        font-size: 1.75rem;
+    }
+    
+    .social-login {
+        flex-direction: column;
+    }
+    
+    .social-btn {
+        width: 100%;
+    }
+    
+    .otp-inputs {
+        gap: 0.5rem;
+    }
+    
+    .otp-input {
+        width: 46px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+    
+    .step-line {
+        width: 30px;
+    }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.btn-loader {
+    display: inline-flex;
+    align-items: center;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Hide text when loading */
+.auth-submit.loading .btn-text {
+    display: none;
+}
+
+.auth-submit.loading .btn-loader {
+    display: inline-flex;
+}
+
+/* ============================================
+   GOOGLE/FACEBOOK BUTTON SPECIFIC STYLES  
+   ============================================ */
+
+.social-btn.google-btn {
+    background: #fff;
+    border-color: #E8ECF0;
+}
+
+.social-btn.google-btn:hover {
+    background: #F8F9FA;
+}
+
+.social-btn.facebook-btn {
+    background: #1877F2;
+    border-color: #1877F2;
+    color: #fff;
+}
+
+.social-btn.facebook-btn:hover {
+    background: #166FE5;
+    border-color: #166FE5;
+}
+
+.social-btn.facebook-btn i {
+    color: #fff !important;
+}

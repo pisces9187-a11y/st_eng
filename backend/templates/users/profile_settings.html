@@ -1,0 +1,996 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Cài đặt tài khoản - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-header {
+        background: linear-gradient(135deg, #183B56 0%, #2C5282 100%);
+        padding: 2rem 0;
+        color: #fff;
+    }
+    
+    .settings-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .settings-nav {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+        position: sticky;
+        top: 1rem;
+    }
+    
+    .settings-nav-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #E8ECF0;
+        color: #183B56;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .settings-nav-item:last-child {
+        border-bottom: none;
+    }
+    
+    .settings-nav-item:hover,
+    .settings-nav-item.active {
+        background: rgba(244, 124, 38, 0.05);
+        color: #F47C26;
+    }
+    
+    .settings-nav-item.active {
+        border-left: 3px solid #F47C26;
+    }
+    
+    .settings-nav-item i {
+        width: 20px;
+        margin-right: 0.75rem;
+    }
+    
+    .settings-section {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #183B56;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #E8ECF0;
+    }
+    
+    .avatar-upload {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F47C26 0%, #FF9F43 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+        overflow: hidden;
+    }
+    
+    .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .avatar-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .btn-upload {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-upload-primary {
+        background: #F47C26;
+        color: #fff;
+        border: none;
+    }
+    
+    .btn-upload-primary:hover {
+        background: #E06A1A;
+    }
+    
+    .btn-upload-secondary {
+        background: transparent;
+        color: #DC3545;
+        border: 1px solid #DC3545;
+    }
+    
+    .btn-upload-secondary:hover {
+        background: #DC3545;
+        color: #fff;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #183B56;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #D1D5DB;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus {
+        border-color: #F47C26;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(244, 124, 38, 0.1);
+    }
+    
+    .form-control:disabled {
+        background: #F3F4F6;
+        cursor: not-allowed;
+    }
+    
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        padding-right: 2.5rem;
+    }
+    
+    .btn-save {
+        background: #F47C26;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-save:hover {
+        background: #E06A1A;
+    }
+    
+    .btn-save:disabled {
+        background: #D1D5DB;
+        cursor: not-allowed;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: none;
+    }
+    
+    .alert-success {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28A745;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+    
+    .alert-error {
+        background: rgba(220, 53, 69, 0.1);
+        color: #DC3545;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+    
+    .danger-zone {
+        border: 1px solid #DC3545;
+    }
+    
+    .danger-zone .section-title {
+        color: #DC3545;
+    }
+    
+    .btn-danger {
+        background: transparent;
+        color: #DC3545;
+        border: 1px solid #DC3545;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-danger:hover {
+        background: #DC3545;
+        color: #fff;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #D1D5DB;
+        transition: 0.3s;
+        border-radius: 26px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background: #fff;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+        background: #F47C26;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(24px);
+    }
+    
+    .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #E8ECF0;
+    }
+    
+    .setting-row:last-child {
+        border-bottom: none;
+    }
+    
+    .setting-info h4 {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #183B56;
+        margin-bottom: 0.25rem;
+    }
+    
+    .setting-info p {
+        font-size: 0.8rem;
+        color: #6C757D;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color: rgba(255,255,255,0.5);">
+                <li class="breadcrumb-item"><a href="{% url 'users:dashboard' %}" class="text-white-50">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'users:profile' %}" class="text-white-50">Hồ sơ</a></li>
+                <li class="breadcrumb-item active text-white">Cài đặt</li>
+            </ol>
+        </nav>
+        <h1><i class="fas fa-cog me-2"></i>Cài đặt tài khoản</h1>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3 mb-4">
+            <div class="settings-nav">
+                <a href="#profile-info" class="settings-nav-item active" data-section="profile-info">
+                    <i class="fas fa-user"></i> Thông tin cá nhân
+                </a>
+                <a href="#security" class="settings-nav-item" data-section="security">
+                    <i class="fas fa-lock"></i> Bảo mật
+                </a>
+                <a href="#notifications" class="settings-nav-item" data-section="notifications">
+                    <i class="fas fa-bell"></i> Thông báo
+                </a>
+                <a href="#learning" class="settings-nav-item" data-section="learning">
+                    <i class="fas fa-graduation-cap"></i> Học tập
+                </a>
+                <a href="#danger" class="settings-nav-item" data-section="danger">
+                    <i class="fas fa-exclamation-triangle"></i> Vùng nguy hiểm
+                </a>
+            </div>
+        </div>
+        
+        <!-- Settings Content -->
+        <div class="col-lg-9">
+            <!-- Alert Messages -->
+            <div class="alert alert-success" id="successAlert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="successMessage">Cập nhật thành công!</span>
+            </div>
+            <div class="alert alert-error" id="errorAlert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="errorMessage">Có lỗi xảy ra!</span>
+            </div>
+            
+            <!-- Profile Info Section -->
+            <div class="settings-section" id="profile-info">
+                <h3 class="section-title">Thông tin cá nhân</h3>
+                
+                <div class="avatar-upload">
+                    <div class="avatar-preview" id="avatarPreview">
+                        <span id="avatarInitial">?</span>
+                    </div>
+                    <div class="avatar-actions">
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                        <button class="btn-upload btn-upload-primary" onclick="document.getElementById('avatarInput').click()">
+                            <i class="fas fa-camera me-1"></i> Tải ảnh lên
+                        </button>
+                        <button class="btn-upload btn-upload-secondary" id="btnRemoveAvatar" style="display: none;">
+                            <i class="fas fa-trash me-1"></i> Xóa ảnh
+                        </button>
+                    </div>
+                </div>
+                
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Họ và tên</label>
+                                <input type="text" class="form-control" id="fullName" name="full_name" placeholder="Nhập họ và tên">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Tên đăng nhập</label>
+                                <input type="text" class="form-control" id="username" name="username" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" id="phone" name="phone_number" placeholder="Nhập số điện thoại">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Ngày sinh</label>
+                                <input type="date" class="form-control" id="dob" name="date_of_birth">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Giới tính</label>
+                                <select class="form-control form-select" id="gender" name="gender">
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
+                                    <option value="other">Khác</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label">Giới thiệu bản thân</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="Viết vài dòng về bạn..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-save" id="btnSaveProfile">
+                        <i class="fas fa-save me-1"></i> Lưu thay đổi
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Security Section -->
+            <div class="settings-section" id="security">
+                <h3 class="section-title">Bảo mật</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Đổi mật khẩu</label>
+                    <p class="text-muted small mb-2">Cập nhật mật khẩu để bảo vệ tài khoản của bạn</p>
+                    <a href="{% url 'users:change-password' %}" class="btn-save" style="display: inline-block; text-decoration: none;">
+                        <i class="fas fa-key me-1"></i> Đổi mật khẩu
+                    </a>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Xác thực 2 bước</h4>
+                        <p>Thêm lớp bảo mật cho tài khoản của bạn</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle2FA">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Phiên đăng nhập</h4>
+                        <p>Quản lý các thiết bị đã đăng nhập</p>
+                    </div>
+                    <button class="btn-upload btn-upload-secondary" onclick="showSessions()">
+                        Xem phiên
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Notifications Section -->
+            <div class="settings-section" id="notifications">
+                <h3 class="section-title">Cài đặt thông báo</h3>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Nhắc nhở học tập</h4>
+                        <p>Nhận thông báo nhắc nhở học hàng ngày</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleStudyReminder" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Email khuyến mãi</h4>
+                        <p>Nhận thông tin về các ưu đãi và khóa học mới</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="togglePromoEmail">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Thông báo thành tựu</h4>
+                        <p>Nhận thông báo khi đạt được thành tựu mới</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleAchievementNotif" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <label class="form-label">Thời gian nhắc nhở</label>
+                    <select class="form-control form-select" id="reminderTime" style="max-width: 200px;">
+                        <option value="07:00">07:00</option>
+                        <option value="08:00">08:00</option>
+                        <option value="09:00">09:00</option>
+                        <option value="18:00">18:00</option>
+                        <option value="19:00">19:00</option>
+                        <option value="20:00" selected>20:00</option>
+                        <option value="21:00">21:00</option>
+                    </select>
+                </div>
+                
+                <button class="btn-save mt-3" onclick="saveNotificationSettings()">
+                    <i class="fas fa-save me-1"></i> Lưu cài đặt
+                </button>
+            </div>
+            
+            <!-- Learning Section -->
+            <div class="settings-section" id="learning">
+                <h3 class="section-title">Cài đặt học tập</h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Mục tiêu hàng ngày</label>
+                            <select class="form-control form-select" id="dailyGoal">
+                                <option value="5">5 phút/ngày - Thoải mái</option>
+                                <option value="10">10 phút/ngày - Nhẹ nhàng</option>
+                                <option value="15" selected>15 phút/ngày - Vừa phải</option>
+                                <option value="30">30 phút/ngày - Chăm chỉ</option>
+                                <option value="60">60 phút/ngày - Nghiêm túc</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Trình độ mục tiêu</label>
+                            <select class="form-control form-select" id="targetLevel">
+                                <option value="A1">A1 - Sơ cấp</option>
+                                <option value="A2">A2 - Cơ bản</option>
+                                <option value="B1">B1 - Trung cấp</option>
+                                <option value="B2" selected>B2 - Trung cao cấp</option>
+                                <option value="C1">C1 - Cao cấp</option>
+                                <option value="C2">C2 - Thành thạo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Chế độ ban đêm</h4>
+                        <p>Giảm độ sáng màn hình khi học vào buổi tối</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleNightMode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Tự động phát âm thanh</h4>
+                        <p>Tự động phát âm thanh khi học từ vựng</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleAutoSound" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <button class="btn-save mt-3" onclick="saveLearningSettings()">
+                    <i class="fas fa-save me-1"></i> Lưu cài đặt
+                </button>
+            </div>
+            
+            <!-- Danger Zone -->
+            <div class="settings-section danger-zone" id="danger">
+                <h3 class="section-title"><i class="fas fa-exclamation-triangle me-2"></i>Vùng nguy hiểm</h3>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Xóa dữ liệu học tập</h4>
+                        <p>Xóa toàn bộ tiến độ và lịch sử học tập của bạn</p>
+                    </div>
+                    <button class="btn-danger" onclick="confirmResetProgress()">
+                        Xóa dữ liệu
+                    </button>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h4>Xóa tài khoản</h4>
+                        <p>Xóa vĩnh viễn tài khoản và tất cả dữ liệu của bạn</p>
+                    </div>
+                    <button class="btn-danger" onclick="confirmDeleteAccount()">
+                        Xóa tài khoản
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ================================
+// Configuration
+// ================================
+const API_BASE_URL = '/api/v1';
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+    USER: 'user'
+};
+
+// ================================
+// Auth & API
+// ================================
+function checkAuth() {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) {
+        window.location.href = '/login/?next=/profile/settings/';
+        return false;
+    }
+    return true;
+}
+
+async function apiRequest(endpoint, options = {}) {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    });
+    
+    if (response.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return apiRequest(endpoint, options);
+        window.location.href = '/login/?next=/profile/settings/';
+        return null;
+    }
+    
+    return response;
+}
+
+async function refreshToken() {
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    if (!refreshToken) return false;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/token/refresh/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh: refreshToken })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access);
+            return true;
+        }
+    } catch (error) {
+        console.error('Token refresh failed:', error);
+    }
+    return false;
+}
+
+// ================================
+// UI Helpers
+// ================================
+function showSuccess(message) {
+    const alert = document.getElementById('successAlert');
+    document.getElementById('successMessage').textContent = message;
+    alert.style.display = 'block';
+    setTimeout(() => alert.style.display = 'none', 3000);
+}
+
+function showError(message) {
+    const alert = document.getElementById('errorAlert');
+    document.getElementById('errorMessage').textContent = message;
+    alert.style.display = 'block';
+    setTimeout(() => alert.style.display = 'none', 5000);
+}
+
+// ================================
+// Load User Data
+// ================================
+async function loadUserData() {
+    try {
+        const response = await apiRequest('/users/me/');
+        if (!response || !response.ok) return;
+        
+        const user = await response.json();
+        
+        // Update avatar
+        const avatarPreview = document.getElementById('avatarPreview');
+        const avatarInitial = document.getElementById('avatarInitial');
+        
+        if (user.avatar) {
+            avatarPreview.innerHTML = `<img src="${user.avatar}" alt="Avatar">`;
+            document.getElementById('btnRemoveAvatar').style.display = 'block';
+        } else {
+            const name = user.full_name || user.username || 'U';
+            avatarInitial.textContent = name.charAt(0).toUpperCase();
+        }
+        
+        // Fill form fields
+        document.getElementById('fullName').value = user.full_name || '';
+        document.getElementById('username').value = user.username || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('phone').value = user.phone_number || '';
+        document.getElementById('dob').value = user.date_of_birth || '';
+        document.getElementById('gender').value = user.gender || '';
+        document.getElementById('bio').value = user.bio || '';
+        
+        // Load settings if available
+        if (user.settings) {
+            document.getElementById('dailyGoal').value = user.settings.daily_goal || '15';
+            document.getElementById('targetLevel').value = user.settings.target_level || 'B2';
+            document.getElementById('toggleStudyReminder').checked = user.settings.study_reminder !== false;
+            document.getElementById('togglePromoEmail').checked = user.settings.promo_email === true;
+            document.getElementById('toggleAchievementNotif').checked = user.settings.achievement_notif !== false;
+            document.getElementById('toggleNightMode').checked = user.settings.night_mode === true;
+            document.getElementById('toggleAutoSound').checked = user.settings.auto_sound !== false;
+        }
+        
+    } catch (error) {
+        console.error('Failed to load user data:', error);
+        showError('Không thể tải thông tin người dùng');
+    }
+}
+
+// ================================
+// Save Profile
+// ================================
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('btnSaveProfile');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang lưu...';
+    
+    try {
+        const formData = {
+            full_name: document.getElementById('fullName').value,
+            phone_number: document.getElementById('phone').value,
+            date_of_birth: document.getElementById('dob').value || null,
+            gender: document.getElementById('gender').value || null,
+            bio: document.getElementById('bio').value
+        };
+        
+        const response = await apiRequest('/users/me/', {
+            method: 'PATCH',
+            body: JSON.stringify(formData)
+        });
+        
+        if (response && response.ok) {
+            const updatedUser = await response.json();
+            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+            showSuccess('Cập nhật thông tin thành công!');
+        } else {
+            const error = await response.json();
+            showError(error.detail || 'Không thể cập nhật thông tin');
+        }
+        
+    } catch (error) {
+        console.error('Save error:', error);
+        showError('Có lỗi xảy ra khi lưu thông tin');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save me-1"></i> Lưu thay đổi';
+    }
+});
+
+// ================================
+// Avatar Upload
+// ================================
+document.getElementById('avatarInput').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+        showError('Vui lòng chọn file hình ảnh');
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        showError('Kích thước file tối đa là 5MB');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    try {
+        const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+        const response = await fetch(`${API_BASE_URL}/users/me/avatar/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('avatarPreview').innerHTML = `<img src="${data.avatar}" alt="Avatar">`;
+            document.getElementById('btnRemoveAvatar').style.display = 'block';
+            showSuccess('Cập nhật ảnh đại diện thành công!');
+        } else {
+            showError('Không thể tải ảnh lên');
+        }
+        
+    } catch (error) {
+        console.error('Upload error:', error);
+        showError('Có lỗi xảy ra khi tải ảnh');
+    }
+});
+
+document.getElementById('btnRemoveAvatar').addEventListener('click', async function() {
+    if (!confirm('Bạn có chắc muốn xóa ảnh đại diện?')) return;
+    
+    try {
+        const response = await apiRequest('/users/me/avatar/', {
+            method: 'DELETE'
+        });
+        
+        if (response && response.ok) {
+            const user = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || '{}');
+            const name = user.full_name || user.username || 'U';
+            document.getElementById('avatarPreview').innerHTML = `<span id="avatarInitial">${name.charAt(0).toUpperCase()}</span>`;
+            this.style.display = 'none';
+            showSuccess('Đã xóa ảnh đại diện');
+        }
+        
+    } catch (error) {
+        showError('Không thể xóa ảnh đại diện');
+    }
+});
+
+// ================================
+// Notification Settings
+// ================================
+async function saveNotificationSettings() {
+    try {
+        const settings = {
+            study_reminder: document.getElementById('toggleStudyReminder').checked,
+            promo_email: document.getElementById('togglePromoEmail').checked,
+            achievement_notif: document.getElementById('toggleAchievementNotif').checked,
+            reminder_time: document.getElementById('reminderTime').value
+        };
+        
+        const response = await apiRequest('/users/me/settings/', {
+            method: 'PATCH',
+            body: JSON.stringify(settings)
+        });
+        
+        if (response && response.ok) {
+            showSuccess('Đã lưu cài đặt thông báo');
+        } else {
+            showError('Không thể lưu cài đặt');
+        }
+        
+    } catch (error) {
+        showError('Có lỗi xảy ra');
+    }
+}
+
+// ================================
+// Learning Settings
+// ================================
+async function saveLearningSettings() {
+    try {
+        const settings = {
+            daily_goal: parseInt(document.getElementById('dailyGoal').value),
+            target_level: document.getElementById('targetLevel').value,
+            night_mode: document.getElementById('toggleNightMode').checked,
+            auto_sound: document.getElementById('toggleAutoSound').checked
+        };
+        
+        const response = await apiRequest('/users/me/settings/', {
+            method: 'PATCH',
+            body: JSON.stringify(settings)
+        });
+        
+        if (response && response.ok) {
+            showSuccess('Đã lưu cài đặt học tập');
+        } else {
+            showError('Không thể lưu cài đặt');
+        }
+        
+    } catch (error) {
+        showError('Có lỗi xảy ra');
+    }
+}
+
+// ================================
+// Danger Zone Actions
+// ================================
+function confirmResetProgress() {
+    if (!confirm('Bạn có chắc muốn xóa toàn bộ dữ liệu học tập? Hành động này không thể hoàn tác!')) return;
+    if (!confirm('XÁC NHẬN LẦN CUỐI: Tất cả tiến độ, streak, XP sẽ bị xóa vĩnh viễn!')) return;
+    
+    // Call API to reset progress
+    apiRequest('/users/me/progress/', { method: 'DELETE' })
+        .then(response => {
+            if (response && response.ok) {
+                showSuccess('Đã xóa dữ liệu học tập');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showError('Không thể xóa dữ liệu');
+            }
+        });
+}
+
+function confirmDeleteAccount() {
+    if (!confirm('Bạn có chắc muốn xóa tài khoản? Hành động này KHÔNG THỂ hoàn tác!')) return;
+    
+    const email = prompt('Nhập email của bạn để xác nhận xóa tài khoản:');
+    const currentEmail = document.getElementById('email').value;
+    
+    if (email !== currentEmail) {
+        showError('Email không khớp. Hủy thao tác.');
+        return;
+    }
+    
+    apiRequest('/users/me/', { method: 'DELETE' })
+        .then(response => {
+            if (response && response.ok) {
+                localStorage.clear();
+                alert('Tài khoản đã được xóa. Tạm biệt!');
+                window.location.href = '/';
+            } else {
+                showError('Không thể xóa tài khoản');
+            }
+        });
+}
+
+function showSessions() {
+    alert('Tính năng đang được phát triển');
+}
+
+// ================================
+// Navigation
+// ================================
+document.querySelectorAll('.settings-nav-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Update active state
+        document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Scroll to section
+        const sectionId = this.dataset.section;
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+
+// ================================
+// Initialize
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+    if (!checkAuth()) return;
+    loadUserData();
+});
+</script>
+{% endblock %}

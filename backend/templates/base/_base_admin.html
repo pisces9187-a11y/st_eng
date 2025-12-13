@@ -1,0 +1,49 @@
+{% extends "base/_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% block page_css %}{% endblock %}
+{% endblock %}
+
+{% block body_class %}admin-layout{% endblock %}
+
+{% block body %}
+<div id="admin-app">
+    <!-- Sidebar -->
+    {% include "components/_sidebar_admin.html" %}
+    
+    <!-- Main Wrapper -->
+    <div class="admin-main">
+        <!-- Top Navbar -->
+        {% include "components/_navbar_admin.html" %}
+        
+        <!-- Page Content -->
+        <div class="admin-content">
+            <!-- Breadcrumb -->
+            {% block breadcrumb %}{% endblock %}
+            
+            <!-- Page Header -->
+            {% block page_header %}{% endblock %}
+            
+            <!-- Main Content -->
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <!-- Global Modal -->
+    <div class="modal fade" id="globalModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                {% block modal_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/admin.js' %}"></script>
+{% block page_js %}{% endblock %}
+{% endblock %}

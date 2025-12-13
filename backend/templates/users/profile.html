@@ -1,0 +1,681 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Hồ sơ cá nhân - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #183B56 0%, #2C5282 100%);
+        padding: 3rem 0;
+        color: #fff;
+        margin-bottom: -80px;
+    }
+    
+    .profile-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-top: 80px;
+    }
+    
+    .profile-avatar-section {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        object-fit: cover;
+        margin-top: -80px;
+    }
+    
+    .profile-avatar-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F47C26 0%, #FF9F43 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 700;
+        color: #fff;
+        margin-top: -80px;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #183B56;
+        margin-top: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .profile-username {
+        color: #6C757D;
+        font-size: 0.9rem;
+    }
+    
+    .profile-badges {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .badge-item {
+        background: rgba(244, 124, 38, 0.1);
+        color: #F47C26;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-item.premium {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        color: #fff;
+    }
+    
+    .profile-stats-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        padding: 1.5rem 0;
+        border-top: 1px solid #E8ECF0;
+        border-bottom: 1px solid #E8ECF0;
+        margin: 1.5rem 0;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-item h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #183B56;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-item p {
+        font-size: 0.8rem;
+        color: #6C757D;
+        margin: 0;
+    }
+    
+    .profile-section {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #183B56;
+        margin: 0;
+    }
+    
+    .section-title i {
+        margin-right: 0.5rem;
+        color: #F47C26;
+    }
+    
+    .edit-link {
+        color: #F47C26;
+        font-size: 0.875rem;
+        text-decoration: none;
+    }
+    
+    .edit-link:hover {
+        text-decoration: underline;
+    }
+    
+    .info-grid {
+        display: grid;
+        gap: 1rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6C757D;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-size: 0.95rem;
+        color: #183B56;
+    }
+    
+    .level-progress {
+        background: #E8ECF0;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .level-progress-bar {
+        background: linear-gradient(90deg, #F47C26 0%, #FF9F43 100%);
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    
+    .level-progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #183B56;
+    }
+    
+    .achievement-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 1rem;
+    }
+    
+    .achievement-item {
+        text-align: center;
+    }
+    
+    .achievement-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        font-size: 1.5rem;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+    
+    .achievement-icon.locked {
+        background: #E8ECF0;
+        color: #ADB5BD;
+        box-shadow: none;
+    }
+    
+    .achievement-name {
+        font-size: 0.7rem;
+        color: #6C757D;
+    }
+    
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+    
+    .btn-profile {
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-edit {
+        background: #F47C26;
+        color: #fff;
+    }
+    
+    .btn-edit:hover {
+        background: #E06A1A;
+        color: #fff;
+    }
+    
+    .btn-share {
+        background: #E8ECF0;
+        color: #183B56;
+    }
+    
+    .btn-share:hover {
+        background: #D1D5DB;
+    }
+    
+    @media (max-width: 768px) {
+        .profile-stats-bar {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color: rgba(255,255,255,0.5); --bs-breadcrumb-item-active-color: rgba(255,255,255,0.8);">
+                <li class="breadcrumb-item"><a href="{% url 'users:dashboard' %}" class="text-white-50">Dashboard</a></li>
+                <li class="breadcrumb-item active text-white">Hồ sơ cá nhân</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row">
+        <!-- Main Profile Card -->
+        <div class="col-lg-4">
+            <div class="profile-card">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-placeholder" id="profileAvatar">
+                        <span id="avatarInitial">?</span>
+                    </div>
+                    <h2 class="profile-name" id="profileName">---</h2>
+                    <p class="profile-username" id="profileUsername">@username</p>
+                    <div class="profile-badges" id="profileBadges">
+                        <!-- Badges will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <div class="profile-stats-bar">
+                    <div class="stat-item">
+                        <h3 id="statStreak">0</h3>
+                        <p>Streak</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 id="statXP">0</h3>
+                        <p>XP</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 id="statLessons">0</h3>
+                        <p>Bài học</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 id="statRank">-</h3>
+                        <p>Hạng</p>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <a href="{% url 'users:profile-settings' %}" class="btn-profile btn-edit">
+                        <i class="fas fa-edit me-1"></i> Chỉnh sửa
+                    </a>
+                    <button class="btn-profile btn-share" onclick="shareProfile()">
+                        <i class="fas fa-share-alt me-1"></i> Chia sẻ
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Details -->
+        <div class="col-lg-8">
+            <!-- Personal Info -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="fas fa-user"></i>Thông tin cá nhân</h3>
+                    <a href="{% url 'users:profile-settings' %}" class="edit-link">Chỉnh sửa</a>
+                </div>
+                <div class="info-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value" id="infoEmail">---</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Số điện thoại</span>
+                        <span class="info-value" id="infoPhone">---</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Ngày sinh</span>
+                        <span class="info-value" id="infoDob">---</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Giới tính</span>
+                        <span class="info-value" id="infoGender">---</span>
+                    </div>
+                    <div class="info-item" style="grid-column: span 2;">
+                        <span class="info-label">Giới thiệu</span>
+                        <span class="info-value" id="infoBio">---</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Learning Progress -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="fas fa-chart-line"></i>Tiến độ học tập</h3>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="info-label">Cấp độ hiện tại</span>
+                        <span id="currentLevel" class="fw-bold" style="color: #F47C26;">Level 1</span>
+                    </div>
+                    <div class="level-progress">
+                        <div class="level-progress-bar" id="levelProgressBar" style="width: 0%;"></div>
+                        <span class="level-progress-text" id="levelProgressText">0/100 XP</span>
+                    </div>
+                </div>
+                <div class="info-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="info-item">
+                        <span class="info-label">Từ vựng đã học</span>
+                        <span class="info-value" id="vocabLearned">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Tổng thời gian học</span>
+                        <span class="info-value" id="totalTime">0h</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Ngày tham gia</span>
+                        <span class="info-value" id="joinDate">---</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Achievements -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="fas fa-trophy"></i>Thành tựu gần đây</h3>
+                    <a href="{% url 'users:profile-achievements' %}" class="edit-link">Xem tất cả</a>
+                </div>
+                <div class="achievement-grid" id="achievementsGrid">
+                    <!-- Achievements will be loaded dynamically -->
+                </div>
+            </div>
+            
+            <!-- Study Goals -->
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="fas fa-bullseye"></i>Mục tiêu học tập</h3>
+                    <a href="{% url 'users:profile-settings' %}" class="edit-link">Thay đổi</a>
+                </div>
+                <div class="info-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="info-item">
+                        <span class="info-label">Mục tiêu hàng ngày</span>
+                        <span class="info-value" id="dailyGoal">15 phút/ngày</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Trình độ mục tiêu</span>
+                        <span class="info-value" id="targetLevel">B2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ================================
+// Configuration
+// ================================
+const API_BASE_URL = '/api/v1';
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+    USER: 'user'
+};
+
+// ================================
+// Auth Check & API Helper
+// ================================
+function checkAuth() {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) {
+        window.location.href = '/login/?next=/profile/';
+        return false;
+    }
+    return true;
+}
+
+async function apiRequest(endpoint) {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (response.status === 401) {
+        // Try refresh token
+        const refreshed = await refreshToken();
+        if (refreshed) return apiRequest(endpoint);
+        window.location.href = '/login/?next=/profile/';
+        return null;
+    }
+    
+    return response;
+}
+
+async function refreshToken() {
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    if (!refreshToken) return false;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/token/refresh/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh: refreshToken })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access);
+            return true;
+        }
+    } catch (error) {
+        console.error('Token refresh failed:', error);
+    }
+    return false;
+}
+
+// ================================
+// Load Profile Data
+// ================================
+async function loadProfile() {
+    try {
+        const response = await apiRequest('/users/me/');
+        if (!response || !response.ok) return;
+        
+        const user = await response.json();
+        
+        // Update avatar
+        const avatarEl = document.getElementById('profileAvatar');
+        const displayName = user.full_name || user.username;
+        
+        if (user.avatar) {
+            avatarEl.outerHTML = `<img src="${user.avatar}" alt="${displayName}" class="profile-avatar" id="profileAvatar">`;
+        } else {
+            document.getElementById('avatarInitial').textContent = displayName.charAt(0).toUpperCase();
+        }
+        
+        // Update basic info
+        document.getElementById('profileName').textContent = displayName;
+        document.getElementById('profileUsername').textContent = `@${user.username}`;
+        
+        // Update badges
+        const badgesContainer = document.getElementById('profileBadges');
+        let badges = [];
+        if (user.is_premium) {
+            badges.push('<span class="badge-item premium"><i class="fas fa-crown me-1"></i>Premium</span>');
+        }
+        if (user.current_level) {
+            badges.push(`<span class="badge-item">Level ${user.current_level}</span>`);
+        }
+        if (user.streak_days >= 7) {
+            badges.push(`<span class="badge-item"><i class="fas fa-fire me-1"></i>${user.streak_days} ngày</span>`);
+        }
+        badgesContainer.innerHTML = badges.join('');
+        
+        // Update stats
+        document.getElementById('statStreak').textContent = user.streak_days || 0;
+        document.getElementById('statXP').textContent = formatNumber(user.total_xp || 0);
+        document.getElementById('statLessons').textContent = user.completed_lessons || 0;
+        document.getElementById('statRank').textContent = user.rank ? `#${user.rank}` : '-';
+        
+        // Update personal info
+        document.getElementById('infoEmail').textContent = user.email || '---';
+        document.getElementById('infoPhone').textContent = user.phone_number || 'Chưa cập nhật';
+        document.getElementById('infoDob').textContent = user.date_of_birth ? formatDate(user.date_of_birth) : 'Chưa cập nhật';
+        document.getElementById('infoGender').textContent = formatGender(user.gender);
+        document.getElementById('infoBio').textContent = user.bio || 'Chưa có giới thiệu';
+        
+        // Update learning progress
+        document.getElementById('currentLevel').textContent = `Level ${user.current_level || 1}`;
+        const xpForNextLevel = (user.current_level || 1) * 100;
+        const xpProgress = ((user.level_xp || 0) / xpForNextLevel) * 100;
+        document.getElementById('levelProgressBar').style.width = `${Math.min(xpProgress, 100)}%`;
+        document.getElementById('levelProgressText').textContent = `${user.level_xp || 0}/${xpForNextLevel} XP`;
+        
+        document.getElementById('vocabLearned').textContent = user.vocabulary_learned || 0;
+        document.getElementById('totalTime').textContent = formatStudyTime(user.total_study_time || 0);
+        document.getElementById('joinDate').textContent = user.date_joined ? formatDate(user.date_joined) : '---';
+        
+        // Update goals
+        document.getElementById('dailyGoal').textContent = `${user.daily_goal || 15} phút/ngày`;
+        document.getElementById('targetLevel').textContent = user.target_level || 'B2';
+        
+    } catch (error) {
+        console.error('Failed to load profile:', error);
+    }
+}
+
+// ================================
+// Load Achievements
+// ================================
+async function loadAchievements() {
+    const grid = document.getElementById('achievementsGrid');
+    
+    try {
+        const response = await apiRequest('/study/achievements/');
+        
+        if (!response || !response.ok) {
+            showDefaultAchievements(grid);
+            return;
+        }
+        
+        const achievements = await response.json();
+        
+        if (!achievements || achievements.length === 0) {
+            showDefaultAchievements(grid);
+            return;
+        }
+        
+        grid.innerHTML = achievements.slice(0, 6).map(achievement => `
+            <div class="achievement-item">
+                <div class="achievement-icon ${achievement.unlocked ? '' : 'locked'}">
+                    <i class="fas ${achievement.icon || 'fa-trophy'}"></i>
+                </div>
+                <span class="achievement-name">${achievement.name}</span>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Failed to load achievements:', error);
+        showDefaultAchievements(grid);
+    }
+}
+
+function showDefaultAchievements(grid) {
+    const defaultAchievements = [
+        { name: 'Khởi đầu', icon: 'fa-star', unlocked: true },
+        { name: '7 ngày streak', icon: 'fa-fire', unlocked: false },
+        { name: '100 từ vựng', icon: 'fa-book', unlocked: false },
+        { name: 'Bài test đầu tiên', icon: 'fa-check-circle', unlocked: false },
+        { name: 'Level 5', icon: 'fa-medal', unlocked: false },
+        { name: 'Premium', icon: 'fa-crown', unlocked: false }
+    ];
+    
+    grid.innerHTML = defaultAchievements.map(achievement => `
+        <div class="achievement-item">
+            <div class="achievement-icon ${achievement.unlocked ? '' : 'locked'}">
+                <i class="fas ${achievement.icon}"></i>
+            </div>
+            <span class="achievement-name">${achievement.name}</span>
+        </div>
+    `).join('');
+}
+
+// ================================
+// Utility Functions
+// ================================
+function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
+
+function formatStudyTime(minutes) {
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h`;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function formatGender(gender) {
+    const genderMap = {
+        'male': 'Nam',
+        'female': 'Nữ',
+        'other': 'Khác'
+    };
+    return genderMap[gender] || 'Chưa cập nhật';
+}
+
+function shareProfile() {
+    const url = window.location.href;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Hồ sơ EnglishMaster',
+            text: 'Xem hồ sơ học tập của tôi trên EnglishMaster!',
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Đã sao chép link hồ sơ!');
+        });
+    }
+}
+
+// ================================
+// Initialize
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+    if (!checkAuth()) return;
+    
+    loadProfile();
+    loadAchievements();
+});
+</script>
+{% endblock %}
