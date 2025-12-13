@@ -60,6 +60,7 @@ page_urlpatterns = [
     path('signup/', SignupPageView.as_view(), name='signup'),
     path('forgot-password/', ForgotPasswordPageView.as_view(), name='forgot-password'),
     path('logout/', LogoutPageView.as_view(), name='logout'),
+    path('delete-account/', LogoutPageView.as_view(), name='delete_account'),
     path('reset-password/<str:token>/', PasswordResetConfirmPageView.as_view(), name='reset-password-confirm'),
     
     # User Dashboard & Onboarding
@@ -68,6 +69,7 @@ page_urlpatterns = [
     
     # Profile & Settings Pages
     path('profile/', ProfilePageView.as_view(), name='profile'),
+    path('profile-update/', ProfilePageView.as_view(), name='update_profile'),
     path('profile/settings/', ProfileSettingsPageView.as_view(), name='profile-settings'),
     path('profile/change-password/', ChangePasswordPageView.as_view(), name='change-password'),
     path('profile/achievements/', AchievementsPageView.as_view(), name='profile-achievements'),

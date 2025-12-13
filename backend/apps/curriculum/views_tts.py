@@ -13,7 +13,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.conf import settings
-
 from utils.tts import TTSService, TTSVoice, EDGE_TTS_AVAILABLE
 
 
