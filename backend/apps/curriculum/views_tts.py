@@ -213,4 +213,8 @@ class TTSStatusView(APIView):
                 'pitch_control',
                 'audio_caching'
             ]
+<<<<<<< HEAD
         })
+=======
+        })
+>>>>>>> 621f4d9814ab309da5f8bca35aa76c59a1c9c355
