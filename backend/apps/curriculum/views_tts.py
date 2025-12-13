@@ -7,13 +7,17 @@ Endpoints:
 - GET /api/v1/tts/voices/ - List available voices
 """
 
-import asyncio
+import logging
+from asgiref.sync import async_to_sync
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.conf import settings
+
 from utils.tts import TTSService, TTSVoice, EDGE_TTS_AVAILABLE
+
+logger = logging.getLogger(__name__)
 
 
 class TTSSpeakView(APIView):
@@ -65,13 +69,12 @@ class TTSSpeakView(APIView):
             rate = "-25%"
         
         try:
-            # Run async function
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            audio_path = loop.run_until_complete(
-                TTSService.speak_async(text, voice=voice, rate=rate)
+            # Sử dụng async_to_sync thay vì asyncio.new_event_loop()
+            audio_path = async_to_sync(TTSService.speak_async)(
+                text, 
+                voice=voice, 
+                rate=rate
             )
-            loop.close()
             
             if audio_path:
                 # Convert to URL
@@ -87,12 +90,14 @@ class TTSSpeakView(APIView):
                     'voice': voice
                 })
             else:
+                logger.error(f"Failed to generate audio for text: {text[:50]}...")
                 return Response({
                     'success': False,
                     'error': 'Failed to generate audio'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 
         except Exception as e:
+            logger.error(f"TTS Error in TTSSpeakView: {str(e)}", exc_info=True)
             return Response({
                 'success': False,
                 'error': str(e)
@@ -139,16 +144,12 @@ class TTSPhonemeView(APIView):
         voice = request.data.get('voice', TTSVoice.DEFAULT)
         
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(
-                TTSService.speak_phoneme_async(
-                    ipa_symbol, 
-                    example_word=example_word,
-                    voice=voice
-                )
+            # Sử dụng async_to_sync thay vì asyncio.new_event_loop()
+            result = async_to_sync(TTSService.speak_phoneme_async)(
+                ipa_symbol, 
+                example_word=example_word,
+                voice=voice
             )
-            loop.close()
             
             # Convert paths to URLs
             response_data = {'success': True, 'ipa_symbol': ipa_symbol}
@@ -164,6 +165,7 @@ class TTSPhonemeView(APIView):
             return Response(response_data)
             
         except Exception as e:
+            logger.error(f"TTS Error in TTSPhonemeView: {str(e)}", exc_info=True)
             return Response({
                 'success': False,
                 'error': str(e)
