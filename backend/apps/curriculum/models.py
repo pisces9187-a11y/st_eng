@@ -1,14 +1,13 @@
-"""
-Curriculum models - Course, Unit, Lesson, Sentence, Flashcard.
-
-This module contains all curriculum-related models for the language learning platform.
-Implements the content hierarchy: Course → Unit → Lesson → Sentence/Flashcard
-"""
+"""Curriculum models - Course, Unit, Lesson, Sentence, Flashcard."""
 
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from datetime import timedelta
 
+<<<<<<< HEAD
+[NOTE: File content too long - continuing in next message]
+=======
 
 class Course(models.Model):
     """
@@ -674,6 +673,14 @@ class PhonemeCategory(models.Model):
     icon = models.CharField(max_length=50, blank=True, verbose_name='Icon class')
     order = models.PositiveIntegerField(default=0, db_index=True)
     
+    preferred_audio_source = models.ForeignKey(
+        'AudioSource',  # Forward reference vì AudioSource định nghĩa sau
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='preferred_for_phoneme',
+        verbose_name='Audio ưu tiên'
+    )
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1053,3 +1060,203 @@ class TongueTwister(models.Model):
     
     def __str__(self):
         return self.text[:50] + '...' if len(self.text) > 50 else self.text
+
+
+#============================================================================
+# PHASE 1: AUDIO SYSTEM MODELS
+#============================================================================
+
+from datetime import timedelta
+
+
+class AudioSource(models.Model):
+    """
+    AudioSource: Centralized audio file management for phonemes.
+    
+    Supports multiple audio sources with intelligent fallback:
+    1. Native speaker recordings (100% quality) - BEST
+    2. Cached TTS audio (90% quality, instant) - GOOD  
+    3. On-demand TTS (80% quality, async) - FALLBACK
+    
+    Example usage:
+        # Create native audio
+        audio = AudioSource.objects.create(
+            phoneme=phoneme,
+            source_type='native',
+            audio_file='path/to/file.mp3'
+        )
+        
+        # Check if cached
+        if audio.is_cached():
+            print(f"Quality: {audio.get_quality_score()}%")
+    """
+    
+    SOURCE_TYPE_CHOICES = [
+        ('native', 'Native Speaker Recording'),
+        ('tts', 'TTS Generated (Cached)'),
+        ('generated', 'TTS Generated (On-Demand)'),
+    ]
+    
+    phoneme = models.ForeignKey(
+        Phoneme,
+        on_delete=models.CASCADE,
+        related_name='audio_sources',
+        verbose_name='Âm vị'
+    )
+    
+    source_type = models.CharField(
+        max_length=20,
+        choices=SOURCE_TYPE_CHOICES,
+        db_index=True,
+        verbose_name='Loại nguồn âm thanh'
+    )
+    
+    voice_id = models.CharField(
+        max_length=50,
+        default='en-US-AriaNeural',
+        blank=True,
+        db_index=True,
+        verbose_name='ID giọng nói TTS'
+    )
+    
+    language = models.CharField(
+        max_length=10,
+        default='en-US',
+        verbose_name='Ngôn ngữ'
+    )
+    
+    audio_file = models.FileField(
+        upload_to='phonemes/audio/%Y/%m/%d/',
+        verbose_name='File âm thanh'
+    )
+    
+    audio_duration = models.FloatField(
+        default=0,
+        verbose_name='Thời lượng (giây)'
+    )
+    
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name='Metadata bổ sung'
+    )
+    
+    cached_until = models.DateTimeField(
+        blank=True,
+        null=True,
+        db_index=True,
+        verbose_name='Lưu cache đến'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'curriculum_audiosource'
+        ordering = ['-created_at']
+        verbose_name = 'Audio Source'
+        verbose_name_plural = 'Audio Sources'
+        indexes = [
+            models.Index(fields=['phoneme', 'source_type']),
+            models.Index(fields=['voice_id', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"/{self.phoneme.ipa_symbol}/ - {self.get_source_type_display()}"
+    
+    def is_native(self):
+        """Check if this is a native speaker recording."""
+        return self.source_type == 'native'
+    
+    def is_cached(self):
+        """Check if this audio is cached and still valid."""
+        if self.source_type == 'native':
+            return True  # Native never expires
+        if not self.cached_until:
+            return False
+        return timezone.now() < self.cached_until
+    
+    def needs_regeneration(self):
+        """Check if TTS audio needs regeneration."""
+        if self.source_type == 'native':
+            return False
+        if not self.cached_until:
+            return True
+        return timezone.now() >= self.cached_until
+    
+    def get_quality_score(self):
+        """Get quality score (100, 90, or 80)."""
+        if self.source_type == 'native':
+            return 100
+        elif self.source_type == 'tts':
+            return 90
+        else:
+            return 80
+    
+    def get_url(self):
+        """Get audio file URL."""
+        if self.audio_file:
+            return self.audio_file.url
+        return None
+
+
+class AudioCache(models.Model):
+    """
+    AudioCache: Track usage and performance metrics for audio files.
+    
+    One-to-one relationship with AudioSource.
+    Tracks usage count, file size, and access patterns.
+    """
+    
+    audio_source = models.OneToOneField(
+        AudioSource,
+        on_delete=models.CASCADE,
+        related_name='cache',
+        verbose_name='Audio Source'
+    )
+    
+    file_size = models.BigIntegerField(
+        default=0,
+        verbose_name='Kích thước file (bytes)'
+    )
+    
+    generated_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày tạo cache'
+    )
+    
+    last_accessed_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Lần truy cập cuối'
+    )
+    
+    usage_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Số lần phát'
+    )
+    
+    class Meta:
+        db_table = 'curriculum_audiocache'
+        verbose_name = 'Audio Cache'
+        verbose_name_plural = 'Audio Caches'
+        indexes = [
+            models.Index(fields=['usage_count', '-last_accessed_at']),
+        ]
+    
+    def __str__(self):
+        return f"Cache for {self.audio_source}"
+    
+    def increment_usage(self):
+        """Increment usage counter."""
+        self.usage_count += 1
+        self.save(update_fields=['usage_count', 'last_accessed_at'])
+    
+    def get_age_days(self):
+        """Get cache age in days."""
+        delta = timezone.now() - self.generated_at
+        return delta.days
+    
+    def is_stale(self, max_days=30):
+        """Check if cache is stale (older than max_days)."""
+        return self.get_age_days() > max_days
+>>>>>>> 9a1c044 (feat(phase1-day1): Add AudioSource and AudioCache models with migrations)
