@@ -5,9 +5,6 @@ from django.utils import timezone
 from django.utils.text import slugify
 from datetime import timedelta
 
-<<<<<<< HEAD
-[NOTE: File content too long - continuing in next message]
-=======
 
 class Course(models.Model):
     """
@@ -1259,4 +1256,3 @@ class AudioCache(models.Model):
     def is_stale(self, max_days=30):
         """Check if cache is stale (older than max_days)."""
         return self.get_age_days() > max_days
->>>>>>> 9a1c044 (feat(phase1-day1): Add AudioSource and AudioCache models with migrations)
