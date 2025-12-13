@@ -674,7 +674,7 @@ class PhonemeCategory(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name='preferred_for_phoneme',
+        related_name='preferred_for_phonemes',
         verbose_name='Audio ưu tiên'
     )
     # Timestamps
@@ -785,6 +785,14 @@ class Phoneme(models.Model):
     # Common mistakes Vietnamese speakers make
     common_mistakes_vi = models.TextField(blank=True, verbose_name='Lỗi người Việt hay mắc')
     
+    preferred_audio_source = models.ForeignKey(
+        'AudioSource',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='preferred_for_phoneme',
+        verbose_name='Audio ưu tiên'
+    )
     order = models.PositiveIntegerField(default=0, db_index=True)
     is_active = models.BooleanField(default=True)
     

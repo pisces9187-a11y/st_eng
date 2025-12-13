@@ -207,8 +207,12 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 # =============================================================================
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/1'),
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  # Development
+        'LOCATION': 'phoneme-audio-cache',
+        'TIMEOUT': 2592000,  # 30 days
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000
+        }
     }
 }
 
