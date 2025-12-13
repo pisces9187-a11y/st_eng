@@ -1,409 +1,336 @@
 {% extends "base/_base_public.html" %}
 {% load static %}
 
-{% block title %}Học Tiếng Anh Online - Chinh phục Tiếng Anh giao tiếp sau 3 tháng{% endblock %}
-
-{% block meta_description %}Nền tảng học tiếng Anh online hiệu quả với Flashcard, Luyện nghe, Luyện nói, Luyện viết và bài test đánh giá trình độ.{% endblock %}
+{% block title %}Trang Chủ - Nền Tảng Học Tiếng Anh{% endblock %}
 
 {% block extra_css %}
+<!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
+    /* Custom Button Styles */
+    .btn-primary-orange {
+        background: linear-gradient(135deg, #FF6B35, #FF8C42);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+    
+    .btn-primary-orange:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        color: white;
+    }
+
+    /* Card Custom Styles */
+    .card-custom {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-custom .card-icon {
+        font-size: 3rem;
+        color: #FF6B35;
+        transition: all 0.3s ease;
+    }
+
+    .card-hover:hover .card-icon {
+        transform: scale(1.1);
+        color: #FF8C42;
+    }
+
     /* Hero Section */
     .hero-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        min-height: 80vh;
+        min-height: 90vh;
         display: flex;
         align-items: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        position: relative;
+        overflow: hidden;
     }
-    
-    .hero-title {
-        font-size: 3rem;
-        line-height: 1.2;
+
+    .hero-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     }
-    
-    .hero-subtext {
-        font-size: 1.25rem;
-        color: #495057;
-    }
-    
-    /* Feature Cards */
-    .feature-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-    }
-    
-    .feature-icon {
+
+    /* Feature Section */
+    .feature-icon-box {
         width: 80px;
         height: 80px;
-        margin: 0 auto;
-        border-radius: 20px;
-        background: rgba(244, 124, 38, 0.1);
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 66, 0.1));
+        margin: 0 auto 20px;
     }
-    
-    /* Teacher Cards */
-    .teacher-card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, #FF6B35, #FF8C42);
+        color: white;
+        padding: 80px 0;
     }
-    
-    .teacher-card img {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border: 4px solid #F47C26;
-    }
-    
-    /* Testimonial */
-    .testimonial-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-    
-    .testimonial-card img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-    }
-    
-    /* CTA Gradient */
-    .bg-gradient-orange {
-        background: linear-gradient(135deg, #F47C26 0%, #e06b1a 100%);
-    }
-    
-    /* Partner Logos */
-    .partner-logo {
-        height: 40px;
-        opacity: 0.6;
-        transition: opacity 0.3s;
-    }
-    
-    .partner-logo:hover {
-        opacity: 1;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2rem;
-        }
-        
-        .hero-subtext {
-            font-size: 1rem;
-        }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section py-5">
+<section class="hero-section">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <h1 class="display-3 fw-bold text-primary-dark mb-4 hero-title">
-                    Từ <span class="text-energetic-orange">"Ấp Úng"</span> Đến <span class="text-energetic-orange">"Bắn"</span> Tiếng Anh Như Gió.
+            <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                <h1 class="display-3 fw-bold mb-4">
+                    Học Tiếng Anh <span style="color: #FF6B35;">Thông Minh</span>
                 </h1>
-                <p class="lead hero-subtext mb-4">
-                    Bạn giỏi ngữ pháp nhưng sợ giao tiếp? Phương pháp phản xạ độc quyền của chúng tôi sẽ giúp bạn mở miệng nói tiếng Anh tự nhiên ngay từ bài học đầu tiên.
+                <p class="lead mb-4" data-aos="fade-right" data-aos-delay="200">
+                    Nền tảng học tiếng Anh trực tuyến với AI, giúp bạn cải thiện kỹ năng nghe, nói, đọc, viết một cách hiệu quả và thú vị.
                 </p>
-                <div class="d-flex flex-column flex-sm-row gap-3 mb-3">
-                    <a href="{% url 'users:onboarding' %}" class="btn btn-primary-orange btn-lg shadow">
-                        <i class="fas fa-rocket me-2"></i>HỌC THỬ MIỄN PHÍ NGAY
+                <div data-aos="fade-right" data-aos-delay="400">
+                    <a href="{% url 'users:signup' %}" class="btn btn-primary-orange btn-lg me-3">
+                        Bắt Đầu Ngay
                     </a>
-                    <a href="{% url 'users:onboarding' %}" class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-clipboard-check me-2"></i>Kiểm tra trình độ
+                    <a href="#features" class="btn btn-outline-secondary btn-lg">
+                        Tìm Hiểu Thêm
                     </a>
-                </div>
-                <div class="mb-4">
-                    <p class="small text-muted mb-0">
-                        <i class="fas fa-sparkles text-energetic-orange me-2"></i>Không cần thẻ tín dụng. Hủy bất cứ lúc nào.
-                    </p>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="text-warning">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <span class="text-muted">Hơn <strong>10,000 học viên</strong> đã tham gia</span>
                 </div>
             </div>
-            <div class="col-lg-5 text-center">
-                <div class="p-4">
-                    <i class="fas fa-graduation-cap text-energetic-orange" style="font-size: 12rem; opacity: 0.9;"></i>
-                </div>
+            <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="300">
+                <img src="{% static 'assets/images/index/hero_image.png' %}" 
+                     alt="Học tiếng Anh trực tuyến" 
+                     class="hero-image"
+                     onerror="this.src='https://via.placeholder.com/600x400/FF6B35/FFFFFF?text=English+Learning+Platform'">
             </div>
         </div>
     </div>
 </section>
 
-<!-- Social Proof Banner -->
-<section class="py-4 bg-light">
-    <div class="container">
-        <div class="text-center mb-3">
-            <p class="text-muted mb-0">Đối tác và được tin tưởng bởi</p>
+<!-- Features Section -->
+<section id="features" class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold mb-3">Tính Năng Nổi Bật</h2>
+            <p class="lead text-muted">Khám phá những tính năng giúp bạn học tiếng Anh hiệu quả hơn</p>
         </div>
-        <div class="d-flex justify-content-center align-items-center flex-wrap gap-5">
-            <span class="text-muted fw-bold">Google</span>
-            <span class="text-muted fw-bold">Microsoft</span>
-            <span class="text-muted fw-bold">Amazon</span>
-            <span class="text-muted fw-bold">VinGroup</span>
-            <span class="text-muted fw-bold">FPT</span>
-        </div>
-    </div>
-</section>
-
-<!-- Value Proposition Section -->
-<section class="py-5 my-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold text-primary-dark mb-3">Tại sao chọn chúng tôi?</h2>
-            <p class="lead text-muted">Phương pháp học tập hiện đại, hiệu quả vượt trội</p>
-        </div>
+        
         <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card text-center h-100 p-4">
-                    <div class="feature-icon mb-4">
-                        <i class="fas fa-brain fa-2x text-energetic-orange"></i>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="card card-custom card-hover h-100 text-center p-4">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-robot card-icon"></i>
                     </div>
-                    <h3 class="h5 fw-bold text-primary-dark mb-3">AI Cá nhân hóa</h3>
-                    <p class="text-muted">Lộ trình học được AI tối ưu dựa trên trình độ và mục tiêu của bạn.</p>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-3">AI Phân Tích</h5>
+                        <p class="card-text text-muted">
+                            Công nghệ AI đánh giá và đưa ra phản hồi chi tiết về phát âm và ngữ pháp của bạn
+                        </p>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card text-center h-100 p-4">
-                    <div class="feature-icon mb-4">
-                        <i class="fas fa-gamepad fa-2x text-energetic-orange"></i>
+
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="card card-custom card-hover h-100 text-center p-4">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-mic-fill card-icon"></i>
                     </div>
-                    <h3 class="h5 fw-bold text-primary-dark mb-3">Gamification</h3>
-                    <p class="text-muted">Học như chơi game với XP, Streak, Bảng xếp hạng và Huy hiệu.</p>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-3">Luyện Phát Âm</h5>
+                        <p class="card-text text-muted">
+                            Thực hành phát âm với nhận diện giọng nói chính xác và cải thiện kỹ năng nói
+                        </p>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card text-center h-100 p-4">
-                    <div class="feature-icon mb-4">
-                        <i class="fas fa-users fa-2x text-energetic-orange"></i>
+
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="card card-custom card-hover h-100 text-center p-4">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-book-fill card-icon"></i>
                     </div>
-                    <h3 class="h5 fw-bold text-primary-dark mb-3">Cộng đồng</h3>
-                    <p class="text-muted">Diễn đàn trao đổi, thử thách nhóm và hỗ trợ từ giáo viên.</p>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-3">Kho Bài Học</h5>
+                        <p class="card-text text-muted">
+                            Hàng nghìn bài học từ cơ bản đến nâng cao, phù hợp với mọi trình độ
+                        </p>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card text-center h-100 p-4">
-                    <div class="feature-icon mb-4">
-                        <i class="fas fa-certificate fa-2x text-energetic-orange"></i>
+
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="card card-custom card-hover h-100 text-center p-4">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-graph-up-arrow card-icon"></i>
                     </div>
-                    <h3 class="h5 fw-bold text-primary-dark mb-3">Chứng chỉ</h3>
-                    <p class="text-muted">Nhận chứng chỉ có giá trị khi hoàn thành mỗi cấp độ.</p>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-3">Theo Dõi Tiến Độ</h5>
+                        <p class="card-text text-muted">
+                            Thống kê chi tiết giúp bạn theo dõi quá trình học tập và đạt mục tiêu
+                        </p>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section" data-aos="fade-up">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="100">
+                <div class="stat-number">10K+</div>
+                <p class="mb-0">Học Viên</p>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="200">
+                <div class="stat-number">500+</div>
+                <p class="mb-0">Bài Học</p>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="300">
+                <div class="stat-number">50+</div>
+                <p class="mb-0">Giáo Viên</p>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="400">
+                <div class="stat-number">95%</div>
+                <p class="mb-0">Hài Lòng</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- How It Works Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold text-primary-dark mb-3">Bắt đầu trong 3 bước</h2>
-            <p class="lead text-muted">Đơn giản, nhanh chóng và hiệu quả</p>
+<section class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold mb-3">Cách Thức Hoạt Động</h2>
+            <p class="lead text-muted">Chỉ 3 bước đơn giản để bắt đầu hành trình học tiếng Anh</p>
         </div>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <div class="mb-4" style="width:80px;height:80px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
-                        <span class="text-white fw-bold fs-2">1</span>
+        
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right" data-aos-delay="100">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="flex-shrink-0 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: 700; background: #FF6B35;">
+                        1
                     </div>
-                    <h3 class="h4 fw-bold text-primary-dark mb-3">Làm bài test</h3>
-                    <p class="text-muted mb-0">Đánh giá chính xác trình độ hiện tại qua bài test thông minh chỉ 15 phút.</p>
+                    <div class="flex-grow-1 ms-4">
+                        <h4 class="fw-bold mb-2">Đăng Ký Tài Khoản</h4>
+                        <p class="text-muted mb-0">Tạo tài khoản miễn phí trong vài giây và bắt đầu ngay</p>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <div class="mb-4" style="width:80px;height:80px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
-                        <span class="text-white fw-bold fs-2">2</span>
-                    </div>
-                    <h3 class="h4 fw-bold text-primary-dark mb-3">Nhận lộ trình</h3>
-                    <p class="text-muted mb-0">AI xây dựng lộ trình học cá nhân hóa, tối ưu thời gian và hiệu quả.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <div class="mb-4" style="width:80px;height:80px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
-                        <span class="text-white fw-bold fs-2">3</span>
-                    </div>
-                    <h3 class="h4 fw-bold text-primary-dark mb-3">Học & Nhận chứng chỉ</h3>
-                    <p class="text-muted mb-0">Luyện tập mỗi ngày với bài tập tương tác và nhận chứng chỉ khi hoàn thành.</p>
-                </div>
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left" data-aos-delay="200">
+                <img src="{% static 'assets/images/index/step1.jpg' %}" 
+                     alt="Đăng ký" 
+                     class="img-fluid rounded"
+                     onerror="this.src='https://via.placeholder.com/500x300/FF6B35/FFFFFF?text=Step+1'">
             </div>
         </div>
-        <div class="text-center mt-5">
-            <a href="{% url 'users:onboarding' %}" class="btn btn-primary-orange btn-lg">
-                <i class="fas fa-play me-2"></i>Bắt đầu ngay
+
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left" data-aos-delay="100">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="flex-shrink-0 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: 700; background: #FF6B35;">
+                        2
+                    </div>
+                    <div class="flex-grow-1 ms-4">
+                        <h4 class="fw-bold mb-2">Chọn Khóa Học</h4>
+                        <p class="text-muted mb-0">Lựa chọn khóa học phù hợp với trình độ và mục tiêu của bạn</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right" data-aos-delay="200">
+                <img src="{% static 'assets/images/index/step2.jpg' %}" 
+                     alt="Chọn khóa học" 
+                     class="img-fluid rounded"
+                     onerror="this.src='https://via.placeholder.com/500x300/FF8C42/FFFFFF?text=Step+2'">
+            </div>
+        </div>
+
+        <div class="row align-items-center">
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right" data-aos-delay="100">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="flex-shrink-0 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: 700; background: #FF6B35;">
+                        3
+                    </div>
+                    <div class="flex-grow-1 ms-4">
+                        <h4 class="fw-bold mb-2">Bắt Đầu Học</h4>
+                        <p class="text-muted mb-0">Học tập mọi lúc, mọi nơi với các bài học tương tác sinh động</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left" data-aos-delay="200">
+                <img src="{% static 'assets/images/index/step3.jpg' %}" 
+                     alt="Bắt đầu học" 
+                     class="img-fluid rounded"
+                     onerror="this.src='https://via.placeholder.com/500x300/FF6B35/FFFFFF?text=Step+3'">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-light" data-aos="fade-up">
+    <div class="container text-center py-5">
+        <h2 class="display-5 fw-bold mb-4" data-aos="fade-up" data-aos-delay="100">
+            Sẵn Sàng Bắt Đầu Hành Trình Học Tiếng Anh?
+        </h2>
+        <p class="lead text-muted mb-5" data-aos="fade-up" data-aos-delay="200">
+            Tham gia cùng hàng nghìn học viên đang cải thiện tiếng Anh mỗi ngày
+        </p>
+        <div data-aos="fade-up" data-aos-delay="300">
+            <a href="{% url 'users:signup' %}" class="btn btn-primary-orange btn-lg">
+                Đăng Ký Miễn Phí Ngay
             </a>
         </div>
     </div>
 </section>
+{% endblock %}
 
-<!-- Teachers Section -->
-<section class="py-5 bg-primary-dark" id="teachers">
-    <div class="container py-4">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold text-white mb-3">Giáo viên tiêu biểu</h2>
-            <p class="lead text-light opacity-75">Đội ngũ giáo viên bản xứ giàu kinh nghiệm</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="teacher-card text-center">
-                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
-                        <span class="text-white fw-bold fs-3">SJ</span>
-                    </div>
-                    <h4 class="fw-bold text-primary-dark mb-2">Sarah Johnson</h4>
-                    <p class="text-muted mb-2">🇺🇸 USA</p>
-                    <p class="small text-muted mb-0">8 năm kinh nghiệm</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="teacher-card text-center">
-                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
-                        <span class="text-white fw-bold fs-3">JW</span>
-                    </div>
-                    <h4 class="fw-bold text-primary-dark mb-2">James Wilson</h4>
-                    <p class="text-muted mb-2">🇬🇧 UK</p>
-                    <p class="small text-muted mb-0">10 năm kinh nghiệm</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="teacher-card text-center">
-                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
-                        <span class="text-white fw-bold fs-3">ED</span>
-                    </div>
-                    <h4 class="fw-bold text-primary-dark mb-2">Emma Davis</h4>
-                    <p class="text-muted mb-2">🇦🇺 Australia</p>
-                    <p class="small text-muted mb-0">6 năm kinh nghiệm</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="teacher-card text-center">
-                    <div class="mb-3" style="width:100px;height:100px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#F47C26,#e06b1a);display:flex;align-items:center;justify-content:center;">
-                        <span class="text-white fw-bold fs-3">MB</span>
-                    </div>
-                    <h4 class="fw-bold text-primary-dark mb-2">Michael Brown</h4>
-                    <p class="text-muted mb-2">🇨🇦 Canada</p>
-                    <p class="small text-muted mb-0">7 năm kinh nghiệm</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+{% block page_js %}
+<!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS with custom settings
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: false,
+            mirror: true,
+            offset: 100,
+            delay: 0,
+            anchorPlacement: 'top-bottom'
+        });
 
-<!-- Testimonials Section -->
-<section class="py-5" id="testimonials">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold text-primary-dark mb-3">Học viên nói gì về chúng tôi</h2>
-            <p class="lead text-muted">Hơn 10,000 học viên đã thay đổi cuộc sống</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="testimonial-card p-4 h-100">
-                    <div class="mb-3 text-warning">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-muted mb-4">"Sau 3 tháng học với EnglishMaster, tôi đã tự tin giao tiếp với đối tác nước ngoài. Phương pháp học rất khoa học!"</p>
-                    <div class="d-flex align-items-center">
-                        <div class="me-3" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#183B56,#2C5282);display:flex;align-items:center;justify-content:center;">
-                            <span class="text-white fw-bold">A</span>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold text-primary-dark mb-0">Nguyễn Văn A</h6>
-                            <small class="text-muted">Marketing Manager</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="testimonial-card p-4 h-100">
-                    <div class="mb-3 text-warning">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-muted mb-4">"Tôi đã thử nhiều app học tiếng Anh nhưng chưa cái nào hiệu quả như EnglishMaster. Cảm ơn đội ngũ!"</p>
-                    <div class="d-flex align-items-center">
-                        <div class="me-3" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#183B56,#2C5282);display:flex;align-items:center;justify-content:center;">
-                            <span class="text-white fw-bold">B</span>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold text-primary-dark mb-0">Trần Thị B</h6>
-                            <small class="text-muted">Software Engineer</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="testimonial-card p-4 h-100">
-                    <div class="mb-3 text-warning">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="text-muted mb-4">"Từ A2 lên B2 chỉ trong 6 tháng! Điều tôi không nghĩ là có thể. EnglishMaster đã thay đổi cuộc sống của tôi."</p>
-                    <div class="d-flex align-items-center">
-                        <div class="me-3" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#183B56,#2C5282);display:flex;align-items:center;justify-content:center;">
-                            <span class="text-white fw-bold">C</span>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold text-primary-dark mb-0">Lê Văn C</h6>
-                            <small class="text-muted">University Student</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Final CTA Section -->
-<section class="py-5 bg-gradient-orange text-white">
-    <div class="container py-4">
-        <div class="row justify-content-center text-center">
-            <div class="col-lg-8">
-                <h2 class="display-5 fw-bold mb-4">Bạn đã sẵn sàng thay đổi trình độ Tiếng Anh?</h2>
-                <p class="lead mb-5 opacity-90">Hãy bắt đầu hành trình chinh phục Tiếng Anh của bạn ngay hôm nay!</p>
-                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                    <a href="{% url 'users:signup' %}" class="btn btn-light btn-lg shadow-lg px-5">
-                        <i class="fas fa-rocket me-2"></i>ĐĂNG KÝ NGAY
-                    </a>
-                    <a href="{% url 'users:onboarding' %}" class="btn btn-outline-light btn-lg px-4">
-                        <i class="fas fa-clipboard-check me-2"></i>KIỂM TRA TRÌNH ĐỘ MIỄN PHÍ
-                    </a>
-                </div>
-                <p class="mt-4 mb-0 opacity-75"><small><i class="fas fa-shield-alt me-2"></i>Không cần thẻ tín dụng • Hủy bất cứ lúc nào</small></p>
-            </div>
-        </div>
-    </div>
-</section>
+        // Fix for lazy loading images with AOS
+        document.querySelectorAll('img').forEach((img) => {
+            img.addEventListener('load', () => {
+                AOS.refresh();
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -110,6 +110,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
+    os.path.join(BASE_DIR.parent, 'assets'),  # Nếu assets cùng cấp với thư mục backend
 ]
 
 # Media files
