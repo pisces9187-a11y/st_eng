@@ -5,6 +5,7 @@ This app manages:
 - Courses, Units, Lessons (Grammar, Vocabulary A1-C1)
 - Pronunciation Learning (Phonemes, IPA)
 - Text-to-Speech (TTS)
+- Phase 1: Audio System (AudioSource, AudioCache)
 - Flashcards, Grammar Rules
 
 URL Structure:
@@ -33,6 +34,15 @@ from .views_pronunciation import (
     CompleteLessonView,
     UserPronunciationProgressView,
     PhonemeListWithProgressView,
+)
+
+# Phase 1: Audio API Views
+from .api_views import (
+    PhonemeAudioAPIView,
+    PhonemeAudioBulkAPIView,
+    SetPreferredAudioAPIView,
+    AudioQualityReportAPIView,
+    PhonemeAudioURLAPIView
 )
 
 # Template Views (for page URLs)
@@ -80,19 +90,70 @@ page_urlpatterns = [
 urlpatterns = [
     path('', include(router.urls)),
     
-    # TTS API endpoints
+    # =======================================================================
+    # PHASE 1: AUDIO SYSTEM API ENDPOINTS
+    # =======================================================================
+    
+    # Phoneme Audio API
+    path('phonemes/<int:phoneme_id>/audio/', 
+         PhonemeAudioAPIView.as_view(), 
+         name='phoneme-audio'),
+    
+    path('phonemes/<int:phoneme_id>/audio/url/', 
+         PhonemeAudioURLAPIView.as_view(), 
+         name='phoneme-audio-url'),
+    
+    path('phonemes/audio/bulk/', 
+         PhonemeAudioBulkAPIView.as_view(), 
+         name='phoneme-audio-bulk'),
+    
+    path('phonemes/<int:phoneme_id>/audio/set-preferred/', 
+         SetPreferredAudioAPIView.as_view(), 
+         name='phoneme-audio-set-preferred'),
+    
+    # Audio Quality & Metrics
+    path('audio/quality-report/', 
+         AudioQualityReportAPIView.as_view(), 
+         name='audio-quality-report'),
+    
+    # =======================================================================
+    # TTS API ENDPOINTS
+    # =======================================================================
+    
     path('tts/speak/', TTSSpeakView.as_view(), name='tts-speak'),
     path('tts/phoneme/', TTSPhonemeView.as_view(), name='tts-phoneme'),
     path('tts/voices/', TTSVoicesView.as_view(), name='tts-voices'),
     path('tts/status/', TTSStatusView.as_view(), name='tts-status'),
     
-    # Pronunciation Learning API endpoints
-    path('pronunciation/lessons/', PronunciationLessonListView.as_view(), name='pronunciation-lessons'),
-    path('pronunciation/lessons/<slug:slug>/', PronunciationLessonDetailView.as_view(), name='pronunciation-lesson-detail'),
-    path('pronunciation/progress/', UserPronunciationProgressView.as_view(), name='api-pronunciation-progress'),
-    path('pronunciation/progress/screen/', SaveScreenProgressView.as_view(), name='pronunciation-screen-progress'),
-    path('pronunciation/progress/challenge/', SaveChallengeResultView.as_view(), name='pronunciation-challenge'),
-    path('pronunciation/progress/complete/', CompleteLessonView.as_view(), name='pronunciation-complete'),
-    path('pronunciation/phonemes/', PhonemeListWithProgressView.as_view(), name='pronunciation-phonemes'),
+    # =======================================================================
+    # PRONUNCIATION LEARNING API ENDPOINTS
+    # =======================================================================
+    
+    path('pronunciation/lessons/', 
+         PronunciationLessonListView.as_view(), 
+         name='pronunciation-lessons'),
+    
+    path('pronunciation/lessons/<slug:slug>/', 
+         PronunciationLessonDetailView.as_view(), 
+         name='pronunciation-lesson-detail'),
+    
+    path('pronunciation/progress/', 
+         UserPronunciationProgressView.as_view(), 
+         name='api-pronunciation-progress'),
+    
+    path('pronunciation/progress/screen/', 
+         SaveScreenProgressView.as_view(), 
+         name='pronunciation-screen-progress'),
+    
+    path('pronunciation/progress/challenge/', 
+         SaveChallengeResultView.as_view(), 
+         name='pronunciation-challenge'),
+    
+    path('pronunciation/progress/complete/', 
+         CompleteLessonView.as_view(), 
+         name='pronunciation-complete'),
+    
+    path('pronunciation/phonemes/', 
+         PhonemeListWithProgressView.as_view(), 
+         name='pronunciation-phonemes'),
 ]
-
