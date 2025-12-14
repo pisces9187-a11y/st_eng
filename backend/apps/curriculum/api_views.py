@@ -8,6 +8,7 @@ quality reporting, and audio management.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAdminUser
 from django.shortcuts import get_object_or_404
 
 from .models import Phoneme, AudioSource
@@ -23,7 +24,7 @@ class PhonemeAudioAPIView(APIView):
     """
     Get audio for a single phoneme with smart fallback.
     
-    GET /api/curriculum/phonemes/{phoneme_id}/audio/
+    GET /api/v1/phonemes/{phoneme_id}/audio/
     
     Query params:
     - voice_id (optional): Filter by specific voice ID
@@ -35,6 +36,7 @@ class PhonemeAudioAPIView(APIView):
         "alternatives": [...]  # Other available audio sources
     }
     """
+    permission_classes = [AllowAny]  # Public access
     
     def get(self, request, phoneme_id):
         """Get audio for phoneme with alternatives."""
@@ -71,7 +73,7 @@ class PhonemeAudioBulkAPIView(APIView):
     """
     Get audio for multiple phonemes in single request.
     
-    GET /api/curriculum/phonemes/audio/bulk/?ids=1,2,3,4,5
+    GET /api/v1/phonemes/audio/bulk/?ids=1,2,3,4,5
     
     Query params:
     - ids (required): Comma-separated phoneme IDs
@@ -89,6 +91,7 @@ class PhonemeAudioBulkAPIView(APIView):
         "without_audio": 1
     }
     """
+    permission_classes = [AllowAny]  # Public access
     
     def get(self, request):
         """Bulk retrieve audio for phonemes."""
@@ -158,7 +161,7 @@ class SetPreferredAudioAPIView(APIView):
     """
     Set preferred audio source for a phoneme.
     
-    POST /api/curriculum/phonemes/{phoneme_id}/audio/set-preferred/
+    POST /api/v1/phonemes/{phoneme_id}/audio/set-preferred/
     
     Body:
     {
@@ -173,6 +176,7 @@ class SetPreferredAudioAPIView(APIView):
         "audio": {...}
     }
     """
+    permission_classes = [IsAdminUser]  # Admin only
     
     def post(self, request, phoneme_id):
         """Set preferred audio for phoneme."""
@@ -225,7 +229,7 @@ class AudioQualityReportAPIView(APIView):
     """
     Get audio quality report and coverage statistics.
     
-    GET /api/curriculum/audio/quality-report/
+    GET /api/v1/audio/quality-report/
     
     Query params:
     - category_type (optional): Filter by category (vowel/consonant/diphthong)
@@ -247,6 +251,7 @@ class AudioQualityReportAPIView(APIView):
         }
     }
     """
+    permission_classes = [AllowAny]  # Public access for metrics
     
     def get(self, request):
         """Get quality report."""
@@ -266,7 +271,7 @@ class PhonemeAudioURLAPIView(APIView):
     """
     Get direct audio URL for a phoneme (lightweight endpoint).
     
-    GET /api/curriculum/phonemes/{phoneme_id}/audio/url/
+    GET /api/v1/phonemes/{phoneme_id}/audio/url/
     
     Response:
     {
@@ -276,6 +281,7 @@ class PhonemeAudioURLAPIView(APIView):
         "quality_score": 100
     }
     """
+    permission_classes = [AllowAny]  # Public access
     
     def get(self, request, phoneme_id):
         """Get direct audio URL."""
