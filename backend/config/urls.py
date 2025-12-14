@@ -72,9 +72,12 @@ urlpatterns = [
     path('api/v1/auth/', include(auth_urlpatterns)),
     path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
+    # =========================================================================
     # API v1 - Apps
-    path('api/v1/users/', include('apps.users.urls')),  # API URLs without namespace
-    path('api/v1/', include('apps.curriculum.urls', namespace='curriculum-api')),
+    # Note: curriculum.urls has app_name='curriculum', so don't add namespace here
+    # =========================================================================
+    path('api/v1/users/', include('apps.users.urls')),
+    path('api/v1/', include('apps.curriculum.urls')),  # Fixed: removed namespace
     path('api/v1/', include('apps.study.urls', namespace='study')),
     
     # Frontend - Serve assets
