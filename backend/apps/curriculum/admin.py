@@ -5,9 +5,304 @@ Admin configuration for Curriculum app.
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
-from .models import Course, Unit, Lesson, Sentence, Flashcard, GrammarRule
+from .models import (
+    Course, Unit, Lesson, Sentence, Flashcard, GrammarRule,
+    PhonemeCategory, Phoneme, PhonemeWord, MinimalPair,
+    PronunciationLesson, TongueTwister,
+    AudioSource, AudioCache
+)
 
+
+# =============================================================================
+# PHASE 1: AUDIO SYSTEM ADMIN
+# =============================================================================
+
+class AudioCacheInline(admin.StackedInline):
+    """Inline display of AudioCache stats."""
+    model = AudioCache
+    extra = 0
+    readonly_fields = [
+        'file_size_display',
+        'generated_at',
+        'last_accessed_at',
+        'usage_count',
+        'age_display'
+    ]
+    can_delete = False
+    
+    def file_size_display(self, obj):
+        """Display file size in human-readable format."""
+        if obj and obj.file_size:
+            size = obj.file_size
+            if size < 1024:
+                return f"{size} bytes"
+            elif size < 1024 * 1024:
+                return f"{size / 1024:.2f} KB"
+            else:
+                return f"{size / (1024 * 1024):.2f} MB"
+        return "Unknown"
+    file_size_display.short_description = 'File Size'
+    
+    def age_display(self, obj):
+        """Display cache age."""
+        if obj:
+            days = obj.get_age_days()
+            if days == 0:
+                return "Today"
+            elif days == 1:
+                return "1 day ago"
+            else:
+                return f"{days} days ago"
+        return "-"
+    age_display.short_description = 'Cache Age'
+
+
+@admin.register(AudioSource)
+class AudioSourceAdmin(admin.ModelAdmin):
+    """Admin for AudioSource with audio preview and quality indicators."""
+    
+    list_display = [
+        'phoneme_display',
+        'source_type',
+        'voice_id',
+        'audio_preview',
+        'quality_badge',
+        'usage_count_display',
+        'duration_display',
+        'cached_status'
+    ]
+    list_filter = ['source_type', 'voice_id', 'language', 'created_at']
+    search_fields = [
+        'phoneme__ipa_symbol',
+        'phoneme__vietnamese_approx',
+        'voice_id'
+    ]
+    readonly_fields = [
+        'audio_player',
+        'quality_score_display',
+        'created_at',
+        'updated_at',
+        'cache_status_display'
+    ]
+    inlines = [AudioCacheInline]
+    raw_id_fields = ['phoneme']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        (None, {
+            'fields': ('phoneme', 'source_type', 'audio_file', 'audio_player')
+        }),
+        (_('TTS Settings'), {
+            'fields': ('voice_id', 'language', 'metadata'),
+            'classes': ('collapse',)
+        }),
+        (_('Audio Info'), {
+            'fields': ('audio_duration', 'quality_score_display')
+        }),
+        (_('Cache Settings'), {
+            'fields': ('cached_until', 'cache_status_display'),
+            'classes': ('collapse',)
+        }),
+        (_('Timestamps'), {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['set_as_preferred', 'clear_cache']
+    
+    def phoneme_display(self, obj):
+        """Show phoneme with IPA symbol."""
+        return f"/{obj.phoneme.ipa_symbol}/"
+    phoneme_display.short_description = 'Phoneme'
+    phoneme_display.admin_order_field = 'phoneme__ipa_symbol'
+    
+    def audio_preview(self, obj):
+        """Show compact audio player in list view."""
+        if obj.audio_file:
+            return format_html(
+                '<audio controls preload="none" style="width: 180px; height: 32px;"'
+                ' controlsList="nodownload noplaybackrate">'
+                '<source src="{}" type="audio/mpeg"></audio>',
+                obj.audio_file.url
+            )
+        return format_html('<span style="color: #999;">No audio</span>')
+    audio_preview.short_description = 'Preview'
+    
+    def audio_player(self, obj):
+        """Full audio player in detail view."""
+        if obj.audio_file:
+            return format_html(
+                '<audio controls preload="metadata" style="width: 100%; max-width: 500px;">'
+                '<source src="{}" type="audio/mpeg">'
+                'Your browser does not support audio.</audio>'
+                '<div style="margin-top: 8px; color: #666; font-size: 13px;">'
+                'File: {}</div>',
+                obj.audio_file.url,
+                obj.audio_file.name
+            )
+        return format_html('<p style="color: #999;">No audio file uploaded</p>')
+    audio_player.short_description = 'Audio Player'
+    
+    def quality_badge(self, obj):
+        """Show quality score badge with color."""
+        score = obj.get_quality_score()
+        if score >= 95:
+            color = '#10b981'  # green
+            icon = '⭐'
+        elif score >= 85:
+            color = '#f59e0b'  # orange
+            icon = '✓'
+        else:
+            color = '#ef4444'  # red
+            icon = '⚠'
+        
+        return format_html(
+            '<span style="display: inline-flex; align-items: center; gap: 4px; '
+            'background: {}; color: white; padding: 4px 10px; border-radius: 12px; '
+            'font-size: 12px; font-weight: 600;">{} {}%</span>',
+            color, icon, score
+        )
+    quality_badge.short_description = 'Quality'
+    quality_badge.admin_order_field = 'source_type'
+    
+    def quality_score_display(self, obj):
+        """Detailed quality info."""
+        score = obj.get_quality_score()
+        source_type = obj.get_source_type_display()
+        
+        descriptions = {
+            100: '🌟 Excellent - Native speaker recording',
+            90: '✅ Very Good - High-quality TTS (cached)',
+            80: '⚡ Good - On-demand TTS generation'
+        }
+        
+        desc = descriptions.get(score, 'Unknown')
+        
+        return format_html(
+            '<div style="padding: 12px; background: #f3f4f6; border-radius: 6px;">'
+            '<div style="font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 4px;">'
+            '{}%</div>'
+            '<div style="color: #6b7280; font-size: 14px; margin-bottom: 8px;">'
+            '{}</div>'
+            '<div style="color: #4b5563; font-size: 13px;">{}</div>'
+            '</div>',
+            score, source_type, desc
+        )
+    quality_score_display.short_description = 'Quality Score'
+    
+    def usage_count_display(self, obj):
+        """Show usage count from cache."""
+        if hasattr(obj, 'cache'):
+            count = obj.cache.usage_count
+            if count > 100:
+                return format_html(
+                    '<span style="color: #10b981; font-weight: bold;">{}</span>',
+                    count
+                )
+            elif count > 10:
+                return format_html('<span style="color: #f59e0b;">{}</span>', count)
+            else:
+                return format_html('<span style="color: #6b7280;">{}</span>', count)
+        return format_html('<span style="color: #999;">-</span>')
+    usage_count_display.short_description = 'Usage'
+    
+    def duration_display(self, obj):
+        """Show audio duration."""
+        if obj.audio_duration:
+            return f"{obj.audio_duration:.1f}s"
+        return "-"
+    duration_display.short_description = 'Duration'
+    
+    def cached_status(self, obj):
+        """Show cache status."""
+        if obj.is_native():
+            return format_html(
+                '<span style="color: #10b981; font-weight: 500;">✓ Permanent</span>'
+            )
+        elif obj.is_cached():
+            days_left = (obj.cached_until - timezone.now()).days
+            return format_html(
+                '<span style="color: #10b981;">✓ Cached ({} days)</span>',
+                days_left
+            )
+        else:
+            return format_html(
+                '<span style="color: #ef4444;">✗ Expired</span>'
+            )
+    cached_status.short_description = 'Cache'
+    
+    def cache_status_display(self, obj):
+        """Detailed cache status."""
+        if obj.is_native():
+            return format_html(
+                '<div style="padding: 12px; background: #d1fae5; border-radius: 6px; '
+                'border-left: 4px solid #10b981;">'
+                '<strong style="color: #065f46;">Native Audio</strong><br>'
+                '<span style="color: #047857;">Permanent - never expires</span>'
+                '</div>'
+            )
+        elif obj.is_cached():
+            days_left = (obj.cached_until - timezone.now()).days
+            return format_html(
+                '<div style="padding: 12px; background: #dbeafe; border-radius: 6px; '
+                'border-left: 4px solid #3b82f6;">'
+                '<strong style="color: #1e40af;">TTS Cached</strong><br>'
+                '<span style="color: #1d4ed8;">Valid for {} more days</span><br>'
+                '<span style="color: #6b7280; font-size: 12px;">Expires: {}</span>'
+                '</div>',
+                days_left,
+                obj.cached_until.strftime('%Y-%m-%d %H:%M')
+            )
+        else:
+            return format_html(
+                '<div style="padding: 12px; background: #fee2e2; border-radius: 6px; '
+                'border-left: 4px solid #ef4444;">'
+                '<strong style="color: #991b1b;">Cache Expired</strong><br>'
+                '<span style="color: #b91c1c;">Needs regeneration</span>'
+                '</div>'
+            )
+    cache_status_display.short_description = 'Cache Status'
+    
+    def set_as_preferred(self, request, queryset):
+        """Set selected audio as preferred for their phonemes."""
+        count = 0
+        for audio in queryset:
+            phoneme = audio.phoneme
+            phoneme.preferred_audio_source = audio
+            phoneme.save(update_fields=['preferred_audio_source'])
+            count += 1
+        
+        self.message_user(
+            request,
+            f"Set {count} audio source(s) as preferred for their phonemes."
+        )
+    set_as_preferred.short_description = "Set as preferred audio for phoneme"
+    
+    def clear_cache(self, request, queryset):
+        """Clear cache for selected audio sources."""
+        count = queryset.filter(source_type='tts').update(
+            cached_until=timezone.now()
+        )
+        self.message_user(
+            request,
+            f"Cleared cache for {count} TTS audio source(s)."
+        )
+    clear_cache.short_description = "Clear cache (TTS only)"
+    
+    def get_queryset(self, request):
+        """Optimize queryset with select_related."""
+        return super().get_queryset(request).select_related(
+            'phoneme',
+            'phoneme__category'
+        ).prefetch_related('cache')
+
+
+# =============================================================================
+# ORIGINAL ADMIN CLASSES
+# =============================================================================
 
 class UnitInline(admin.TabularInline):
     """Inline for Units in Course admin."""
