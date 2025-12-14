@@ -2,13 +2,133 @@
 Serializers for Curriculum app.
 
 Handles serialization for Course, Unit, Lesson, Sentence, Flashcard,
-and GrammarRule models.
+GrammarRule, and Phase 1 Audio System (AudioSource, Phoneme).
 """
 
 from rest_framework import serializers
 
-from .models import Course, Unit, Lesson, Sentence, Flashcard, GrammarRule
+from .models import (
+    Course, Unit, Lesson, Sentence, Flashcard, GrammarRule,
+    Phoneme, PhonemeCategory, AudioSource, AudioCache
+)
 
+
+# =============================================================================
+# PHASE 1: AUDIO SYSTEM SERIALIZERS
+# =============================================================================
+
+class AudioCacheSerializer(serializers.ModelSerializer):
+    """Serializer for AudioCache usage stats."""
+    
+    age_days = serializers.IntegerField(source='get_age_days', read_only=True)
+    is_stale = serializers.SerializerMethodField()
+    file_size_mb = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = AudioCache
+        fields = [
+            'file_size',
+            'file_size_mb',
+            'generated_at',
+            'last_accessed_at',
+            'usage_count',
+            'age_days',
+            'is_stale'
+        ]
+    
+    def get_file_size_mb(self, obj):
+        """Convert bytes to MB."""
+        if obj.file_size:
+            return round(obj.file_size / (1024 * 1024), 2)
+        return 0
+    
+    def get_is_stale(self, obj):
+        """Check if cache is stale (> 30 days)."""
+        return obj.is_stale(max_days=30)
+
+
+class AudioSourceSerializer(serializers.ModelSerializer):
+    """Serializer for AudioSource with quality and cache info."""
+    
+    audio_url = serializers.SerializerMethodField()
+    quality_score = serializers.IntegerField(source='get_quality_score', read_only=True)
+    is_native = serializers.BooleanField(read_only=True)
+    is_cached = serializers.BooleanField(read_only=True)
+    source_type_display = serializers.CharField(source='get_source_type_display', read_only=True)
+    cache_info = AudioCacheSerializer(source='cache', read_only=True)
+    
+    class Meta:
+        model = AudioSource
+        fields = [
+            'id',
+            'source_type',
+            'source_type_display',
+            'voice_id',
+            'language',
+            'audio_file',
+            'audio_url',
+            'audio_duration',
+            'quality_score',
+            'is_native',
+            'is_cached',
+            'cached_until',
+            'cache_info',
+            'created_at',
+            'updated_at'
+        ]
+    
+    def get_audio_url(self, obj):
+        """Get full audio URL."""
+        return obj.get_url()
+
+
+class PhonemeMinimalSerializer(serializers.ModelSerializer):
+    """Minimal phoneme serializer for nested usage."""
+    
+    phoneme_type_display = serializers.CharField(source='get_phoneme_type_display', read_only=True)
+    
+    class Meta:
+        model = Phoneme
+        fields = [
+            'id',
+            'ipa_symbol',
+            'vietnamese_approx',
+            'phoneme_type',
+            'phoneme_type_display'
+        ]
+
+
+class PhonemeAudioSerializer(serializers.Serializer):
+    """Serializer for phoneme with audio (nested response)."""
+    
+    phoneme = PhonemeMinimalSerializer(read_only=True)
+    audio = AudioSourceSerializer(read_only=True)
+    alternatives = AudioSourceSerializer(many=True, read_only=True)
+
+
+class AudioQualityReportSerializer(serializers.Serializer):
+    """Serializer for audio quality report."""
+    
+    total_phonemes = serializers.IntegerField()
+    phonemes_with_audio = serializers.IntegerField()
+    phonemes_without_audio = serializers.IntegerField()
+    coverage_percent = serializers.FloatField()
+    
+    native_audio_count = serializers.IntegerField()
+    tts_audio_count = serializers.IntegerField()
+    generated_audio_count = serializers.IntegerField()
+    
+    avg_quality_score = serializers.FloatField()
+    
+    cache_enabled = serializers.BooleanField()
+    cache_hit_rate = serializers.FloatField(required=False)
+    
+    by_category = serializers.DictField(required=False)
+
+
+# =============================================================================
+# ORIGINAL SERIALIZERS
+# =============================================================================
 
 class FlashcardSerializer(serializers.ModelSerializer):
     """Serializer for Flashcard model."""
