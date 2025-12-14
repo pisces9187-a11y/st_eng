@@ -260,7 +260,7 @@ class AudioQualityReportAPIView(APIView):
         
         # Use service to get report
         service = PhonemeAudioService()
-        report = service.get_audio_quality_report(category_type=category_type)
+        report = service.get_audio_quality_report()
         
         # Serialize and return
         serializer = AudioQualityReportSerializer(report)

@@ -22,7 +22,7 @@ from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q, Prefetch, Count, Avg
 from django.utils import timezone
-
+from ..models import PhonemeCategory
 from apps.curriculum.models import Phoneme, AudioSource, AudioCache
 
 
@@ -272,48 +272,61 @@ class PhonemeAudioService:
     # AUDIO QUALITY & METRICS
     # =========================================================================
     
-    def get_audio_quality_report(self) -> Dict:
-        """
-        Generate quality report for all phoneme audio.
+    def get_audio_quality_report(self):
+        """Get comprehensive audio quality and coverage report."""
+        phonemes_qs = Phoneme.objects.all().select_related('category', 'preferred_audio_source')
+        total_phonemes = phonemes_qs.count()
         
-        Returns:
-            Dict with quality metrics
+        phonemes_with_audio = 0
+        native_count = 0
+        tts_count = 0
+        generated_count = 0
+        total_quality = 0
         
-        Example:
-            >>> report = service.get_audio_quality_report()
-            >>> print(f"Coverage: {report['coverage_percent']}%")
-            >>> print(f"Avg Quality: {report['avg_quality_score']}")
-        """
-        total_phonemes = Phoneme.objects.filter(is_active=True).count()
-        phonemes_with_audio = Phoneme.objects.filter(
-            is_active=True,
-            audio_sources__isnull=False
-        ).distinct().count()
+        for phoneme in phonemes_qs:
+            audio = self.get_audio_for_phoneme(phoneme)
+            if audio:
+                phonemes_with_audio += 1
+                total_quality += audio.get_quality_score()
+                
+                if audio.source_type == 'native':
+                    native_count += 1
+                elif audio.source_type == 'tts':
+                    tts_count += 1
+                elif audio.source_type == 'generated':
+                    generated_count += 1
         
-        # Count by source type
-        native_count = AudioSource.objects.filter(
-            source_type='native'
-        ).values('phoneme').distinct().count()
+        coverage_percent = (phonemes_with_audio / total_phonemes * 100) if total_phonemes > 0 else 0.0
+        avg_quality_score = (total_quality / phonemes_with_audio) if phonemes_with_audio > 0 else 0.0
         
-        tts_count = AudioSource.objects.filter(
-            source_type='tts'
-        ).values('phoneme').distinct().count()
-        
-        # Average quality
-        audio_sources = AudioSource.objects.all()
-        total_quality = sum(a.get_quality_score() for a in audio_sources)
-        avg_quality = total_quality / len(audio_sources) if audio_sources else 0
+        by_category = {}
+        categories = PhonemeCategory.objects.all().prefetch_related('phonemes')
+        for category in categories:
+            cat_phonemes = category.phonemes.all()
+            cat_total = cat_phonemes.count()
+            cat_with_audio = sum(1 for p in cat_phonemes if self.get_audio_for_phoneme(p))
+            cat_coverage = (cat_with_audio / cat_total * 100) if cat_total > 0 else 0.0
+            
+            by_category[category.category_type] = {
+                'total': cat_total,
+                'with_audio': cat_with_audio,
+                'coverage': round(cat_coverage, 1)
+            }
         
         return {
             'total_phonemes': total_phonemes,
             'phonemes_with_audio': phonemes_with_audio,
-            'coverage_percent': round(phonemes_with_audio / total_phonemes * 100, 1) if total_phonemes else 0,
+            'phonemes_without_audio': total_phonemes - phonemes_with_audio,  # FIX
+            'coverage_percent': round(coverage_percent, 1),
             'native_audio_count': native_count,
             'tts_audio_count': tts_count,
-            'avg_quality_score': round(avg_quality, 1),
-            'cache_enabled': self.cache_enabled,
+            'generated_audio_count': generated_count,  # FIX
+            'avg_quality_score': round(avg_quality_score, 1),
+            'cache_enabled': True,
+            'by_category': by_category
         }
-    
+
+
     def set_preferred_audio(
         self,
         phoneme: Phoneme,
