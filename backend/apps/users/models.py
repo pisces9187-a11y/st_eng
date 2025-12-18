@@ -5,6 +5,7 @@ User models for English Learning Platform.
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -35,6 +36,27 @@ class User(AbstractUser):
         null=True,
         blank=True,
         verbose_name=_('Số điện thoại')
+    )
+    date_of_birth = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_('Ngày sinh')
+    )
+    gender = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        choices=[
+            ('male', _('Nam')),
+            ('female', _('Nữ')),
+            ('other', _('Khác'))
+        ],
+        verbose_name=_('Giới tính')
+    )
+    bio = models.TextField(
+        blank=True,
+        default='',
+        verbose_name=_('Giới thiệu bản thân')
     )
     
     # Learning profile
@@ -116,6 +138,16 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.email
+    
+    @property
+    def full_name(self):
+        """Return full name from first_name and last_name."""
+        return self.get_full_name()
+    
+    @property
+    def phone_number(self):
+        """Alias for phone field to match API expectations."""
+        return self.phone
     
     @property
     def display_name(self):
@@ -777,6 +809,13 @@ class UserPhonemeProgress(models.Model):
     """
     Tracks user mastery of individual phonemes.
     Updated whenever user practices a specific sound.
+    
+    Learning Journey (4 Stages):
+    1. Discovered - User clicked phoneme on IPA chart
+    2. Learning - User read theory (mouth diagram, tips)
+    3. Discriminating - User practicing discrimination (minimal pairs)
+    4. Producing - User recording own pronunciation
+    5. Mastered - User achieved high accuracy
     """
     MASTERY_LEVELS = [
         (0, 'Chưa học'),
@@ -785,6 +824,15 @@ class UserPhonemeProgress(models.Model):
         (3, 'Khá tốt'),
         (4, 'Thành thạo'),
         (5, 'Hoàn hảo'),
+    ]
+    
+    STAGE_CHOICES = [
+        ('not_started', 'Chưa bắt đầu'),
+        ('discovered', 'Đã khám phá'),
+        ('learning', 'Đang học lý thuyết'),
+        ('discriminating', 'Đang luyện phân biệt'),
+        ('producing', 'Đang luyện phát âm'),
+        ('mastered', 'Đã thành thạo'),
     ]
     
     user = models.ForeignKey(
@@ -800,6 +848,15 @@ class UserPhonemeProgress(models.Model):
         verbose_name='Âm vị'
     )
     
+    # Learning Stage (NEW)
+    current_stage = models.CharField(
+        max_length=20,
+        choices=STAGE_CHOICES,
+        default='not_started',
+        db_index=True,
+        verbose_name='Giai đoạn hiện tại'
+    )
+    
     # Mastery level (0-5)
     mastery_level = models.PositiveSmallIntegerField(
         default=0,
@@ -807,7 +864,58 @@ class UserPhonemeProgress(models.Model):
         verbose_name='Mức thành thạo'
     )
     
-    # Practice count
+    # Stage timestamps (NEW)
+    discovery_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Ngày khám phá'
+    )
+    learning_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Bắt đầu học lý thuyết'
+    )
+    discrimination_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Bắt đầu luyện phân biệt'
+    )
+    production_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Bắt đầu luyện phát âm'
+    )
+    mastered_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Hoàn thành'
+    )
+    
+    # Discrimination metrics (NEW)
+    discrimination_attempts = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Số lần thử phân biệt'
+    )
+    discrimination_correct = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Số lần phân biệt đúng'
+    )
+    discrimination_accuracy = models.FloatField(
+        default=0.0,
+        verbose_name='Độ chính xác phân biệt (0-1)'
+    )
+    
+    # Production metrics (NEW)
+    production_attempts = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Số lần thử phát âm'
+    )
+    production_best_score = models.FloatField(
+        default=0.0,
+        verbose_name='Điểm phát âm cao nhất (0-1)'
+    )
+    
+    # Practice count (existing)
     times_practiced = models.PositiveIntegerField(default=0, verbose_name='Số lần luyện tập')
     times_correct = models.PositiveIntegerField(default=0, verbose_name='Số lần đúng')
     
@@ -864,6 +972,121 @@ class UserPhonemeProgress(models.Model):
             self.mastery_level = 4
         else:
             self.mastery_level = 5
+    
+    # NEW: Stage management methods
+    def can_practice_discrimination(self):
+        """Check if user can practice discrimination (requires learning stage completed)."""
+        return self.current_stage in ['learning', 'discriminating', 'producing', 'mastered']
+    
+    def can_practice_production(self):
+        """
+        Check if user can practice production.
+        Requires 80% accuracy on discrimination (8/10 correct).
+        """
+        return (
+            self.current_stage in ['discriminating', 'producing', 'mastered']
+            and self.discrimination_accuracy >= 0.8
+        )
+    
+    def mark_as_discovered(self):
+        """Mark phoneme as discovered when user first clicks it."""
+        from django.utils import timezone
+        if self.current_stage == 'not_started':
+            self.current_stage = 'discovered'
+            self.discovery_date = timezone.now()
+            self.save(update_fields=['current_stage', 'discovery_date'])
+    
+    def start_learning(self):
+        """Mark phoneme learning started when user opens detail page."""
+        from django.utils import timezone
+        if self.current_stage in ['not_started', 'discovered']:
+            self.current_stage = 'learning'
+            self.learning_started_at = timezone.now()
+            self.save(update_fields=['current_stage', 'learning_started_at'])
+    
+    def start_discrimination(self):
+        """Mark discrimination started when user begins quiz."""
+        from django.utils import timezone
+        if self.current_stage in ['learning']:
+            self.current_stage = 'discriminating'
+            self.discrimination_started_at = timezone.now()
+            self.save(update_fields=['current_stage', 'discrimination_started_at'])
+    
+    def start_production(self):
+        """Mark production started when user begins recording."""
+        from django.utils import timezone
+        if self.can_practice_production():
+            self.current_stage = 'producing'
+            self.production_started_at = timezone.now()
+            self.save(update_fields=['current_stage', 'production_started_at'])
+    
+    def update_discrimination_progress(self, correct, total):
+        """
+        Update discrimination progress after a quiz attempt.
+        Auto-unlock production if accuracy >= 80%.
+        """
+        self.discrimination_attempts += total
+        self.discrimination_correct += correct
+        
+        if self.discrimination_attempts > 0:
+            self.discrimination_accuracy = self.discrimination_correct / self.discrimination_attempts
+        
+        self.last_practiced_at = timezone.now()
+        
+        # Check if should unlock production
+        if self.discrimination_accuracy >= 0.8 and self.current_stage == 'discriminating':
+            # Ready for production but don't auto-advance
+            pass
+        
+        self.save()
+    
+    def update_production_progress(self, score):
+        """Update production progress after a recording attempt."""
+        self.production_attempts += 1
+        if score > self.production_best_score:
+            self.production_best_score = score
+        
+        self.last_practiced_at = timezone.now()
+        
+        # Check if mastered (80%+ on both discrimination and production)
+        if self.discrimination_accuracy >= 0.8 and self.production_best_score >= 0.8:
+            if self.current_stage != 'mastered':
+                self.current_stage = 'mastered'
+                self.mastered_at = timezone.now()
+                self.mastery_level = 5
+        
+        self.save()
+    
+    def get_stage_display_vi(self):
+        """Get Vietnamese display name for current stage."""
+        stage_names = {
+            'not_started': 'Chưa bắt đầu',
+            'discovered': 'Đã khám phá',
+            'learning': 'Đang học',
+            'discriminating': 'Đang phân biệt',
+            'producing': 'Đang phát âm',
+            'mastered': 'Đã thành thạo',
+        }
+        return stage_names.get(self.current_stage, 'Không xác định')
+    
+    def get_next_stage_action(self):
+        """Get recommendation for next action."""
+        if self.current_stage == 'not_started':
+            return 'Khám phá âm này'
+        elif self.current_stage == 'discovered':
+            return 'Học lý thuyết'
+        elif self.current_stage == 'learning':
+            return 'Luyện phân biệt'
+        elif self.current_stage == 'discriminating':
+            if self.can_practice_production():
+                return 'Luyện phát âm'
+            else:
+                accuracy_percent = int(self.discrimination_accuracy * 100)
+                return f'Tiếp tục phân biệt ({accuracy_percent}/80% để mở khóa phát âm)'
+        elif self.current_stage == 'producing':
+            return 'Hoàn thiện phát âm'
+        else:
+            return 'Ôn tập'
 
 
 class UserPronunciationStreak(models.Model):

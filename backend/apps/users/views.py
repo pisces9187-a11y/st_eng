@@ -35,15 +35,46 @@ User = get_user_model()
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
     Custom JWT token view that returns user data along with tokens.
+    Sets access_token and refresh_token in HTTP-only cookies.
     
     POST /api/v1/auth/token/
     """
     serializer_class = CustomTokenObtainPairSerializer
+    
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        
+        # Set tokens in HTTP-only cookies for better security
+        if response.status_code == 200 and 'access' in response.data:
+            access_token = response.data['access']
+            refresh_token = response.data['refresh']
+            
+            # Set access token cookie (24 hours)
+            response.set_cookie(
+                'access_token',
+                access_token,
+                max_age=86400,  # 24 hours
+                httponly=True,
+                secure=False,  # Set to True in production (HTTPS only)
+                samesite='Lax'
+            )
+            
+            # Set refresh token cookie (30 days)
+            response.set_cookie(
+                'refresh_token',
+                refresh_token,
+                max_age=2592000,  # 30 days
+                httponly=True,
+                secure=False,  # Set to True in production
+                samesite='Lax'
+            )
+        
+        return response
 
 
 class LogoutView(APIView):
     """
-    API endpoint for user logout - blacklists refresh token.
+    API endpoint for user logout - blacklists refresh token and clears cookies.
     
     POST /api/v1/auth/logout/
     """
@@ -51,11 +82,22 @@ class LogoutView(APIView):
     
     def post(self, request):
         try:
-            refresh_token = request.data.get('refresh')
+            # Try to blacklist refresh token
+            refresh_token = request.data.get('refresh') or request.COOKIES.get('refresh_token')
             if refresh_token:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            return Response({'message': 'Đăng xuất thành công.'}, status=status.HTTP_200_OK)
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except Exception as e:
+                    pass  # Token might already be invalid
+            
+            response = Response({'message': 'Đăng xuất thành công.'}, status=status.HTTP_200_OK)
+            
+            # Clear authentication cookies
+            response.delete_cookie('access_token', samesite='Lax')
+            response.delete_cookie('refresh_token', samesite='Lax')
+            
+            return response
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -284,6 +326,77 @@ class UserMeView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         return self.request.user
+
+
+class AvatarUploadView(APIView):
+    """
+    API endpoint for avatar upload.
+    
+    POST /api/v1/users/me/avatar/ - Upload avatar
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        if 'avatar' not in request.FILES:
+            return Response(
+                {'error': 'Vui lòng chọn file ảnh'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        avatar_file = request.FILES['avatar']
+        
+        # Validate file type
+        if not avatar_file.content_type.startswith('image/'):
+            return Response(
+                {'error': 'File phải là hình ảnh'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validate file size (max 5MB)
+        if avatar_file.size > 5 * 1024 * 1024:
+            return Response(
+                {'error': 'Kích thước file tối đa là 5MB'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Delete old avatar if exists
+        user = request.user
+        if user.avatar:
+            try:
+                user.avatar.delete(save=False)
+            except:
+                pass
+        
+        # Save new avatar
+        user.avatar = avatar_file
+        user.save(update_fields=['avatar'])
+        
+        return Response({
+            'message': 'Cập nhật ảnh đại diện thành công',
+            'avatar': user.avatar.url if user.avatar else None
+        }, status=status.HTTP_200_OK)
+
+
+class AvatarDeleteView(APIView):
+    """
+    API endpoint for avatar deletion.
+    
+    DELETE /api/v1/users/me/avatar/ - Delete avatar
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def delete(self, request):
+        user = request.user
+        
+        if user.avatar:
+            try:
+                user.avatar.delete(save=True)
+            except:
+                pass
+        
+        return Response({
+            'message': 'Đã xóa ảnh đại diện'
+        }, status=status.HTTP_200_OK)
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):

@@ -110,20 +110,40 @@ class UserSerializer(serializers.ModelSerializer):
     settings = UserSettingsSerializer(read_only=True)
     subscription = SubscriptionSerializer(read_only=True)
     level_display = serializers.CharField(source='get_current_level_display', read_only=True)
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    phone_number = serializers.CharField(source='phone', required=False, allow_blank=True, allow_null=True)
+    display_name = serializers.CharField(read_only=True)
     
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'first_name', 'last_name',
-            'current_level', 'level_display', 'xp_points',
-            'streak_days', 'longest_streak', 'last_study_date',
-            'is_active', 'date_joined', 'last_login',
+            'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
+            'avatar', 'phone', 'phone_number', 'date_of_birth', 'gender', 'bio',
+            'current_level', 'level_display', 'target_level',
+            'xp_points', 'streak_days', 'longest_streak', 'last_study_date',
+            'daily_goal_minutes', 'timezone', 'display_name',
+            'is_premium', 'premium_expires_at',
+            'is_active', 'is_staff', 'is_superuser',
+            'date_joined', 'last_login',
             'profile', 'settings', 'subscription'
         ]
         read_only_fields = [
             'id', 'xp_points', 'streak_days', 'longest_streak',
-            'last_study_date', 'date_joined', 'last_login'
+            'last_study_date', 'date_joined', 'last_login', 'full_name',
+            'display_name', 'is_premium', 'premium_expires_at'
         ]
+    
+    def update(self, instance, validated_data):
+        # Handle phone_number -> phone mapping
+        if 'phone' in validated_data:
+            instance.phone = validated_data.pop('phone')
+        
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

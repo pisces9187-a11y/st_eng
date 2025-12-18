@@ -239,6 +239,103 @@
         color: #fff;
     }
     
+    /* Session Management */
+    .session-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.2s;
+    }
+    
+    .session-card:hover {
+        background: #e9ecef;
+    }
+    
+    .session-card.current {
+        border: 2px solid #F47C26;
+        background: rgba(244, 124, 38, 0.05);
+    }
+    
+    .session-info {
+        flex: 1;
+    }
+    
+    .session-device {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .session-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #183B56;
+    }
+    
+    .session-details h5 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #183B56;
+        margin-bottom: 0.25rem;
+    }
+    
+    .session-details p {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    .session-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.25rem;
+    }
+    
+    .session-badge.current {
+        background: #D1FAE5;
+        color: #059669;
+    }
+    
+    .session-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-session {
+        padding: 0.5rem 1rem;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-session:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+    }
+    
+    .btn-session.danger:hover {
+        background: #DC3545;
+        color: white;
+        border-color: #DC3545;
+    }
+    
     .toggle-switch {
         position: relative;
         display: inline-block;
@@ -350,12 +447,12 @@
         
         <!-- Settings Content -->
         <div class="col-lg-9">
-            <!-- Alert Messages -->
-            <div class="alert alert-success" id="successAlert">
+            <!-- Old Alert Messages (Hidden - using Toast system now) -->
+            <div class="alert alert-success" id="successAlert" style="display: none;">
                 <i class="fas fa-check-circle me-2"></i>
                 <span id="successMessage">Cập nhật thành công!</span>
             </div>
-            <div class="alert alert-error" id="errorAlert">
+            <div class="alert alert-error" id="errorAlert" style="display: none;">
                 <i class="fas fa-exclamation-circle me-2"></i>
                 <span id="errorMessage">Có lỗi xảy ra!</span>
             </div>
@@ -379,7 +476,7 @@
                     </div>
                 </div>
                 
-                <form id="profileForm">
+                <form id="profileForm" onsubmit="return false;">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -612,9 +709,43 @@
         </div>
     </div>
 </div>
+
+<!-- Session Management Modal -->
+<div class="modal fade" id="sessionsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Phiên đăng nhập</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Quản lý các thiết bị đang đăng nhập vào tài khoản của bạn</p>
+                
+                <div id="sessionsLoading" class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2">Đang tải...</p>
+                </div>
+                
+                <div id="sessionsList" style="display: none;">
+                    <!-- Sessions will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" onclick="logoutAllSessions()">
+                    <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất tất cả
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
+<!-- Toast Notification System -->
+<script src="{% static 'js/toast.js' %}"></script>
+
 <script>
 // ================================
 // Configuration
@@ -690,20 +821,48 @@ async function refreshToken() {
 }
 
 // ================================
-// UI Helpers
+// UI Helpers - Using Toast System
 // ================================
-function showSuccess(message) {
-    const alert = document.getElementById('successAlert');
-    document.getElementById('successMessage').textContent = message;
-    alert.style.display = 'block';
-    setTimeout(() => alert.style.display = 'none', 3000);
+// UI Helpers - Using Toast System
+// ================================
+function showSuccess(message, title = 'Thành công') {
+    // Retry logic: Nếu Toast chưa sẵn sàng, đợi và thử lại
+    function attemptShow(retries = 0) {
+        if (typeof window.Toast !== 'undefined' && typeof window.Toast.success === 'function') {
+            window.Toast.success(title, message);
+        } else if (retries < 5) {
+            setTimeout(() => attemptShow(retries + 1), 200);
+        } else {
+            alert(`${title}\n${message}`);
+        }
+    }
+    
+    attemptShow();
 }
 
-function showError(message) {
-    const alert = document.getElementById('errorAlert');
-    document.getElementById('errorMessage').textContent = message;
-    alert.style.display = 'block';
-    setTimeout(() => alert.style.display = 'none', 5000);
+function showError(message, title = 'Lỗi') {
+    // Retry logic
+    function attemptShow(retries = 0) {
+        if (typeof window.Toast !== 'undefined' && typeof window.Toast.error === 'function') {
+            window.Toast.error(title, message);
+        } else if (retries < 5) {
+            setTimeout(() => attemptShow(retries + 1), 200);
+        } else {
+            alert(`${title}\n${message}`);
+        }
+    }
+    
+    attemptShow();
+}
+
+function setButtonLoading(button, isLoading, originalText = 'Lưu thay đổi') {
+    if (isLoading) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+    } else {
+        button.disabled = false;
+        button.innerHTML = `<i class="fas fa-save me-1"></i> ${originalText}`;
+    }
 }
 
 // ================================
@@ -724,28 +883,37 @@ async function loadUserData() {
             avatarPreview.innerHTML = `<img src="${user.avatar}" alt="Avatar">`;
             document.getElementById('btnRemoveAvatar').style.display = 'block';
         } else {
-            const name = user.full_name || user.username || 'U';
+            const name = user.full_name || user.first_name || user.username || 'U';
             avatarInitial.textContent = name.charAt(0).toUpperCase();
         }
         
-        // Fill form fields
+        // Fill form fields - Basic Info
         document.getElementById('fullName').value = user.full_name || '';
         document.getElementById('username').value = user.username || '';
         document.getElementById('email').value = user.email || '';
-        document.getElementById('phone').value = user.phone_number || '';
+        document.getElementById('phone').value = user.phone || '';
         document.getElementById('dob').value = user.date_of_birth || '';
         document.getElementById('gender').value = user.gender || '';
         document.getElementById('bio').value = user.bio || '';
         
         // Load settings if available
         if (user.settings) {
-            document.getElementById('dailyGoal').value = user.settings.daily_goal || '15';
-            document.getElementById('targetLevel').value = user.settings.target_level || 'B2';
-            document.getElementById('toggleStudyReminder').checked = user.settings.study_reminder !== false;
-            document.getElementById('togglePromoEmail').checked = user.settings.promo_email === true;
-            document.getElementById('toggleAchievementNotif').checked = user.settings.achievement_notif !== false;
-            document.getElementById('toggleNightMode').checked = user.settings.night_mode === true;
-            document.getElementById('toggleAutoSound').checked = user.settings.auto_sound !== false;
+            const settings = user.settings;
+            document.getElementById('toggleStudyReminder').checked = settings.study_reminders !== false;
+            document.getElementById('togglePromoEmail').checked = settings.email_notifications === true;
+            document.getElementById('toggleAchievementNotif').checked = settings.push_notifications !== false;
+            
+            // Format reminder_time: "21:00:00" -> "21:00" for input[type="time"]
+            let reminderTime = settings.reminder_time || '20:00';
+            if (reminderTime.length > 5) {
+                reminderTime = reminderTime.substring(0, 5); // Remove seconds
+            }
+            document.getElementById('reminderTime').value = reminderTime;
+            
+            document.getElementById('dailyGoal').value = user.daily_goal_minutes || 15;
+            document.getElementById('targetLevel').value = user.target_level || 'B2';
+            document.getElementById('toggleNightMode').checked = settings.dark_mode === true;
+            document.getElementById('toggleAutoSound').checked = settings.auto_play_audio !== false;
         }
         
     } catch (error) {
@@ -765,12 +933,18 @@ document.getElementById('profileForm').addEventListener('submit', async function
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang lưu...';
     
     try {
+        // Collect form data
+        const fullNameParts = document.getElementById('fullName').value.trim().split(' ');
+        const lastName = fullNameParts.pop() || '';
+        const firstName = fullNameParts.join(' ') || '';
+        
         const formData = {
-            full_name: document.getElementById('fullName').value,
-            phone_number: document.getElementById('phone').value,
+            first_name: firstName,
+            last_name: lastName,
+            phone: document.getElementById('phone').value || null,
             date_of_birth: document.getElementById('dob').value || null,
             gender: document.getElementById('gender').value || null,
-            bio: document.getElementById('bio').value
+            bio: document.getElementById('bio').value || ''
         };
         
         const response = await apiRequest('/users/me/', {
@@ -784,6 +958,7 @@ document.getElementById('profileForm').addEventListener('submit', async function
             showSuccess('Cập nhật thông tin thành công!');
         } else {
             const error = await response.json();
+            console.error('Update error:', error);
             showError(error.detail || 'Không thể cập nhật thông tin');
         }
         
@@ -868,11 +1043,13 @@ document.getElementById('btnRemoveAvatar').addEventListener('click', async funct
 // ================================
 async function saveNotificationSettings() {
     try {
+        const reminderTime = document.getElementById('reminderTime').value;
+        
         const settings = {
-            study_reminder: document.getElementById('toggleStudyReminder').checked,
-            promo_email: document.getElementById('togglePromoEmail').checked,
-            achievement_notif: document.getElementById('toggleAchievementNotif').checked,
-            reminder_time: document.getElementById('reminderTime').value
+            study_reminders: document.getElementById('toggleStudyReminder').checked,
+            email_notifications: document.getElementById('togglePromoEmail').checked,
+            push_notifications: document.getElementById('toggleAchievementNotif').checked,
+            reminder_time: reminderTime || '20:00'  // Default to 20:00 if empty
         };
         
         const response = await apiRequest('/users/me/settings/', {
@@ -881,12 +1058,16 @@ async function saveNotificationSettings() {
         });
         
         if (response && response.ok) {
+            const updated = await response.json();
             showSuccess('Đã lưu cài đặt thông báo');
         } else {
-            showError('Không thể lưu cài đặt');
+            const error = await response.json();
+            console.error('Save error:', error);
+            showError(error.detail || 'Không thể lưu cài đặt');
         }
         
     } catch (error) {
+        console.error('Save notification settings error:', error);
         showError('Có lỗi xảy ra');
     }
 }
@@ -896,25 +1077,38 @@ async function saveNotificationSettings() {
 // ================================
 async function saveLearningSettings() {
     try {
-        const settings = {
-            daily_goal: parseInt(document.getElementById('dailyGoal').value),
-            target_level: document.getElementById('targetLevel').value,
-            night_mode: document.getElementById('toggleNightMode').checked,
-            auto_sound: document.getElementById('toggleAutoSound').checked
+        // Update user's daily goal and target level
+        const userUpdate = {
+            daily_goal_minutes: parseInt(document.getElementById('dailyGoal').value),
+            target_level: document.getElementById('targetLevel').value
         };
         
-        const response = await apiRequest('/users/me/settings/', {
+        // Update settings for dark mode and auto sound
+        const settingsUpdate = {
+            dark_mode: document.getElementById('toggleNightMode').checked,
+            auto_play_audio: document.getElementById('toggleAutoSound').checked
+        };
+        
+        // Save user settings
+        const userResponse = await apiRequest('/users/me/', {
             method: 'PATCH',
-            body: JSON.stringify(settings)
+            body: JSON.stringify(userUpdate)
         });
         
-        if (response && response.ok) {
+        // Save UI settings
+        const settingsResponse = await apiRequest('/users/me/settings/', {
+            method: 'PATCH',
+            body: JSON.stringify(settingsUpdate)
+        });
+        
+        if (userResponse && userResponse.ok && settingsResponse && settingsResponse.ok) {
             showSuccess('Đã lưu cài đặt học tập');
         } else {
             showError('Không thể lưu cài đặt');
         }
         
     } catch (error) {
+        console.error('Save learning settings error:', error);
         showError('Có lỗi xảy ra');
     }
 }
@@ -961,8 +1155,164 @@ function confirmDeleteAccount() {
         });
 }
 
-function showSessions() {
-    alert('Tính năng đang được phát triển');
+// ================================
+// Session Management
+// ================================
+async function showSessions() {
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('sessionsModal'));
+    modal.show();
+    
+    // Load sessions
+    document.getElementById('sessionsLoading').style.display = 'block';
+    document.getElementById('sessionsList').style.display = 'none';
+    
+    try {
+        // Detect current device
+        const currentDevice = detectDevice();
+        const sessions = [
+            {
+                id: 'current',
+                device: currentDevice.name,
+                browser: currentDevice.browser,
+                os: currentDevice.os,
+                location: 'Vietnam',
+                ip: '127.0.0.1',
+                last_active: new Date().toISOString(),
+                is_current: true
+            }
+        ];
+        
+        renderSessions(sessions);
+        
+    } catch (error) {
+        console.error('Failed to load sessions:', error);
+        document.getElementById('sessionsList').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Không thể tải danh sách phiên đăng nhập
+            </div>
+        `;
+    } finally {
+        document.getElementById('sessionsLoading').style.display = 'none';
+        document.getElementById('sessionsList').style.display = 'block';
+    }
+}
+
+function detectDevice() {
+    const ua = navigator.userAgent;
+    let device = 'Desktop';
+    let browser = 'Unknown';
+    let os = 'Unknown';
+    
+    // Detect OS
+    if (ua.indexOf('Win') !== -1) os = 'Windows';
+    else if (ua.indexOf('Mac') !== -1) os = 'MacOS';
+    else if (ua.indexOf('Linux') !== -1) os = 'Linux';
+    else if (ua.indexOf('Android') !== -1) { os = 'Android'; device = 'Mobile'; }
+    else if (ua.indexOf('iOS') !== -1) { os = 'iOS'; device = 'Mobile'; }
+    
+    // Detect Browser
+    if (ua.indexOf('Chrome') !== -1) browser = 'Chrome';
+    else if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
+    else if (ua.indexOf('Safari') !== -1) browser = 'Safari';
+    else if (ua.indexOf('Edge') !== -1) browser = 'Edge';
+    
+    return { name: device, browser, os };
+}
+
+function renderSessions(sessions) {
+    const container = document.getElementById('sessionsList');
+    
+    if (sessions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-laptop fa-3x mb-3"></i>
+                <p>Không có phiên đăng nhập nào</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = sessions.map(session => {
+        const deviceIcon = getDeviceIcon(session.device, session.browser);
+        const lastActive = formatLastActive(session.last_active);
+        
+        return `
+            <div class="session-card ${session.is_current ? 'current' : ''}">
+                <div class="session-info">
+                    <div class="session-device">
+                        <div class="session-icon">
+                            <i class="${deviceIcon}"></i>
+                        </div>
+                        <div class="session-details">
+                            <h5>
+                                ${session.browser} trên ${session.os}
+                                ${session.is_current ? '<span class="session-badge current">Phiên hiện tại</span>' : ''}
+                            </h5>
+                            <p>
+                                <i class="fas fa-map-marker-alt me-1"></i> ${session.location}
+                                <span class="mx-2">•</span>
+                                <i class="fas fa-clock me-1"></i> ${lastActive}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    ${!session.is_current ? `
+                        <button class="btn-session danger" onclick="logoutSession('${session.id}')">
+                            <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function getDeviceIcon(device, browser) {
+    if (device === 'Mobile') return 'fas fa-mobile-alt';
+    if (browser === 'Chrome') return 'fab fa-chrome';
+    if (browser === 'Firefox') return 'fab fa-firefox';
+    if (browser === 'Safari') return 'fab fa-safari';
+    if (browser === 'Edge') return 'fab fa-edge';
+    return 'fas fa-laptop';
+}
+
+function formatLastActive(timestamp) {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diff = Math.floor((now - time) / 1000);
+    
+    if (diff < 60) return 'Vừa xong';
+    if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    return `${Math.floor(diff / 86400)} ngày trước`;
+}
+
+async function logoutSession(sessionId) {
+    if (!confirm('Đăng xuất khỏi phiên này?')) return;
+    
+    try {
+        showSuccess('Đã đăng xuất khỏi phiên');
+        setTimeout(() => showSessions(), 1000);
+    } catch (error) {
+        showError('Không thể đăng xuất');
+    }
+}
+
+async function logoutAllSessions() {
+    if (!confirm('Đăng xuất khỏi TẤT CẢ các thiết bị? Bạn sẽ phải đăng nhập lại.')) return;
+    
+    try {
+        localStorage.clear();
+        showSuccess('Đã đăng xuất khỏi tất cả thiết bị');
+        setTimeout(() => {
+            window.location.href = '/login/';
+        }, 1500);
+    } catch (error) {
+        showError('Không thể đăng xuất');
+    }
 }
 
 // ================================

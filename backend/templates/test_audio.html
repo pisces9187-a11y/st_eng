@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Audio Playback</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-item {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .test-item h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        audio {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.pending {
+            background: #e7f3ff;
+            color: #004085;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 Audio Playback Test</h1>
+        
+        <div class="info">
+            <strong>ℹ️ Test Instructions:</strong><br>
+            Click the <strong>PLAY</strong> button to test each audio file. You should hear a 440Hz tone (musical note A).
+        </div>
+
+        <div class="test-item">
+            <h3>Phoneme /ɪ/ (ID: 45)</h3>
+            <audio id="audio_45" controls preload="auto">
+                <source src="http://localhost:8000/media/phonemes/audio/2025/12/15/phoneme_45_en_US_AriaNeural.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button onclick="testAudio(45)">Play & Test</button>
+            <div id="status_45" class="status pending">Waiting to test...</div>
+        </div>
+
+        <div class="test-item">
+            <h3>Phoneme /e/ (ID: 46)</h3>
+            <audio id="audio_46" controls preload="auto">
+                <source src="http://localhost:8000/media/phonemes/audio/2025/12/15/phoneme_46_en_US_AriaNeural.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button onclick="testAudio(46)">Play & Test</button>
+            <div id="status_46" class="status pending">Waiting to test...</div>
+        </div>
+
+        <div class="test-item">
+            <h3>Phoneme /æ/ (ID: 47)</h3>
+            <audio id="audio_47" controls preload="auto">
+                <source src="http://localhost:8000/media/phonemes/audio/2025/12/15/phoneme_47_en_US_AriaNeural.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button onclick="testAudio(47)">Play & Test</button>
+            <div id="status_47" class="status pending">Waiting to test...</div>
+        </div>
+
+        <div class="test-item">
+            <h3>Phoneme /p/ (ID: 65)</h3>
+            <audio id="audio_65" controls preload="auto">
+                <source src="http://localhost:8000/media/phonemes/audio/2025/12/15/phoneme_65_en_US_AriaNeural.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button onclick="testAudio(65)">Play & Test</button>
+            <div id="status_65" class="status pending">Waiting to test...</div>
+        </div>
+
+        <hr style="margin: 30px 0;">
+        
+        <div class="test-item">
+            <h3>🧪 Browser Console Test</h3>
+            <p>Open your browser's Developer Tools (F12) and check the Console tab for detailed audio loading and playback information.</p>
+            <button onclick="runDetailedTest()">Run Detailed Test</button>
+        </div>
+    </div>
+
+    <script>
+        async function testAudio(id) {
+            const audio = document.getElementById(`audio_${id}`);
+            const statusDiv = document.getElementById(`status_${id}`);
+            
+            if (!audio) {
+                showStatus(statusDiv, `❌ Audio element not found`, 'error');
+                return;
+            }
+
+            try {
+                // Update status
+                showStatus(statusDiv, `⏳ Loading audio...`, 'pending');
+                
+                // Try to play
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            showStatus(statusDiv, `✅ Playing! (Duration: ${audio.duration.toFixed(2)}s)`, 'success');
+                            console.log(`✅ Audio ${id} playing successfully`);
+                        })
+                        .catch(error => {
+                            showStatus(statusDiv, `❌ Playback error: ${error.message}`, 'error');
+                            console.error(`❌ Playback error for audio ${id}:`, error);
+                        });
+                }
+            } catch (error) {
+                showStatus(statusDiv, `❌ Error: ${error.message}`, 'error');
+                console.error(`❌ Error testing audio ${id}:`, error);
+            }
+        }
+
+        function showStatus(element, message, type) {
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        async function runDetailedTest() {
+            console.clear();
+            console.log('%c🔊 Audio System Test Started', 'font-size: 16px; font-weight: bold; color: blue;');
+            
+            const phoneIds = [45, 46, 47, 65];
+            
+            for (const id of phoneIds) {
+                const audio = document.getElementById(`audio_${id}`);
+                if (!audio) {
+                    console.log(`❌ Audio element #audio_${id} not found`);
+                    continue;
+                }
+                
+                console.log(`\n📝 Testing Phoneme ${id}:`);
+                console.log(`  - URL: ${audio.src}`);
+                console.log(`  - Current src: ${audio.currentSrc}`);
+                
+                // Check if file can be fetched
+                try {
+                    const response = await fetch(audio.src);
+                    console.log(`  - HTTP Status: ${response.status} ${response.statusText}`);
+                    console.log(`  - Content-Type: ${response.headers.get('content-type')}`);
+                    console.log(`  - Content-Length: ${response.headers.get('content-length')} bytes`);
+                } catch (error) {
+                    console.log(`  - ❌ Fetch error: ${error.message}`);
+                }
+            }
+            
+            console.log('\n%c✅ Test Complete', 'font-size: 14px; font-weight: bold; color: green;');
+            console.log('If you see all statuses as 200, the audio system is working correctly.');
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            console.log('🔊 Audio Test Page Loaded');
+            console.log('Click "Run Detailed Test" button to check audio system');
+        });
+    </script>
+</body>
+</html>

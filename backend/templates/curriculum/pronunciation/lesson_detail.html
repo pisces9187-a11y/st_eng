@@ -390,6 +390,109 @@
         background: var(--phoneme-success);
     }
     
+    /* Comparison Table Styles (Screen 4) */
+    .comparison-table {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .comparison-table table {
+        margin-bottom: 0;
+    }
+    
+    .comparison-table th {
+        font-weight: 700;
+        vertical-align: middle;
+        padding: 1rem;
+    }
+    
+    .comparison-table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    
+    .tip-badge {
+        background: rgba(13, 110, 253, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+    
+    .word-comparison-card {
+        background: white;
+        border: 2px solid #E0E6ED;
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .word-comparison-card:hover {
+        border-color: var(--phoneme-primary);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .word-box {
+        text-align: center;
+        cursor: pointer;
+        padding: 0.75rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        flex: 1;
+    }
+    
+    .word-box:hover {
+        background: rgba(0,0,0,0.03);
+    }
+    
+    .word-box .word-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .word-box .word-ipa {
+        font-size: 0.9rem;
+        color: #6c757d;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        margin-bottom: 0.25rem;
+    }
+    
+    .word-box .word-meaning {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .vs-divider-small {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #6c757d;
+        padding: 0 0.5rem;
+    }
+    
+    /* Quick Recall Alert (Screen 3) */
+    .recall-alert {
+        animation: slideInDown 0.5s ease;
+    }
+    
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Hint Box Styles */
+    .hint-box {
+        animation: fadeIn 0.3s ease;
+    }
+    
     /* Responsive */
     @media (max-width: 768px) {
         .ipa-symbol-hero { font-size: 4rem; }
@@ -398,6 +501,13 @@
         .choice-btn { 
             min-width: 140px; 
             padding: 1rem 1.5rem;
+            font-size: 1.25rem;
+        }
+        .comparison-table {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        .word-box .word-text {
             font-size: 1.25rem;
         }
     }
@@ -569,9 +679,28 @@
         <!-- SCREEN 3: PRACTICE PHONEME 2 -->
         <!-- ============================================ -->
         <div class="screen-container" :class="{ active: currentScreen === 3 }">
+            <!-- Quick Recall Section (NEW) -->
+            <div class="alert alert-info border-0 mb-4 recall-alert" v-if="phoneme2 && phoneme2.ipa_symbol !== phoneme1.ipa_symbol">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h6 class="mb-1">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Nhớ lại âm trước:
+                        </h6>
+                        <p class="mb-0 small">
+                            /[[ phoneme1.ipa_symbol ]]/ - [[ phoneme1.vietnamese_approx ]] 
+                            - <strong>[[ phoneme1.voicing === 'voiceless' ? 'Vô thanh (không rung thanh quản)' : 'Hữu thanh (rung thanh quản)' ]]</strong>
+                        </p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-info" @click="playPhoneme(phoneme1)" :disabled="isPlaying">
+                        <i class="fas fa-volume-up me-1"></i> Nghe lại
+                    </button>
+                </div>
+            </div>
+            
             <div class="text-center mb-4">
                 <span class="badge px-3 py-2 mb-3" :class="phoneme2.voicing === 'voiceless' ? 'bg-info' : 'bg-warning text-dark'">
-                    [[ phoneme2.voicing === 'voiceless' ? 'Âm Vô Thanh (Unvoiced)' : 'Âm Hữu Thanh (Voiced)' ]]
+                    Bây giờ học âm thứ 2: [[ phoneme2.voicing === 'voiceless' ? 'Âm Vô Thanh (Unvoiced)' : 'Âm Hữu Thanh (Voiced)' ]]
                 </span>
                 <div class="ipa-symbol-hero">/[[ phoneme2.ipa_symbol ]]/</div>
                 <p class="lead mt-2">[[ phoneme2.vietnamese_approx ]]</p>
@@ -617,9 +746,161 @@
         </div>
         
         <!-- ============================================ -->
-        <!-- SCREEN 4: MINIMAL PAIRS CHALLENGE -->
+        <!-- SCREEN 4: SIDE-BY-SIDE COMPARISON (NEW) -->
         <!-- ============================================ -->
         <div class="screen-container" :class="{ active: currentScreen === 4 }">
+            <div class="text-center mb-4">
+                <span class="badge bg-primary px-3 py-2 mb-3">
+                    <i class="fas fa-balance-scale me-2"></i>
+                    So sánh trực tiếp
+                </span>
+                <h2 class="h4 fw-bold">So sánh /[[ phoneme1.ipa_symbol ]]/ và /[[ phoneme2.ipa_symbol ]]/</h2>
+                <p class="text-muted">Nghe và so sánh sự khác biệt giữa hai âm</p>
+            </div>
+            
+            <!-- Comparison Table -->
+            <div class="comparison-table mb-4">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="25%">Đặc điểm</th>
+                            <th width="37.5%" class="bg-info bg-opacity-10">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span>/[[ phoneme1.ipa_symbol ]]/</span>
+                                    <button class="btn btn-sm btn-audio-play" style="width: 40px; height: 40px;" @click="playPhoneme(phoneme1)" :disabled="isPlaying">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th width="37.5%" class="bg-warning bg-opacity-10">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span>/[[ phoneme2.ipa_symbol ]]/</span>
+                                    <button class="btn btn-sm btn-audio-play" style="width: 40px; height: 40px;" @click="playPhoneme(phoneme2)" :disabled="isPlaying">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Xấp xỉ tiếng Việt</strong></td>
+                            <td>[[ phoneme1.vietnamese_approx ]]</td>
+                            <td>[[ phoneme2.vietnamese_approx ]]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Loại âm</strong></td>
+                            <td>
+                                <span class="badge" :class="phoneme1.voicing === 'voiceless' ? 'bg-info' : 'bg-warning text-dark'">
+                                    [[ phoneme1.voicing === 'voiceless' ? 'Vô thanh' : 'Hữu thanh' ]]
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" :class="phoneme2.voicing === 'voiceless' ? 'bg-info' : 'bg-warning text-dark'">
+                                    [[ phoneme2.voicing === 'voiceless' ? 'Vô thanh' : 'Hữu thanh' ]]
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>✅ Giống nhau</strong></td>
+                            <td colspan="2" class="text-center">
+                                • Cùng động tác miệng<br>
+                                • Cùng vị trí lưỡi<br>
+                                • Cùng cách khí thoát ra
+                            </td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><strong>❌ Khác nhau</strong></td>
+                            <td>[[ phoneme1.pronunciation_tips_vi || (phoneme1.voicing === 'voiceless' ? 'Không rung thanh quản' : 'Rung thanh quản') ]]</td>
+                            <td>[[ phoneme2.pronunciation_tips_vi || (phoneme2.voicing === 'voiceless' ? 'Không rung thanh quản' : 'Rung thanh quản') ]]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cách kiểm tra</strong></td>
+                            <td>
+                                <div class="tip-badge">
+                                    <i class="fas fa-hand-paper me-2"></i>
+                                    <span v-if="phoneme1.voicing === 'voiceless'">Đặt tờ giấy trước miệng → giấy bay mạnh</span>
+                                    <span v-else>Đặt ngón tay lên cổ họng → rung rõ</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="tip-badge">
+                                    <i class="fas fa-hand-point-up me-2"></i>
+                                    <span v-if="phoneme2.voicing === 'voiceless'">Đặt tờ giấy trước miệng → giấy bay mạnh</span>
+                                    <span v-else>Đặt ngón tay lên cổ họng → rung rõ</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Interactive Word Comparison -->
+            <div class="card border-0 shadow-sm" v-if="minimalPairsSample && minimalPairsSample.length > 0">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-exchange-alt text-primary me-2"></i>
+                        So sánh từ vựng
+                    </h5>
+                    
+                    <div class="row g-3">
+                        <div v-for="(pair, idx) in minimalPairsSample" :key="idx" class="col-md-6">
+                            <div class="word-comparison-card">
+                                <div class="d-flex justify-content-around align-items-center">
+                                    <!-- Word 1 -->
+                                    <div class="word-box" @click="playComparisonWord(pair.word_1)">
+                                        <div class="word-text text-info">[[ pair.word_1 ]]</div>
+                                        <div class="word-ipa">[[ pair.word_1_ipa ]]</div>
+                                        <div class="word-meaning" v-if="pair.word_1_meaning">[[ pair.word_1_meaning ]]</div>
+                                        <button class="btn btn-sm btn-outline-info mt-2">
+                                            <i class="fas fa-volume-up"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- VS -->
+                                    <div class="vs-divider-small">vs</div>
+                                    
+                                    <!-- Word 2 -->
+                                    <div class="word-box" @click="playComparisonWord(pair.word_2)">
+                                        <div class="word-text text-warning">[[ pair.word_2 ]]</div>
+                                        <div class="word-ipa">[[ pair.word_2_ipa ]]</div>
+                                        <div class="word-meaning" v-if="pair.word_2_meaning">[[ pair.word_2_meaning ]]</div>
+                                        <button class="btn btn-sm btn-outline-warning mt-2">
+                                            <i class="fas fa-volume-up"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Explanation -->
+                                <div class="mt-2 text-muted text-center small" v-if="pair.difference_note_vi">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    [[ pair.difference_note_vi ]]
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Guided Practice -->
+            <div class="alert alert-primary mt-4 border-0">
+                <h6 class="alert-heading">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Thực hành có hướng dẫn
+                </h6>
+                <ol class="mb-0">
+                    <li>Nghe âm /[[ phoneme1.ipa_symbol ]]/ → Đặt tay lên cổ họng → <strong v-if="phoneme1.voicing === 'voiceless'">Không rung</strong><strong v-else>CÓ rung</strong></li>
+                    <li>Nghe âm /[[ phoneme2.ipa_symbol ]]/ → Đặt tay lên cổ họng → <strong v-if="phoneme2.voicing === 'voiceless'">Không rung</strong><strong v-else>CÓ rung</strong></li>
+                    <li>Nghe các cặp từ bên trên → Phân biệt ngay lập tức</li>
+                    <li>Sẵn sàng cho thử thách ở màn hình tiếp theo!</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- SCREEN 5: MINIMAL PAIRS CHALLENGE -->
+        <!-- ============================================ -->
+        <div class="screen-container" :class="{ active: currentScreen === 5 }">
             <div class="text-center mb-4">
                 <span class="badge bg-danger px-3 py-2 mb-3">Thử thách phân biệt</span>
                 <h2 class="h4 fw-bold">Nghe và chọn từ đúng!</h2>
@@ -634,6 +915,22 @@
                     <i class="fas fa-play" v-if="!isPlayingChallenge"></i>
                     <i class="fas fa-volume-up" v-else></i>
                 </button>
+                
+                <!-- Hint Button (NEW) -->
+                <div class="mb-3" v-if="!hasAnswered">
+                    <button class="btn btn-sm btn-outline-secondary" @click="showHint = !showHint">
+                        <i class="fas fa-question-circle me-1"></i>
+                        [[ showHint ? 'Ẩn gợi ý' : 'Hiện gợi ý' ]]
+                    </button>
+                    
+                    <div v-if="showHint" class="alert alert-warning mt-2 small hint-box">
+                        <strong>💡 Gợi ý:</strong><br>
+                        • Đặt ngón tay lên cổ họng khi nghe<br>
+                        • Rung = <strong>/[[ phoneme2.ipa_symbol ]]/ ([[ phoneme2.vietnamese_approx ]])</strong><br>
+                        • Không rung = <strong>/[[ phoneme1.ipa_symbol ]]/ ([[ phoneme1.vietnamese_approx ]])</strong><br>
+                        <small class="text-muted">Nghe lại nhiều lần để quen tai!</small>
+                    </div>
+                </div>
                 
                 <div class="d-flex justify-content-center gap-4 flex-wrap">
                     <button class="choice-btn" 
@@ -684,9 +981,9 @@
         </div>
         
         <!-- ============================================ -->
-        <!-- SCREEN 5: SUMMARY & HOMEWORK -->
+        <!-- SCREEN 6: SUMMARY & HOMEWORK -->
         <!-- ============================================ -->
-        <div class="screen-container" :class="{ active: currentScreen === 5 }">
+        <div class="screen-container" :class="{ active: currentScreen === 6 }">
             <div class="text-center mb-5">
                 <div class="mb-4">
                     <i class="fas fa-trophy text-warning" style="font-size: 4rem;"></i>
@@ -770,7 +1067,7 @@
             </button>
             
             <div class="screen-dots">
-                <div v-for="n in 5" :key="n" 
+                <div v-for="n in 6" :key="n" 
                      class="screen-dot"
                      :class="{ 
                          active: currentScreen === n,
@@ -779,8 +1076,8 @@
                 </div>
             </div>
             
-            <button class="btn btn-primary" @click="nextScreen" v-if="currentScreen < 5">
-                <span v-if="currentScreen === 4 && !hasAnswered && currentChallenge">Trả lời</span>
+            <button class="btn btn-primary" @click="nextScreen" v-if="currentScreen < 6">
+                <span v-if="currentScreen === 5 && !hasAnswered && currentChallenge">Chọn đáp án</span>
                 <span v-else>Tiếp tục <i class="fas fa-arrow-right ms-2"></i></span>
             </button>
             <div v-else style="width: 100px;"></div>
@@ -915,6 +1212,12 @@ createApp({
             playingPhoneme: null,
             isPlayingChallenge: false,
             
+            // Screen 4: Comparison
+            minimalPairsSample: [],
+            
+            // Screen 5: Challenge hints
+            showHint: false,
+            
             // Challenge state
             challengeQuestions: [],
             currentQuestion: 0,
@@ -939,7 +1242,7 @@ createApp({
     
     computed: {
         progressPercent() {
-            return (this.currentScreen / 5) * 100;
+            return (this.currentScreen / 6) * 100;
         },
         
         accuracy() {
@@ -992,6 +1295,9 @@ createApp({
             // Setup challenge questions from minimal pairs
             this.setupChallengeQuestions();
             
+            // Setup minimal pairs sample for Screen 4 comparison (take first 4 pairs)
+            this.minimalPairsSample = (this.minimalPairs || []).slice(0, 4);
+            
             // Restore progress if exists
             if (this.userProgress && this.userProgress.current_screen) {
                 this.currentScreen = Math.min(this.userProgress.current_screen, 1);
@@ -1031,7 +1337,7 @@ createApp({
         },
         
         nextScreen() {
-            if (this.currentScreen === 4 && !this.hasAnswered && this.currentChallenge) {
+            if (this.currentScreen === 5 && !this.hasAnswered && this.currentChallenge) {
                 // Must answer challenge first
                 return;
             }
@@ -1043,7 +1349,7 @@ createApp({
             }
             
             // Move to next question in challenge
-            if (this.currentScreen === 4 && this.hasAnswered) {
+            if (this.currentScreen === 5 && this.hasAnswered) {
                 if (this.currentQuestion < this.challengeQuestions.length - 1) {
                     this.currentQuestion++;
                     this.resetChallengeState();
@@ -1054,11 +1360,14 @@ createApp({
                 }
             }
             
-            if (this.currentScreen < 5) {
+            if (this.currentScreen < 6) {
                 this.currentScreen++;
                 
+                // Reset hint when moving to next screen
+                this.showHint = false;
+                
                 // Calculate XP for completing screens
-                if (this.currentScreen === 5) {
+                if (this.currentScreen === 6) {
                     this.totalXpEarned = this.calculateXP();
                 }
             }
@@ -1186,6 +1495,11 @@ createApp({
             }
         },
         
+        async playComparisonWord(word) {
+            if (this.isPlaying) return;
+            await this.playTTS(word);
+        },
+        
         async playTTS(text, voice = 'en-US-AriaNeural', rate = '+0%') {
             // Sử dụng Web Speech API trực tiếp (không cần server)
             return new Promise((resolve) => {
@@ -1255,6 +1569,7 @@ createApp({
             this.hasAnswered = false;
             this.isCorrect = false;
             this.correctAnswer = '';
+            this.showHint = false;
         },
         
         // IPA highlighting

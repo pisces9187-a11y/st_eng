@@ -24,7 +24,8 @@ from .views import (
     SubscriptionView, AchievementViewSet, UserAchievementViewSet,
     LeaderboardView, UserPublicProfileView,
     GoogleAuthView, FacebookAuthView,
-    SendVerificationCodeView, VerifyEmailCodeView, RegisterWithVerificationView
+    SendVerificationCodeView, VerifyEmailCodeView, RegisterWithVerificationView,
+    AvatarUploadView, AvatarDeleteView
 )
 
 from .template_views import (
@@ -34,7 +35,8 @@ from .template_views import (
     DashboardPageView, OnboardingPageView,
     ProfilePageView, ProfileSettingsPageView, ChangePasswordPageView,
     AchievementsPageView, SubscriptionPageView,
-    ForumPageView, LeaderboardPageView, HelpCenterPageView
+    ForumPageView, LeaderboardPageView, HelpCenterPageView,
+    ClearAuthView
 )
 
 # Note: Curriculum template views are now in curriculum/urls.py
@@ -60,6 +62,7 @@ page_urlpatterns = [
     path('signup/', SignupPageView.as_view(), name='signup'),
     path('forgot-password/', ForgotPasswordPageView.as_view(), name='forgot-password'),
     path('logout/', LogoutPageView.as_view(), name='logout'),
+    path('clear-auth/', ClearAuthView.as_view(), name='clear-auth'),  # Clear expired tokens
     path('delete-account/', LogoutPageView.as_view(), name='delete_account'),
     path('reset-password/<str:token>/', PasswordResetConfirmPageView.as_view(), name='reset-password-confirm'),
     
@@ -93,6 +96,7 @@ urlpatterns = [
     
     # User profile API endpoints
     path('me/', UserMeView.as_view(), name='me'),
+    path('me/avatar/', AvatarUploadView.as_view(), name='me-avatar-upload'),
     path('me/profile/', UserProfileView.as_view(), name='me-profile'),
     path('me/settings/', UserSettingsView.as_view(), name='me-settings'),
     path('me/subscription/', SubscriptionView.as_view(), name='me-subscription'),

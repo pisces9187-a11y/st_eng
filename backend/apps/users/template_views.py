@@ -238,3 +238,17 @@ class HelpCenterPageView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Trung tâm hỗ trợ'
         return context
+
+
+class ClearAuthView(TemplateView):
+    """
+    Clear authentication cookies and redirect to login.
+    Use this if user has expired tokens stuck in browser.
+    """
+    template_name = 'users/login.html'
+    
+    def get(self, request, *args, **kwargs):
+        response = redirect('users:login')
+        response.delete_cookie('access_token', samesite='Lax')
+        response.delete_cookie('refresh_token', samesite='Lax')
+        return response

@@ -1,0 +1,761 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Học âm {{ phoneme.ipa_symbol }} - EnglishMaster{% endblock %}
+{% block meta_description %}Học cách phát âm chuẩn âm IPA {{ phoneme.ipa_symbol }} qua lý thuyết, hình ảnh minh họa và ví dụ thực tế{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --learning-primary: #F47C26;
+        --learning-secondary: #183B56;
+        --learning-success: #28A745;
+    }
+    
+    /* Learning Header */
+    .learning-header {
+        background: linear-gradient(135deg, var(--learning-secondary) 0%, #2E5F7F 100%);
+        padding: 3rem 0 2rem;
+        color: white;
+    }
+    
+    .phoneme-display {
+        text-align: center;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .phoneme-symbol-large {
+        font-size: 6rem;
+        font-family: 'Lucida Sans Unicode', 'Arial Unicode MS', sans-serif;
+        margin-bottom: 1rem;
+    }
+    
+    .phoneme-approx-large {
+        font-size: 1.5rem;
+        opacity: 0.9;
+    }
+    
+    /* Progress Steps */
+    .progress-steps {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-top: -2rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .step-item {
+        position: relative;
+        padding-left: 3rem;
+        padding-bottom: 2rem;
+    }
+    
+    .step-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .step-item::before {
+        content: '';
+        position: absolute;
+        left: 19px;
+        top: 40px;
+        bottom: -10px;
+        width: 2px;
+        background: #E8ECF0;
+    }
+    
+    .step-item:last-child::before {
+        display: none;
+    }
+    
+    .step-icon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #E8ECF0;
+        color: #6c757d;
+    }
+    
+    .step-item.active .step-icon {
+        background: var(--learning-primary);
+        color: white;
+    }
+    
+    .step-item.completed .step-icon {
+        background: var(--learning-success);
+        color: white;
+    }
+    
+    .step-title {
+        font-weight: 600;
+        color: var(--learning-secondary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .step-description {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    /* Content Sections */
+    .content-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--learning-secondary);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--learning-primary), #FF9A56);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    /* Audio Player */
+    .audio-player {
+        background: linear-gradient(135deg, #F9FAFC, #EEF2F7);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .play-button {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--learning-primary), #FF9A56);
+        color: white;
+        border: none;
+        font-size: 2rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(244,124,38,0.3);
+    }
+    
+    .play-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 32px rgba(244,124,38,0.4);
+    }
+    
+    .play-button:active {
+        transform: scale(0.95);
+    }
+    
+    .play-button.playing {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 8px 24px rgba(244,124,38,0.3); }
+        50% { box-shadow: 0 12px 40px rgba(244,124,38,0.6); }
+    }
+    
+    .audio-label {
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    /* Mouth Diagram */
+    .mouth-diagram {
+        text-align: center;
+        padding: 2rem;
+        background: #F9FAFC;
+        border-radius: 16px;
+    }
+    
+    .mouth-diagram img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+    }
+    
+    .diagram-placeholder {
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #E8ECF0, #F9FAFC);
+        border-radius: 12px;
+        color: #6c757d;
+    }
+    
+    /* Tips List */
+    .tips-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .tip-item {
+        padding: 1rem;
+        background: #F9FAFC;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--learning-primary);
+    }
+    
+    .tip-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .tip-icon {
+        color: var(--learning-primary);
+        margin-right: 0.75rem;
+    }
+    
+    /* Examples Grid */
+    .examples-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .example-card {
+        background: #F9FAFC;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    
+    .example-card:hover {
+        border-color: var(--learning-primary);
+        background: white;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    .example-word {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--learning-secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .example-phonetic {
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        color: var(--learning-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .example-meaning {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    /* Action Button */
+    .start-learning-button {
+        background: linear-gradient(135deg, var(--learning-primary), #FF9A56);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 1.25rem 3rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(244,124,38,0.3);
+    }
+    
+    .start-learning-button:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(244,124,38,0.4);
+    }
+    
+    .start-learning-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Navigation */
+    .learning-nav {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .nav-link-custom {
+        color: #6c757d;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .nav-link-custom:hover {
+        color: var(--learning-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="learningApp">
+    <!-- Learning Header -->
+    <section class="learning-header">
+        <div class="container">
+            <!-- Back Navigation -->
+            <div class="mb-4">
+                <a href="/pronunciation/discovery/" class="nav-link-custom text-white">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                </a>
+            </div>
+            
+            <!-- Phoneme Display -->
+            <div class="phoneme-display">
+                <div class="phoneme-symbol-large">[[ phoneme.ipa_symbol ]]</div>
+                <div class="phoneme-approx-large">[[ phoneme.vietnamese_approx ]]</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Progress Steps -->
+        <section class="progress-steps mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="step-item" :class="getStepClass('discovered')">
+                        <div class="step-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="step-title">1. Khám phá</div>
+                        <div class="step-description">Làm quen với âm mới</div>
+                    </div>
+                    
+                    <div class="step-item" :class="getStepClass('learning')">
+                        <div class="step-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="step-title">2. Học lý thuyết</div>
+                        <div class="step-description">Hiểu cách phát âm</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="step-item" :class="getStepClass('discriminating')">
+                        <div class="step-icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div class="step-title">3. Luyện phân biệt</div>
+                        <div class="step-description">Nghe và nhận biết âm</div>
+                    </div>
+                    
+                    <div class="step-item" :class="getStepClass('producing')">
+                        <div class="step-icon">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <div class="step-title">4. Luyện phát âm</div>
+                        <div class="step-description">Thực hành phát âm</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Audio Section -->
+                <div class="content-card">
+                    <h2 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-volume-up"></i>
+                        </div>
+                        Nghe mẫu chuẩn
+                    </h2>
+                    
+                    <div class="audio-player">
+                        <button class="play-button" 
+                                :class="{ playing: isPlaying }"
+                                @click="playAudio">
+                            <i class="fas" :class="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+                        </button>
+                        <div class="audio-label">Nhấn để nghe phát âm chuẩn</div>
+                        <audio ref="audioPlayer" @ended="isPlaying = false">
+                            <source v-if="phoneme.audio_sample" :src="phoneme.audio_sample" type="audio/mpeg">
+                        </audio>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lời khuyên:</strong> Nghe nhiều lần để làm quen với âm thanh. 
+                        Chú ý đến vị trí môi, lưỡi và cách khí thoát ra.
+                    </div>
+                </div>
+
+                <!-- Pronunciation Guide -->
+                <div class="content-card">
+                    <h2 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        Hướng dẫn phát âm
+                    </h2>
+                    
+                    <div class="mouth-diagram mb-4">
+                        <div v-if="phoneme.mouth_diagram">
+                            <img :src="phoneme.mouth_diagram" 
+                                 :alt="'Sơ đồ miệng âm ' + phoneme.ipa_symbol">
+                        </div>
+                        <div v-else class="diagram-placeholder">
+                            <i class="fas fa-image fa-3x mb-3"></i>
+                            <p>Sơ đồ miệng đang được cập nhật</p>
+                        </div>
+                    </div>
+                    
+                    <ul class="tips-list">
+                        <li class="tip-item" v-for="tip in pronunciationTips" :key="tip">
+                            <i class="fas fa-check-circle tip-icon"></i>
+                            [[ tip ]]
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Example Words -->
+                <div class="content-card">
+                    <h2 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-spell-check"></i>
+                        </div>
+                        Ví dụ thực tế
+                    </h2>
+                    
+                    <p class="text-muted mb-3">
+                        Các từ điển hình có chứa âm <strong>[[ phoneme.ipa_symbol ]]</strong>
+                    </p>
+                    
+                    <div class="examples-grid">
+                        <div v-for="example in exampleWords" 
+                             :key="example.word"
+                             class="example-card"
+                             @click="playExampleAudio(example)">
+                            <div class="example-word">[[ example.word ]]</div>
+                            <div class="example-phonetic">/[[ example.phonetic ]]/</div>
+                            <div class="example-meaning">[[ example.meaning ]]</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Start Learning Card -->
+                <div class="content-card sticky-top" style="top: 2rem;">
+                    <h3 class="h5 fw-bold mb-3">Sẵn sàng bắt đầu?</h3>
+                    
+                    <div v-if="progress" class="mb-3">
+                        <div class="alert" 
+                             :class="getProgressAlertClass()"
+                             style="border-left: 4px solid;">
+                            <small class="d-block mb-1">
+                                <strong>Trạng thái hiện tại:</strong>
+                            </small>
+                            <div class="fw-bold">
+                                [[ getStageDisplayName(progress.current_stage) ]]
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="start-learning-button"
+                            @click="startLearning"
+                            :disabled="loading || (progress && progress.current_stage === 'mastered')">
+                        <span v-if="loading">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Đang xử lý...
+                        </span>
+                        <span v-else>
+                            <i class="fas" :class="getActionIcon()"></i>
+                            [[ getActionButtonText() ]]
+                        </span>
+                    </button>
+                    
+                    <!-- Quick Stats -->
+                    <div class="mt-4" v-if="progress && progress.current_stage !== 'not_started'">
+                        <hr>
+                        <h4 class="h6 fw-bold mb-3">Thống kê của bạn</h4>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Phân biệt:</span>
+                            <span class="fw-bold">[[ Math.round(progress.discrimination_accuracy * 100) ]]%</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Phát âm:</span>
+                            <span class="fw-bold">[[ Math.round(progress.production_best_score * 100) ]]%</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Lần luyện:</span>
+                            <span class="fw-bold">[[ progress.times_practiced ]] lần</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Wait for Auth to be loaded before running Vue app
+function initializeLearningApp() {
+    if (typeof Auth === 'undefined') {
+        // Auth not loaded yet, retry
+        setTimeout(initializeLearningApp, 100);
+        return;
+    }
+
+    const { createApp } = Vue;
+
+    createApp({
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                phoneme: {{ phoneme_json|safe }},
+            progress: null,
+            isPlaying: false,
+            loading: false,
+            pronunciationTips: [],
+            exampleWords: []
+        };
+    },
+    methods: {
+        async loadProgress() {
+            try {
+                // In real implementation, fetch from API
+                // For now, using passed data from template
+                const phonemeId = this.phoneme.id;
+                
+                const response = await ApiClient.get(
+                    `/pronunciation/phoneme/${phonemeId}/progress/`
+                );
+                
+                if (response.success) {
+                    this.progress = response.data;
+                }
+            } catch (error) {
+                console.error('Error loading progress:', error);
+            }
+        },
+        
+        playAudio() {
+            const audio = this.$refs.audioPlayer;
+            if (this.isPlaying) {
+                audio.pause();
+                this.isPlaying = false;
+            } else {
+                audio.play();
+                this.isPlaying = true;
+            }
+        },
+        
+        playExampleAudio(example) {
+            // Play example word audio if available
+            if (example.audio_url) {
+                const audio = new Audio(example.audio_url);
+                audio.play();
+            }
+        },
+        
+        async startLearning() {
+            if (!this.progress || this.progress.current_stage === 'not_started') {
+                // First time - mark as learning
+                await this.markAsLearning();
+            } else if (this.progress.current_stage === 'discovered' || 
+                       this.progress.current_stage === 'learning') {
+                // Continue to discrimination
+                window.location.href = `/pronunciation/discrimination/${this.phoneme.id}/`;
+            } else if (this.progress.current_stage === 'discriminating') {
+                // Go to discrimination practice
+                window.location.href = `/pronunciation/discrimination/${this.phoneme.id}/`;
+            } else if (this.progress.current_stage === 'producing') {
+                // Go to production practice
+                window.location.href = `/pronunciation/production/${this.phoneme.id}/`;
+            }
+        },
+        
+        async markAsLearning() {
+            try {
+                this.loading = true;
+                
+                const response = await ApiClient.post(
+                    `/pronunciation/phoneme/${this.phoneme.id}/start-learning/`
+                );
+                
+                if (response.success) {
+                    this.progress = response.data;
+                    this.showSuccess(response.message || 'Bắt đầu học thành công!');
+                    
+                    // Redirect to practice after 1 second
+                    setTimeout(() => {
+                        window.location.href = `/pronunciation/discrimination/${this.phoneme.id}/`;
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Error starting learning:', error);
+                this.showError('Không thể bắt đầu học. Vui lòng thử lại.');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        getStepClass(stage) {
+            if (!this.progress) return '';
+            
+            const stages = ['discovered', 'learning', 'discriminating', 'producing', 'mastered'];
+            const currentIndex = stages.indexOf(this.progress.current_stage);
+            const stepIndex = stages.indexOf(stage);
+            
+            if (stepIndex < currentIndex) return 'completed';
+            if (stepIndex === currentIndex) return 'active';
+            return '';
+        },
+        
+        getStageDisplayName(stage) {
+            const names = {
+                'not_started': 'Chưa bắt đầu',
+                'discovered': 'Đã khám phá',
+                'learning': 'Đang học',
+                'discriminating': 'Luyện phân biệt',
+                'producing': 'Luyện phát âm',
+                'mastered': 'Thành thạo'
+            };
+            return names[stage] || stage;
+        },
+        
+        getProgressAlertClass() {
+            if (!this.progress) return 'alert-secondary';
+            
+            const classes = {
+                'not_started': 'alert-secondary',
+                'discovered': 'alert-primary',
+                'learning': 'alert-info',
+                'discriminating': 'alert-warning',
+                'producing': 'alert-purple',
+                'mastered': 'alert-success'
+            };
+            return classes[this.progress.current_stage] || 'alert-secondary';
+        },
+        
+        getActionIcon() {
+            if (!this.progress) return 'fa-play me-2';
+            
+            const icons = {
+                'not_started': 'fa-play me-2',
+                'discovered': 'fa-book-open me-2',
+                'learning': 'fa-headphones me-2',
+                'discriminating': 'fa-headphones me-2',
+                'producing': 'fa-microphone me-2',
+                'mastered': 'fa-check me-2'
+            };
+            return icons[this.progress.current_stage] || 'fa-arrow-right me-2';
+        },
+        
+        getActionButtonText() {
+            if (!this.progress || this.progress.current_stage === 'not_started') {
+                return 'Bắt đầu học';
+            }
+            
+            const texts = {
+                'discovered': 'Bắt đầu luyện phân biệt',
+                'learning': 'Tiếp tục luyện phân biệt',
+                'discriminating': 'Tiếp tục luyện phân biệt',
+                'producing': 'Tiếp tục luyện phát âm',
+                'mastered': 'Đã hoàn thành'
+            };
+            return texts[this.progress.current_stage] || 'Tiếp tục';
+        },
+        
+        loadPronunciationTips() {
+            // Load tips from phoneme data or default tips
+            this.pronunciationTips = this.phoneme.pronunciation_tips || [
+                'Chú ý đến vị trí lưỡi khi phát âm',
+                'Quan sát hình dạng môi trong sơ đồ miệng',
+                'Lắng nghe và bắt chước âm mẫu nhiều lần',
+                'So sánh với âm tiếng Việt gần nhất để dễ nhớ',
+                'Luyện tập trong các từ thực tế để nhớ lâu hơn'
+            ];
+        },
+        
+        loadExampleWords() {
+            // Load example words from phoneme data
+            this.exampleWords = this.phoneme.example_words || [];
+        },
+        
+        // Helper methods for alerts
+        showSuccess(message) {
+            this.showAlert('success', message);
+        },
+        
+        showError(message) {
+            this.showAlert('error', message);
+        },
+        
+        showAlert(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    },
+    mounted() {
+        // Check authentication
+        if (!Auth.isAuthenticated()) {
+            window.location.href = '/login/?next=' + window.location.pathname;
+            return;
+        }
+        
+        // Load additional data
+        this.loadProgress();
+        this.loadPronunciationTips();
+        this.loadExampleWords();
+    }
+    }).mount('#learningApp');
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeLearningApp);
+} else {
+    initializeLearningApp();
+}
+</script>
+{% endblock %}

@@ -5,6 +5,7 @@ Handles courses, units, lessons, sentences, flashcards, and grammar rules.
 """
 
 from django.db.models import Count, Prefetch, Q
+from django.views.generic import TemplateView
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -366,3 +367,8 @@ class GrammarRuleViewSet(viewsets.ReadOnlyModelViewSet):
         ).order_by('category')
         
         return Response(list(categories))
+
+
+class TestAudioView(TemplateView):
+    """Test page for audio playback."""
+    template_name = 'test_audio.html'

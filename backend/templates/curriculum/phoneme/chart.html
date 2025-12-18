@@ -1,0 +1,497 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - English Learning Platform{% endblock %}
+
+{% block page_css %}
+<style>
+/* ============================================================================
+   PHONEME CHART STYLES - Phase 2 Day 1-2
+   Following DEVELOPMENT_STANDARDS.md color system
+   ============================================================================ */
+
+/* Color Palette (60-30-10 rule) */
+:root {
+    --primary: #2563EB;      /* Blue - Main brand */
+    --secondary: #10B981;    /* Green - Success/Progress */
+    --accent: #F59E0B;       /* Amber - Highlights */
+    --neutral-100: #F9FAFB;
+    --neutral-200: #E5E7EB;
+    --neutral-700: #374151;
+    --neutral-900: #111827;
+}
+
+/* Page Container */
+.phoneme-chart-container {
+    background: linear-gradient(135deg, var(--neutral-100) 0%, #ffffff 100%);
+    min-height: 100vh;
+    padding: 3rem 0;
+}
+
+/* Header Section */
+.chart-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.chart-header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: var(--neutral-900);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.chart-header .subtitle {
+    color: var(--neutral-700);
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Category Tabs */
+.category-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.category-tab {
+    padding: 0.75rem 2rem;
+    border: 2px solid var(--neutral-200);
+    background: white;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--neutral-700);
+}
+
+.category-tab:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.category-tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Phoneme Grid */
+.phoneme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+/* Phoneme Card */
+.phoneme-card {
+    background: white;
+    border: 2px solid var(--neutral-200);
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.phoneme-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.phoneme-card:hover::before {
+    transform: scaleX(1);
+}
+
+.phoneme-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+}
+
+.phoneme-card.playing {
+    border-color: var(--secondary);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, white 100%);
+    animation: pulse 1s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Phoneme IPA Symbol */
+.phoneme-ipa {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.75rem;
+    font-family: 'Doulos SIL', 'Charis SIL', serif;
+}
+
+.phoneme-card.playing .phoneme-ipa {
+    color: var(--secondary);
+}
+
+/* Vietnamese Approximation */
+.phoneme-approx {
+    font-size: 0.875rem;
+    color: var(--neutral-700);
+    font-style: italic;
+    margin-bottom: 0.5rem;
+}
+
+/* Category Badge */
+.phoneme-category {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Audio Icon */
+.audio-icon {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 24px;
+    height: 24px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.phoneme-card:hover .audio-icon {
+    opacity: 1;
+}
+
+.phoneme-card.playing .audio-icon {
+    background: var(--secondary);
+    opacity: 1;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Loading State */
+.loading-spinner {
+    text-align: center;
+    padding: 3rem;
+    color: var(--neutral-700);
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--neutral-700);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--neutral-200);
+    margin-bottom: 1rem;
+}
+
+/* Instructions */
+.instructions {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border-left: 4px solid var(--primary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.instructions h4 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.instructions ul {
+    margin-bottom: 0;
+    padding-left: 1.5rem;
+}
+
+.instructions li {
+    color: var(--neutral-700);
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .phoneme-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 1rem;
+    }
+    
+    .chart-header h1 {
+        font-size: 2rem;
+    }
+    
+    .category-tab {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="phoneme-chart-container" id="phonemeChartApp">
+    <div class="container">
+        <!-- Header -->
+        <div class="chart-header">
+            <h1>🎵 {{ page_title }}</h1>
+            <p class="subtitle">
+                Nhấp vào mỗi âm để nghe phát âm chuẩn. Học 44 âm IPA một cách trực quan và hiệu quả!
+            </p>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h4><i class="fas fa-info-circle"></i> Hướng dẫn sử dụng</h4>
+            <ul>
+                <li><strong>Nhấp vào ô âm</strong> để nghe phát âm chuẩn</li>
+                <li><strong>Chọn loại âm</strong> (Nguyên âm / Nguyên âm đôi / Phụ âm) để lọc</li>
+                <li><strong>Chú ý âm Việt gần đúng</strong> để dễ nhớ hơn</li>
+                <li><strong>Luyện tập nhiều lần</strong> để phát âm chuẩn xác</li>
+            </ul>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+            <button 
+                class="category-tab" 
+                :class="{ active: activeCategory === 'all' }"
+                @click="activeCategory = 'all'"
+            >
+                <i class="fas fa-th"></i> Tất cả (${allPhonemes.length})
+            </button>
+            <button 
+                class="category-tab" 
+                :class="{ active: activeCategory === 'vowel' }"
+                @click="activeCategory = 'vowel'"
+            >
+                <i class="fas fa-circle"></i> Nguyên âm (${vowels.length})
+            </button>
+            <button 
+                class="category-tab" 
+                :class="{ active: activeCategory === 'diphthong' }"
+                @click="activeCategory = 'diphthong'"
+            >
+                <i class="fas fa-adjust"></i> Nguyên âm đôi (${diphthongs.length})
+            </button>
+            <button 
+                class="category-tab" 
+                :class="{ active: activeCategory === 'consonant' }"
+                @click="activeCategory = 'consonant'"
+            >
+                <i class="fas fa-cube"></i> Phụ âm (${consonants.length})
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3">Đang tải dữ liệu âm thanh...</p>
+        </div>
+
+        <!-- Phoneme Grid -->
+        <div v-else class="phoneme-grid">
+            <div 
+                v-for="phoneme in filteredPhonemes" 
+                :key="phoneme.id"
+                class="phoneme-card"
+                :class="{ playing: playingPhonemeId === phoneme.id }"
+                @click="playPhoneme(phoneme)"
+            >
+                <!-- Audio Icon -->
+                <div class="audio-icon">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+
+                <!-- IPA Symbol -->
+                <div class="phoneme-ipa">
+                    /${phoneme.ipa_symbol}/
+                </div>
+
+                <!-- Vietnamese Approximation -->
+                <div class="phoneme-approx">
+                    ${phoneme.vietnamese_approx || 'Không có âm tương đương'}
+                </div>
+
+                <!-- Category Badge -->
+                <div class="phoneme-category">
+                    ${phoneme.category_name_vi || phoneme.phoneme_type}
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-if="!loading && filteredPhonemes.length === 0" class="empty-state">
+            <i class="fas fa-music"></i>
+            <h4>Không có âm nào</h4>
+            <p>Chọn danh mục khác để xem âm.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<!-- Vue.js 3 CDN -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['${', '}'],  // Avoid conflict with Django template tags
+    
+    data() {
+        return {
+            // Data from Django
+            vowels: {{ vowels_json|safe }},
+            diphthongs: {{ diphthongs_json|safe }},
+            consonants: {{ consonants_json|safe }},
+            
+            // UI State
+            activeCategory: 'all',
+            playingPhonemeId: null,
+            loading: false,
+            
+            // Audio player
+            audioPlayer: null,
+        };
+    },
+    
+    computed: {
+        allPhonemes() {
+            return [...this.vowels, ...this.diphthongs, ...this.consonants];
+        },
+        
+        filteredPhonemes() {
+            if (this.activeCategory === 'all') {
+                return this.allPhonemes;
+            } else if (this.activeCategory === 'vowel') {
+                return this.vowels;
+            } else if (this.activeCategory === 'diphthong') {
+                return this.diphthongs;
+            } else if (this.activeCategory === 'consonant') {
+                return this.consonants;
+            }
+            return [];
+        }
+    },
+    
+    methods: {
+        async playPhoneme(phoneme) {
+            console.log('Playing phoneme:', phoneme.ipa_symbol);
+            
+            // Set playing state
+            this.playingPhonemeId = phoneme.id;
+            
+            try {
+                // Fetch audio from API
+                const response = await fetch(`/api/v1/phonemes/${phoneme.id}/audio/url/`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch audio');
+                }
+                
+                const data = await response.json();
+                
+                if (!data.audio_url) {
+                    throw new Error('No audio URL available');
+                }
+                
+                // Play audio
+                if (this.audioPlayer) {
+                    this.audioPlayer.pause();
+                    this.audioPlayer = null;
+                }
+                
+                this.audioPlayer = new Audio(data.audio_url);
+                
+                // Handle audio end
+                this.audioPlayer.addEventListener('ended', () => {
+                    this.playingPhonemeId = null;
+                });
+                
+                // Handle audio error
+                this.audioPlayer.addEventListener('error', (e) => {
+                    console.error('Audio playback error:', e);
+                    this.playingPhonemeId = null;
+                    alert('Không thể phát âm thanh. Vui lòng thử lại sau.');
+                });
+                
+                await this.audioPlayer.play();
+                
+            } catch (error) {
+                console.error('Error playing phoneme audio:', error);
+                this.playingPhonemeId = null;
+                alert('Không thể tải âm thanh. Vui lòng thử lại sau.');
+            }
+        },
+        
+        stopAudio() {
+            if (this.audioPlayer) {
+                this.audioPlayer.pause();
+                this.audioPlayer = null;
+            }
+            this.playingPhonemeId = null;
+        }
+    },
+    
+    mounted() {
+        console.log('Phoneme Chart App mounted');
+        console.log('Total phonemes:', this.allPhonemes.length);
+        console.log('Vowels:', this.vowels.length);
+        console.log('Diphthongs:', this.diphthongs.length);
+        console.log('Consonants:', this.consonants.length);
+    },
+    
+    beforeUnmount() {
+        // Clean up audio player
+        this.stopAudio();
+    }
+}).mount('#phonemeChartApp');
+</script>
+{% endblock %}

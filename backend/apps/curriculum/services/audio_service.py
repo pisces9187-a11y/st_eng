@@ -4,26 +4,30 @@ This service implements intelligent audio source selection:
 1. Check preferred audio (native > cached TTS)
 2. Fallback to any native audio
 3. Fallback to cached TTS
-4. Return None for on-demand generation
+4. Generate new audio with Edge TTS on-demand
 
 Features:
-- 4-tier fallback hierarchy
+- 4-tier fallback hierarchy with auto-generation
 - Django cache integration
 - Bulk operations
 - Performance metrics
 - Quality scoring
+- Edge TTS integration for on-demand generation
 """
 
 import logging
+import asyncio
 from typing import Optional, Dict, List, Tuple
 from datetime import timedelta
 
 from django.core.cache import cache
+from django.core.files import File
 from django.db import transaction
 from django.db.models import Q, Prefetch, Count, Avg
 from django.utils import timezone
 from ..models import PhonemeCategory
 from apps.curriculum.models import Phoneme, AudioSource, AudioCache
+from .edge_tts_service import get_tts_service
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +83,8 @@ class PhonemeAudioService:
         phoneme: Phoneme,
         voice_id: Optional[str] = None,
         prefer_native: bool = True,
-        use_cache: bool = True
+        use_cache: bool = True,
+        auto_generate: bool = True
     ) -> Optional[AudioSource]:
         """
         Get the best available audio for a phoneme with smart fallback.
@@ -88,13 +93,14 @@ class PhonemeAudioService:
         1. Preferred audio (if set and valid)
         2. Native speaker audio (highest quality)
         3. Cached TTS audio (good quality, instant)
-        4. None (trigger on-demand generation)
+        4. Auto-generate with Edge TTS (if auto_generate=True)
         
         Args:
             phoneme: Phoneme instance
             voice_id: Specific voice ID to use (optional)
             prefer_native: Prefer native over TTS even if lower usage
             use_cache: Use Django cache for faster retrieval
+            auto_generate: Automatically generate audio if not found
         
         Returns:
             AudioSource instance or None
@@ -105,7 +111,7 @@ class PhonemeAudioService:
             >>> if audio:
             ...     print(f"Found: {audio.source_type}")
             ... else:
-            ...     print("Need to generate TTS")
+            ...     print("No audio available")
         """
         # Try cache first
         if use_cache and self.cache_enabled:
@@ -144,8 +150,18 @@ class PhonemeAudioService:
                 self._save_to_cache(phoneme.id, tts_audio, voice_id)
             return tts_audio
         
-        # Step 4: No audio available - need generation
-        logger.warning(f"No audio available for /{phoneme.ipa_symbol}/ - needs generation")
+        # Step 4: Auto-generate with Edge TTS
+        if auto_generate:
+            logger.info(f"Auto-generating audio for /{phoneme.ipa_symbol}/ with Edge TTS")
+            generated_audio = self._generate_phoneme_audio(phoneme, voice_id)
+            if generated_audio:
+                self._increment_usage(generated_audio)
+                if use_cache:
+                    self._save_to_cache(phoneme.id, generated_audio, voice_id)
+                return generated_audio
+        
+        # No audio available
+        logger.warning(f"No audio available for /{phoneme.ipa_symbol}/")
         return None
     
     def get_audio_url(
@@ -552,3 +568,199 @@ class PhonemeAudioService:
         # This would require tracking all voice_ids or using Redis pattern matching
         
         return True
+    
+    # =========================================================================
+    # EDGE TTS GENERATION METHODS
+    # =========================================================================
+    
+    def _generate_phoneme_audio(
+        self,
+        phoneme: Phoneme,
+        voice_id: Optional[str] = None
+    ) -> Optional[AudioSource]:
+        """
+        Generate audio for phoneme using Edge TTS.
+        
+        Args:
+            phoneme: Phoneme to generate audio for
+            voice_id: Specific voice ID (optional)
+        
+        Returns:
+            AudioSource instance or None
+        """
+        try:
+            tts_service = get_tts_service()
+            
+            # Determine voice key
+            voice_key = voice_id if voice_id else "us_female_clear"
+            
+            # Generate audio with slow speed for pronunciation clarity
+            audio_path = tts_service.generate_word_pronunciation_sync(
+                word=phoneme.ipa_symbol,
+                accent="us" if "us_" in voice_key else "gb",
+                repeat=2,
+                speed_level="beginner"
+            )
+            
+            # Create AudioSource record
+            with transaction.atomic():
+                # Create audio source
+                audio_source = AudioSource.objects.create(
+                    phoneme=phoneme,
+                    source_type='tts',
+                    voice_id=voice_key,
+                    cached_until=timezone.now() + timedelta(days=30),
+                    metadata={
+                        'generated_at': timezone.now().isoformat(),
+                        'voice_key': voice_key,
+                        'speed_level': 'beginner',
+                        'repeat': 2,
+                        'engine': 'edge_tts'
+                    }
+                )
+                
+                # Attach audio file
+                with open(audio_path, 'rb') as f:
+                    audio_source.audio_file.save(
+                        f"phoneme_{phoneme.id}_{voice_key}.mp3",
+                        File(f),
+                        save=True
+                    )
+                
+                # Create cache record
+                AudioCache.objects.create(
+                    audio_source=audio_source,
+                    usage_count=0
+                )
+            
+            logger.info(f"✅ Generated audio for /{phoneme.ipa_symbol}/ with {voice_key}")
+            return audio_source
+            
+        except Exception as e:
+            logger.error(f"Failed to generate audio for /{phoneme.ipa_symbol}/: {e}")
+            return None
+    
+    def generate_sentence_audio(
+        self,
+        text: str,
+        voice_key: str = "us_female_clear",
+        speed_level: str = "intermediate"
+    ) -> Optional[str]:
+        """
+        Generate audio for a sentence.
+        
+        Args:
+            text: Sentence text
+            voice_key: Voice to use
+            speed_level: Speed level
+        
+        Returns:
+            Audio file path or None
+        """
+        try:
+            tts_service = get_tts_service()
+            
+            audio_path = tts_service.generate_sentence_audio_sync(
+                sentence=text,
+                student_level=speed_level,
+                voice_type="female" if "female" in voice_key else "male",
+                accent="us" if "us_" in voice_key else "gb"
+            )
+            
+            logger.info(f"✅ Generated sentence audio: {text[:50]}...")
+            return audio_path
+            
+        except Exception as e:
+            logger.error(f"Failed to generate sentence audio: {e}")
+            return None
+    
+    def generate_conversation_audio(
+        self,
+        dialogues: List[Dict[str, str]],
+        speed_level: str = "intermediate"
+    ) -> List[str]:
+        """
+        Generate audio for conversation.
+        
+        Args:
+            dialogues: List of {"speaker": "A/B", "text": "..."}
+            speed_level: Speed level
+        
+        Returns:
+            List of audio file paths
+        """
+        try:
+            tts_service = get_tts_service()
+            
+            audio_paths = tts_service.generate_conversation_sync(
+                dialogues=dialogues,
+                student_level=speed_level
+            )
+            
+            logger.info(f"✅ Generated conversation audio: {len(dialogues)} utterances")
+            return audio_paths
+            
+        except Exception as e:
+            logger.error(f"Failed to generate conversation audio: {e}")
+            return []
+    
+    def generate_flashcard_audio(
+        self,
+        word: str,
+        definition: str,
+        example: str,
+        accent: str = "us"
+    ) -> Dict[str, str]:
+        """
+        Generate complete audio set for flashcard.
+        
+        Args:
+            word: Vocabulary word
+            definition: Word definition
+            example: Example sentence
+            accent: "us" or "gb"
+        
+        Returns:
+            Dict with keys: word, definition, example (audio paths)
+        """
+        try:
+            tts_service = get_tts_service()
+            
+            audio_dict = tts_service.generate_flashcard_audio_sync(
+                word=word,
+                definition=definition,
+                example=example,
+                accent=accent
+            )
+            
+            logger.info(f"✅ Generated flashcard audio for: {word}")
+            return audio_dict
+            
+        except Exception as e:
+            logger.error(f"Failed to generate flashcard audio: {e}")
+            return {}
+    
+    def bulk_generate_phoneme_audio(
+        self,
+        phonemes: List[Phoneme],
+        voice_key: str = "us_female_clear"
+    ) -> Dict[int, AudioSource]:
+        """
+        Bulk generate audio for multiple phonemes.
+        
+        Args:
+            phonemes: List of phonemes
+            voice_key: Voice to use
+        
+        Returns:
+            Dict mapping phoneme_id -> AudioSource
+        """
+        result = {}
+        
+        for phoneme in phonemes:
+            audio = self._generate_phoneme_audio(phoneme, voice_key)
+            if audio:
+                result[phoneme.id] = audio
+        
+        logger.info(f"✅ Bulk generated audio for {len(result)}/{len(phonemes)} phonemes")
+        return result

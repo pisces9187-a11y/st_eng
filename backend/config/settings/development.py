@@ -62,6 +62,10 @@ CACHES = {
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 
+# Mock TTS Mode - For offline development (no internet required)
+# Set to True to use mock audio generation instead of real Edge-TTS API
+MOCK_TTS_MODE = config('MOCK_TTS', default='false').lower() == 'true'
+
 # Logging
 LOGGING = {
     'version': 1,

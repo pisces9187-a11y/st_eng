@@ -469,6 +469,7 @@ class PhonemeListWithProgressView(APIView):
             progress_qs = UserPhonemeProgress.objects.filter(user=request.user)
             for p in progress_qs:
                 user_progress[p.phoneme_id] = {
+                    'current_stage': p.current_stage,
                     'mastery_level': p.mastery_level,
                     'accuracy_rate': round(p.accuracy_rate, 1),
                     'times_practiced': p.times_practiced,
@@ -500,3 +501,452 @@ class PhonemeListWithProgressView(APIView):
             'success': True,
             'categories': result,
         })
+
+
+# ============================================================================
+# PAGE VIEWS (Frontend HTML Rendering)
+# ============================================================================
+
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_http_methods
+from functools import wraps
+import json
+
+
+def jwt_required(view_func):
+    """Decorator to check JWT authentication for template views."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not getattr(request, 'jwt_authenticated', False):
+            next_url = request.get_full_path()
+            return redirect(f'/login/?next={next_url}')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@jwt_required
+@require_http_methods(["GET"])
+def pronunciation_discovery_view(request):
+    """
+    Render the phoneme discovery page.
+    
+    Shows all 44 IPA phonemes in an interactive grid.
+    Users can click to mark phonemes as discovered.
+    """
+    context = {
+        'page_title': 'Khám phá âm IPA',
+        'meta_description': 'Khám phá và học 44 âm IPA tiếng Anh qua hệ thống 4 giai đoạn SMART',
+    }
+    
+    return render(request, 'pages/pronunciation_discovery.html', context)
+
+
+@jwt_required
+@require_http_methods(["GET"])
+def pronunciation_learning_view(request, phoneme_id):
+    """
+    Render the learning page for a specific phoneme.
+    
+    Shows:
+    - Phoneme details (IPA symbol, Vietnamese approximation)
+    - Audio playback for reference pronunciation
+    - Mouth diagram and pronunciation tips
+    - Example words
+    - Current learning progress
+    """
+    # Get phoneme
+    phoneme = get_object_or_404(Phoneme, pk=phoneme_id, is_active=True)
+    
+    # Get user's progress for this phoneme
+    progress, _ = UserPhonemeProgress.objects.get_or_create(
+        user=request.user,
+        phoneme=phoneme
+    )
+    
+    # Prepare phoneme data for JSON serialization
+    phoneme_data = {
+        'id': phoneme.id,
+        'ipa_symbol': phoneme.ipa_symbol,
+        'vietnamese_approx': phoneme.vietnamese_approx,
+        'phoneme_type': phoneme.phoneme_type,
+        'voicing': phoneme.voicing,
+        'mouth_position': phoneme.mouth_position_vi or phoneme.mouth_position,
+        'tongue_position': phoneme.tongue_position_vi or phoneme.tongue_position,
+        'audio_sample': phoneme.audio_sample.url if phoneme.audio_sample else None,
+        'mouth_diagram': phoneme.mouth_diagram.url if phoneme.mouth_diagram else None,
+        'pronunciation_tips': _get_pronunciation_tips(phoneme),
+        'example_words': _get_example_words(phoneme),
+    }
+    
+    # Prepare progress data
+    progress_data = {
+        'current_stage': progress.current_stage,
+        'mastery_level': progress.mastery_level,
+        'discrimination_accuracy': progress.discrimination_accuracy,
+        'discrimination_attempts': progress.discrimination_attempts,
+        'production_best_score': progress.production_best_score,
+        'production_attempts': progress.production_attempts,
+        'times_practiced': progress.times_practiced,
+        'accuracy_rate': progress.accuracy_rate,
+    }
+    
+    context = {
+        'phoneme': phoneme,
+        'phoneme_json': json.dumps(phoneme_data),
+        'progress': progress,
+        'progress_json': json.dumps(progress_data),
+        'page_title': f'Học âm {phoneme.ipa_symbol}',
+        'meta_description': f'Học cách phát âm chuẩn âm IPA {phoneme.ipa_symbol} qua lý thuyết và thực hành',
+    }
+    
+    return render(request, 'pages/pronunciation_learning.html', context)
+
+
+def _get_pronunciation_tips(phoneme):
+    """
+    Get pronunciation tips for a phoneme.
+    
+    In future, this could be stored in database.
+    For now, returns generic tips based on phoneme type.
+    """
+    tips = []
+    
+    # Generic tips applicable to all phonemes
+    tips.append(f'Chú ý đến hình dạng môi và vị trí lưỡi khi phát âm /{phoneme.ipa_symbol}/')
+    tips.append('Nghe và bắt chước âm mẫu nhiều lần để quen tai')
+    
+    # Type-specific tips
+    if phoneme.phoneme_type in ['long_vowel', 'short_vowel']:
+        tips.append('Nguyên âm cần giữ nguyên vị trí miệng trong suốt quá trình phát âm')
+        tips.append(f'So sánh với âm tiếng Việt "{phoneme.vietnamese_approx}" để dễ nhớ')
+    elif phoneme.phoneme_type == 'diphthong':
+        tips.append('Nguyên âm đôi: bắt đầu từ một âm và trượt sang âm khác')
+        tips.append('Âm đầu tiên mạnh hơn, âm thứ hai nhẹ dần')
+    elif phoneme.phoneme_type in ['voiced_consonant', 'unvoiced_consonant']:
+        tips.append('Phụ âm: chú ý đến cách khí thoát ra và rung dây thanh')
+        if phoneme.phoneme_type == 'voiced_consonant':
+            tips.append('Đây là phụ âm hữu thanh - dây thanh rung khi phát âm')
+        else:
+            tips.append('Đây là phụ âm vô thanh - dây thanh không rung')
+    
+    # Add specific tips from model if available
+    if phoneme.pronunciation_tips_vi:
+        tips.append(phoneme.pronunciation_tips_vi)
+    elif phoneme.pronunciation_tips:
+        tips.append(phoneme.pronunciation_tips)
+    
+    return tips
+
+
+def _get_example_words(phoneme):
+    """
+    Get example words containing this phoneme.
+    
+    In future, this could be fetched from database (MinimalPair or Sentence models).
+    For now, returns sample data.
+    """
+    # This is a placeholder - in production, query from database
+    examples = []
+    
+    # TODO: Query from MinimalPair where phoneme_a or phoneme_b matches
+    # TODO: Or create a new ExampleWord model
+    
+    # Sample data based on common phonemes
+    sample_examples = {
+        '/iː/': [
+            {'word': 'see', 'phonetic': 'siː', 'meaning': 'nhìn', 'audio_url': None},
+            {'word': 'tree', 'phonetic': 'triː', 'meaning': 'cây', 'audio_url': None},
+            {'word': 'eat', 'phonetic': 'iːt', 'meaning': 'ăn', 'audio_url': None},
+        ],
+        '/ɪ/': [
+            {'word': 'sit', 'phonetic': 'sɪt', 'meaning': 'ngồi', 'audio_url': None},
+            {'word': 'big', 'phonetic': 'bɪg', 'meaning': 'lớn', 'audio_url': None},
+            {'word': 'fish', 'phonetic': 'fɪʃ', 'meaning': 'cá', 'audio_url': None},
+        ],
+        '/æ/': [
+            {'word': 'cat', 'phonetic': 'kæt', 'meaning': 'mèo', 'audio_url': None},
+            {'word': 'hat', 'phonetic': 'hæt', 'meaning': 'mũ', 'audio_url': None},
+            {'word': 'man', 'phonetic': 'mæn', 'meaning': 'đàn ông', 'audio_url': None},
+        ],
+    }
+    
+    # Return examples if available for this phoneme
+    if phoneme.ipa_symbol in sample_examples:
+        return sample_examples[phoneme.ipa_symbol]
+    
+    # Return empty list if no examples found
+    return examples
+
+
+@jwt_required
+@require_http_methods(["GET"])
+def pronunciation_discrimination_view(request, phoneme_id):
+    """
+    Render the discrimination practice page.
+    
+    Shows quiz interface for minimal pair discrimination.
+    """
+    phoneme = get_object_or_404(Phoneme, pk=phoneme_id, is_active=True)
+    
+    context = {
+        'phoneme': phoneme,
+        'page_title': f'Luyện phân biệt âm {phoneme.ipa_symbol}',
+        'meta_description': f'Luyện tập phân biệt âm {phoneme.ipa_symbol} qua các cặp từ tối thiểu',
+    }
+    
+    return render(request, 'pages/pronunciation_discrimination.html', context)
+
+
+@jwt_required
+@require_http_methods(["GET"])
+def pronunciation_production_view(request, phoneme_id):
+    """
+    Render the production practice page.
+    
+    Shows recording interface for pronunciation practice.
+    """
+    phoneme = get_object_or_404(Phoneme, pk=phoneme_id, is_active=True)
+    
+    context = {
+        'phoneme': phoneme,
+        'page_title': f'Luyện phát âm {phoneme.ipa_symbol}',
+        'meta_description': f'Thực hành phát âm chuẩn âm {phoneme.ipa_symbol}',
+    }
+    
+    return render(request, 'pages/pronunciation_production.html', context)
+
+
+@jwt_required
+@require_http_methods(["GET"])
+def pronunciation_progress_dashboard_view(request):
+    """
+    Render the overall progress dashboard.
+    
+    Shows:
+    - Overall statistics
+    - Recently practiced phonemes
+    - Recommended next phonemes
+    - Stage-by-stage breakdown
+    """
+    context = {
+        'page_title': 'Tiến độ học phát âm',
+        'meta_description': 'Xem tiến độ học và thành tích phát âm tiếng Anh của bạn',
+    }
+    
+    return render(request, 'pages/pronunciation_progress.html', context)
+
+# ==================== Day 6-7: Discrimination Quiz Views ====================
+
+@jwt_required
+@require_http_methods(["GET"])
+def discrimination_start_view(request):
+    """
+    Discrimination quiz start page.
+    
+    Shows:
+    - Quiz instructions (10 questions, 5 minutes)
+    - User's best score and session count
+    - Start Quiz button
+    """
+    from apps.study.models import DiscriminationSession
+    
+    # Get user stats
+    completed_sessions = DiscriminationSession.objects.filter(
+        user=request.user,
+        status='completed'
+    )
+    
+    best_session = completed_sessions.order_by('-accuracy').first()
+    total_sessions = completed_sessions.count()
+    
+    context = {
+        'page_title': 'Discrimination Practice - Luyện phân biệt âm',
+        'meta_description': 'Luyện phân biệt các cặp âm tương tự trong tiếng Anh',
+        'best_score': best_session.accuracy if best_session else 0,
+        'total_sessions': total_sessions,
+    }
+    
+    return render(request, 'pages/discrimination_start.html', context)
+
+# ==================== Day 10: Learning Hub Dashboard View ====================
+
+@jwt_required
+@require_http_methods(["GET"])
+def learning_hub_dashboard_view(request):
+    """
+    Learning Hub Dashboard - Main overview page.
+    
+    Shows:
+    - Overall statistics (30 days)
+    - Progress charts (Chart.js)
+    - Top 3 phoneme recommendations
+    - Recent activity feed
+    - Quick action buttons
+    """
+    context = {
+        'page_title': 'Learning Hub - Dashboard',
+        'meta_description': 'Tổng quan tiến độ học phát âm tiếng Anh',
+    }
+    return render(request, 'pages/learning_hub_dashboard.html', context)
+# ==================== Day 8-9: Production Recording Views ====================
+
+@jwt_required
+@require_http_methods(["GET"])
+def production_record_view(request, phoneme_id):
+    """Production recording interface for a specific phoneme."""
+    phoneme = get_object_or_404(Phoneme, id=phoneme_id)
+    
+    from apps.study.models import ProductionRecording
+    recordings_qs = ProductionRecording.objects.filter(
+        user=request.user, phoneme=phoneme
+    ).order_by('-created_at')[:5]
+    
+    # Serialize recordings for JSON
+    recordings_data = []
+    for rec in recordings_qs:
+        recordings_data.append({
+            'id': rec.id,
+            'recording_url': request.build_absolute_uri(rec.recording_file.url),
+            'duration_seconds': rec.duration_seconds,
+            'self_assessment_score': rec.self_assessment_score,
+            'is_best': rec.is_best,
+            'created_at': rec.created_at.isoformat(),
+        })
+    
+    context = {
+        'page_title': f'Practice Recording - {phoneme.ipa_symbol}',
+        'meta_description': f'Luyện phát âm {phoneme.name_vi}',
+        'phoneme': phoneme,
+        'recordings': json.dumps(recordings_data),
+    }
+    return render(request, 'pages/production_record.html', context)
+
+
+@jwt_required
+@require_http_methods(["GET"])
+def production_history_view(request):
+    """Production recording history page."""
+    from apps.study.models import ProductionRecording
+    
+    phoneme_id = request.GET.get('phoneme_id')
+    recordings_qs = ProductionRecording.objects.filter(
+        user=request.user
+    ).select_related('phoneme').order_by('-created_at')
+    
+    if phoneme_id:
+        recordings_qs = recordings_qs.filter(phoneme_id=phoneme_id)
+    
+    total_recordings = recordings_qs.count()
+    unique_phonemes = recordings_qs.values('phoneme').distinct().count()
+    avg_score = recordings_qs.filter(
+        self_assessment_score__isnull=False
+    ).aggregate(Avg('self_assessment_score'))['self_assessment_score__avg'] or 0
+    
+    # Serialize recordings for JSON
+    recordings_data = []
+    for rec in recordings_qs[:50]:
+        recordings_data.append({
+            'id': rec.id,
+            'phoneme': {
+                'id': rec.phoneme.id,
+                'ipa_symbol': rec.phoneme.ipa_symbol,
+                'name_vi': rec.phoneme.name_vi,
+            },
+            'recording_url': request.build_absolute_uri(rec.recording_file.url),
+            'duration_seconds': rec.duration_seconds,
+            'self_assessment_score': rec.self_assessment_score,
+            'is_best': rec.is_best,
+            'created_at': rec.created_at.isoformat(),
+        })
+    
+    phonemes = Phoneme.objects.all().order_by('ipa_symbol')
+    
+    context = {
+        'page_title': 'Recording History',
+        'meta_description': 'Lịch sử ghi âm luyện phát âm',
+        'recordings': json.dumps(recordings_data),
+        'phonemes': phonemes,
+        'selected_phoneme_id': int(phoneme_id) if phoneme_id else None,
+        'stats': {
+            'total_recordings': total_recordings,
+            'unique_phonemes': unique_phonemes,
+            'avg_score': round(avg_score, 2)
+        }
+    }
+    return render(request, 'pages/production_history.html', context)
+
+@jwt_required
+@require_http_methods(["GET"])
+def discrimination_quiz_view(request, session_id):
+    """
+    Active discrimination quiz interface.
+    
+    Validates session exists and belongs to user.
+    Vue.js handles the quiz interaction.
+    """
+    from apps.study.models import DiscriminationSession
+    
+    session = get_object_or_404(
+        DiscriminationSession,
+        session_id=session_id,
+        user=request.user
+    )
+    
+    if session.status != 'in_progress':
+        # Redirect to results if already completed
+        if session.status == 'completed':
+            return redirect('curriculum:discrimination-results', session_id=session_id)
+        # Redirect to start if expired/abandoned
+        return redirect('curriculum:discrimination-start')
+    
+    context = {
+        'page_title': 'Discrimination Quiz',
+        'meta_description': 'Luyện phân biệt âm tiếng Anh',
+        'session_id': session_id,
+    }
+    
+    return render(request, 'pages/discrimination_quiz.html', context)
+
+
+@jwt_required
+@require_http_methods(["GET"])
+def discrimination_results_view(request, session_id):
+    """
+    Discrimination quiz results page.
+    
+    Shows:
+    - Final score
+    - Question breakdown
+    - Time spent
+    - Progress updates
+    """
+    from apps.study.models import DiscriminationSession, DiscriminationAttempt
+    
+    session = get_object_or_404(
+        DiscriminationSession,
+        session_id=session_id,
+        user=request.user
+    )
+    
+    if session.status != 'completed':
+        return redirect('curriculum:discrimination-start')
+    
+    # Get all attempts
+    attempts = DiscriminationAttempt.objects.filter(
+        session=session
+    ).select_related('minimal_pair', 'minimal_pair__phoneme_1', 'minimal_pair__phoneme_2').order_by('question_number')
+    
+    # Calculate stats
+    total_time = (session.completed_at - session.started_at).total_seconds() if session.completed_at else 0
+    avg_response_time = attempts.aggregate(Avg('response_time'))['response_time__avg'] or 0
+    
+    context = {
+        'page_title': 'Quiz Results',
+        'meta_description': 'Kết quả bài tập phân biệt âm',
+        'session': session,
+        'attempts': attempts,
+        'total_time': total_time,
+        'avg_response_time': avg_response_time,
+    }
+    
+    return render(request, 'pages/discrimination_results.html', context)

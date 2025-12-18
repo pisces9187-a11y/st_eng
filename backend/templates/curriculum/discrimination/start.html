@@ -1,0 +1,329 @@
+{% extends 'base/_base_public.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Breadcrumb Styles */
+    .custom-breadcrumb {
+        background: #f8f9fa;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .custom-breadcrumb .breadcrumb {
+        margin-bottom: 0;
+        background: transparent;
+        padding: 0;
+    }
+    .custom-breadcrumb .breadcrumb-item {
+        font-size: 14px;
+    }
+    .custom-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        font-size: 18px;
+        color: #6c757d;
+        padding: 0 0.5rem;
+    }
+    .custom-breadcrumb .breadcrumb-item a {
+        color: #F47C26;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .custom-breadcrumb .breadcrumb-item a:hover {
+        color: #ff9454;
+        text-decoration: underline;
+    }
+    .custom-breadcrumb .breadcrumb-item.active {
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    .discrimination-hero {
+        background: linear-gradient(135deg, #F47C26 0%, #ff9454 100%);
+        border-radius: 16px;
+        padding: 48px 32px;
+        text-align: center;
+        color: white;
+        margin-bottom: 32px;
+    }
+    
+    .discrimination-hero__icon {
+        font-size: 72px;
+        margin-bottom: 16px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    
+    .discrimination-hero__title {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+    
+    .discrimination-hero__subtitle {
+        font-size: 18px;
+        opacity: 0.95;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+    
+    .info-card__title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .info-card__content {
+        color: #555;
+        line-height: 1.8;
+    }
+    
+    .info-card__content ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+    
+    .info-card__content li {
+        margin-bottom: 8px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .stat-item__label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+    
+    .stat-item__value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #F47C26;
+    }
+    
+    .btn-start-quiz {
+        background: linear-gradient(135deg, #F47C26 0%, #ff9454 100%);
+        border: none;
+        padding: 16px 48px;
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(244, 124, 38, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-start-quiz:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(244, 124, 38, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary-action {
+        background: white;
+        border: 2px solid #e0e0e0;
+        padding: 12px 32px;
+        font-size: 16px;
+        font-weight: 500;
+        color: #555;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary-action:hover {
+        border-color: #F47C26;
+        color: #F47C26;
+    }
+    
+    .actions-container {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 32px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<div class="custom-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/dashboard/">
+                        <i class="bi bi-house-door"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'curriculum:pronunciation-discovery' %}">
+                        <i class="bi bi-mic"></i> Phát âm
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bi bi-puzzle"></i> Bài kiểm tra phân biệt
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-5" id="discriminationStartApp">
+    <!-- Hero Section -->
+    <div class="discrimination-hero">
+        <div class="discrimination-hero__icon">🎯</div>
+        <h1 class="discrimination-hero__title">Discrimination Practice</h1>
+        <p class="discrimination-hero__subtitle">
+            Luyện phân biệt các cặp âm tương tự trong tiếng Anh
+        </p>
+    </div>
+    
+    <!-- Info Cards -->
+    <div class="row mb-4">
+        <!-- Quiz Details -->
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="info-card">
+                <h3 class="info-card__title">
+                    <i class="bi bi-info-circle"></i>
+                    Thông tin bài quiz
+                </h3>
+                <div class="info-card__content">
+                    <ul>
+                        <li><strong>Số câu hỏi:</strong> 10 câu</li>
+                        <li><strong>Thời gian:</strong> 5 phút</li>
+                        <li><strong>Định dạng:</strong> Chọn từ đúng theo audio</li>
+                        <li><strong>Phản hồi:</strong> Ngay lập tức sau mỗi câu</li>
+                    </ul>
+                    <p class="mb-0 mt-3">
+                        <i class="bi bi-lightbulb text-warning"></i>
+                        <strong>Mẹo:</strong> Tập trung nghe kỹ để phân biệt các âm tương tự!
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Your Stats -->
+        <div class="col-md-6">
+            <div class="info-card">
+                <h3 class="info-card__title">
+                    <i class="bi bi-graph-up"></i>
+                    Thống kê của bạn
+                </h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-item__label">Điểm cao nhất</div>
+                        <div class="stat-item__value">[[ bestScore ]]%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item__label">Số bài đã làm</div>
+                        <div class="stat-item__value">[[ totalSessions ]]</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center">
+                    <p class="mb-0 text-muted">
+                        <span v-if="totalSessions === 0">
+                            Hãy bắt đầu bài quiz đầu tiên của bạn!
+                        </span>
+                        <span v-else>
+                            Tiếp tục luyện tập để cải thiện kết quả!
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="actions-container">
+        <button 
+            class="btn btn-start-quiz"
+            @click="startQuiz"
+            :disabled="isStarting"
+        >
+            <span v-if="!isStarting">
+                <i class="bi bi-play-fill"></i>
+                Bắt đầu Quiz
+            </span>
+            <span v-else>
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Đang tạo bài quiz...
+            </span>
+        </button>
+        
+        <a 
+            href="{% url 'curriculum:pronunciation-dashboard' %}" 
+            class="btn btn-secondary-action"
+        >
+            <i class="bi bi-bar-chart"></i>
+            Xem tiến độ
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            bestScore: {{ best_score }},
+            totalSessions: {{ total_sessions }},
+            isStarting: false,
+        }
+    },
+    methods: {
+        async startQuiz() {
+            this.isStarting = true;
+            
+            try {
+                // Wait for auth to be ready
+                await Auth.waitUntilReady();
+                
+                // Start new session
+                const response = await ApiClient.post('/api/v1/discrimination/sessions/start/');
+                
+                if (response.success) {
+                    // Redirect to quiz page
+                    window.location.href = `/discrimination/quiz/${response.data.session.session_id}/`;
+                } else {
+                    throw new Error(response.message || 'Failed to start quiz');
+                }
+            } catch (error) {
+                console.error('Error starting quiz:', error);
+                alert('Có lỗi xảy ra khi bắt đầu quiz. Vui lòng thử lại.');
+                this.isStarting = false;
+            }
+        }
+    }
+}).mount('#discriminationStartApp');
+</script>
+{% endblock %}

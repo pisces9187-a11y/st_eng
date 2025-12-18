@@ -35,6 +35,9 @@ THIRD_PARTY_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'social_django',
+    'dal',  # django-autocomplete-light
+    'dal_select2',  # django-autocomplete-light select2 theme
+    'import_export',  # django-import-export
 ]
 
 LOCAL_APPS = [
@@ -148,8 +151,10 @@ REST_FRAMEWORK = {
 # JWT SETTINGS
 # =============================================================================
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('JWT_ACCESS_TOKEN_LIFETIME', default=60, cast=int)),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=config('JWT_REFRESH_TOKEN_LIFETIME', default=7, cast=int)),
+    # Access Token: 24 hours (tăng từ 60 phút để tránh token hết hạn nhanh)
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=config('JWT_ACCESS_TOKEN_LIFETIME', default=24, cast=int)),
+    # Refresh Token: 30 days
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=config('JWT_REFRESH_TOKEN_LIFETIME', default=30, cast=int)),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -201,6 +206,56 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
+# Task retry settings
+CELERY_TASK_AUTORETRY_FOR = (Exception,)
+CELERY_TASK_RETRY_KWARGS = {'max_retries': 3}
+CELERY_TASK_RETRY_BACKOFF = True  # Exponential backoff
+
+# Task routing (optional - for multiple queues)
+CELERY_TASK_ROUTES = {
+    'apps.curriculum.tasks.generate_phoneme_audio': {'queue': 'tts'},
+    'apps.curriculum.tasks.generate_audio_batch': {'queue': 'tts'},
+    'apps.curriculum.tasks.clean_expired_audio_cache': {'queue': 'maintenance'},
+}
+
+# Worker settings
+CELERY_WORKER_PREFETCH_MULTIPLIER = 4
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 100  # Restart worker after 100 tasks
+
+# =============================================================================
+# TTS CONFIGURATION (Edge-TTS Enhanced)
+# =============================================================================
+# Edge-TTS Voice Settings (Enhanced with voice keys)
+TTS_DEFAULT_VOICE = 'en-US-AriaNeural'  # Legacy support
+TTS_DEFAULT_VOICE_KEY = 'us_female_clear'  # New: Voice key for EnglishTTSService
+TTS_DEFAULT_SPEED_LEVEL = 'intermediate'  # Default speed level
+
+# Legacy voice configuration (kept for backward compatibility)
+TTS_VOICES = {
+    'en-US-AriaNeural': {'gender': 'female', 'accent': 'US'},
+    'en-US-GuyNeural': {'gender': 'male', 'accent': 'US'},
+    'en-GB-SoniaNeural': {'gender': 'female', 'accent': 'UK'},
+    'en-GB-RyanNeural': {'gender': 'male', 'accent': 'UK'},
+    'en-AU-NatashaNeural': {'gender': 'female', 'accent': 'AU'},
+    'en-AU-WilliamNeural': {'gender': 'male', 'accent': 'AU'},
+}
+
+# TTS Generation Settings
+TTS_RATE = '-30%'  # Slower for clarity (legacy)
+TTS_VOLUME = '+0%'  # Normal volume
+TTS_CACHE_DAYS = 30  # Cache TTS audio for 30 days
+
+# Audio Output Directory
+TTS_AUDIO_DIR = os.path.join(MEDIA_ROOT, 'tts_audio')
+
+# Audio Processing Settings
+AUDIO_FORMAT = 'mp3'
+AUDIO_BITRATE = '128k'  # Good quality, reasonable file size
+AUDIO_SAMPLE_RATE = 44100  # CD quality
+
+# Mock TTS Mode (for offline development/testing)
+MOCK_TTS_MODE = os.environ.get('MOCK_TTS', 'false').lower() == 'true'
 
 # =============================================================================
 # CACHE SETTINGS

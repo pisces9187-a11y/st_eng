@@ -1,0 +1,372 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Ti\u1ebfn \u0111\u1ed9 h\u1ecdc ph\u00e1t \u00e2m - EnglishMaster{% endblock %}
+{% block meta_description %}Xem ti\u1ebfn \u0111\u1ed9 h\u1ecdc v\u00e0 th\u00e0nh t\u00edch ph\u00e1t \u00e2m ti\u1ebfng Anh c\u1ee7a b\u1ea1n{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --progress-primary: #F47C26;
+        --progress-secondary: #183B56;
+        --progress-success: #28A745;
+    }
+    
+    .progress-hero {
+        background: linear-gradient(135deg, var(--progress-secondary) 0%, #2E5F7F 100%);
+        padding: 3rem 0;
+        color: white;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon.discovered { background: rgba(244,124,38,0.1); color: var(--progress-primary); }
+    .stat-icon.learning { background: rgba(23,162,184,0.1); color: #17A2B8; }
+    .stat-icon.discriminating { background: rgba(255,193,7,0.1); color: #FFC107; }
+    .stat-icon.producing { background: rgba(111,66,193,0.1); color: #6F42C1; }
+    .stat-icon.mastered { background: rgba(40,167,69,0.1); color: var(--progress-success); }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        font-family: 'Montserrat', sans-serif;
+        color: var(--progress-secondary);
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .content-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--progress-secondary);
+        margin-bottom: 1.5rem;
+    }
+    
+    .phoneme-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .phoneme-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: #F9FAFC;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+    }
+    
+    .phoneme-item:hover {
+        background: #EEF2F7;
+    }
+    
+    .phoneme-symbol-small {
+        font-size: 1.5rem;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        color: var(--progress-primary);
+        margin-right: 1rem;
+    }
+    
+    .phoneme-info {
+        flex: 1;
+    }
+    
+    .phoneme-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-discovered { background: rgba(244,124,38,0.1); color: var(--progress-primary); }
+    .badge-learning { background: rgba(23,162,184,0.1); color: #17A2B8; }
+    .badge-discriminating { background: rgba(255,193,7,0.1); color: #FFC107; }
+    .badge-producing { background: rgba(111,66,193,0.1); color: #6F42C1; }
+    .badge-mastered { background: rgba(40,167,69,0.1); color: var(--progress-success); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="progressApp">
+    <!-- Hero Section -->
+    <section class="progress-hero">
+        <div class="container text-center">
+            <h1 class="mb-3"><i class="fas fa-chart-line me-2"></i>Ti\u1ebfn \u0111\u1ed9 H\u1ecdc Ph\u00e1t \u00c2m</h1>
+            <p class="lead">Theo d\u00f5i qu\u00e1 tr\u00ecnh h\u1ecdc v\u00e0 th\u00e0nh t\u00edch c\u1ee7a b\u1ea1n</p>
+        </div>
+    </section>
+
+    <div class="container mt-5">
+        <!-- Overall Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon discovered">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="stat-number">[[ progress.discovered_count ]]</div>
+                <div class="stat-label">\u0110\u00e3 kh\u00e1m ph\u00e1</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon learning">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="stat-number">[[ progress.learning_count ]]</div>
+                <div class="stat-label">\u0110ang h\u1ecdc</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon discriminating">
+                    <i class="fas fa-headphones"></i>
+                </div>
+                <div class="stat-number">[[ progress.discriminating_count ]]</div>
+                <div class="stat-label">Luy\u1ec7n ph\u00e2n bi\u1ec7t</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon producing">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <div class="stat-number">[[ progress.producing_count ]]</div>
+                <div class="stat-label">Luy\u1ec7n ph\u00e1t \u00e2m</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon mastered">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-number">[[ progress.mastered_count ]]</div>
+                <div class="stat-label">Th\u00e0nh th\u1ea1o</div>
+            </div>
+        </div>
+
+        <!-- Overall Progress Bar -->
+        <div class="content-card mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="section-title mb-0">Ti\u1ebfn \u0111\u1ed9 t\u1ed5ng th\u1ec3</h3>
+                <span class="fs-3 fw-bold text-primary">[[ progress.mastery_percentage ]]%</span>
+            </div>
+            <div class="progress" style="height: 24px; border-radius: 12px;">
+                <div class="progress-bar bg-success" 
+                     role="progressbar" 
+                     :style="{ width: progress.mastery_percentage + '%' }"
+                     :aria-valuenow="progress.mastery_percentage" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    [[ progress.mastery_percentage ]]%
+                </div>
+            </div>
+            <p class="text-muted mt-2 mb-0">
+                <small>[[ progress.mastered_count ]] / [[ progress.total_phonemes ]] \u00e2m \u0111\u00e3 th\u00e0nh th\u1ea1o</small>
+            </p>
+        </div>
+
+        <div class="row">
+            <!-- Recently Practiced -->
+            <div class="col-lg-6">
+                <div class="content-card">
+                    <h3 class="section-title">
+                        <i class="fas fa-history me-2"></i>G\u1ea7n \u0111\u00e2y luy\u1ec7n t\u1eadp
+                    </h3>
+                    
+                    <ul class="phoneme-list" v-if="recentlyPracticed.length > 0">
+                        <li v-for="item in recentlyPracticed" :key="item.phoneme.id" class="phoneme-item">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <div class="phoneme-symbol-small">[[ item.phoneme.ipa_symbol ]]</div>
+                                <div class="phoneme-info">
+                                    <div class="fw-bold">[[ item.phoneme.vietnamese_approx ]]</div>
+                                    <small class="text-muted">Luy\u1ec7n l\u1ea7n cu\u1ed1i: [[ formatDate(item.last_practiced) ]]</small>
+                                </div>
+                            </div>
+                            <span class="phoneme-badge" :class="'badge-' + item.current_stage">
+                                [[ getStageLabel(item.current_stage) ]]
+                            </span>
+                        </li>
+                    </ul>
+                    
+                    <div v-else class="text-center py-4 text-muted">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p>Ch\u01b0a c\u00f3 l\u1ecbch s\u1eed luy\u1ec7n t\u1eadp</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Next -->
+            <div class="col-lg-6">
+                <div class="content-card">
+                    <h3 class="section-title">
+                        <i class="fas fa-bullseye me-2"></i>\u0110\u1ec1 xu\u1ea5t ti\u1ebfp theo
+                    </h3>
+                    
+                    <ul class="phoneme-list" v-if="recommendedNext.length > 0">
+                        <li v-for="phoneme in recommendedNext" :key="phoneme.id" class="phoneme-item">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <div class="phoneme-symbol-small">[[ phoneme.ipa_symbol ]]</div>
+                                <div class="phoneme-info">
+                                    <div class="fw-bold">[[ phoneme.vietnamese_approx ]]</div>
+                                    <small class="text-muted">[[ phoneme.description ]]</small>
+                                </div>
+                            </div>
+                            <a :href="'/pronunciation/learning/' + phoneme.id + '/'" 
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-play me-1"></i>B\u1eaft \u0111\u1ea7u
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div v-else class="text-center py-4">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <p class="text-muted">B\u1ea1n \u0111\u00e3 ho\u00e0n th\u00e0nh t\u1ea5t c\u1ea3!</p>
+                        <a href="/pronunciation/discovery/" class="btn btn-primary">
+                            Xem l\u1ea1i danh s\u00e1ch
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="content-card">
+            <h3 class="section-title">H\u00e0nh \u0111\u1ed9ng nhanh</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="/pronunciation/discovery/" class="btn btn-primary">
+                    <i class="fas fa-compass me-2"></i>Kh\u00e1m ph\u00e1 \u00e2m m\u1edbi
+                </a>
+                <a href="/pronunciation/" class="btn btn-outline-primary">
+                    <i class="fas fa-book me-2"></i>Th\u01b0 vi\u1ec7n \u00e2m
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Wait for Auth to be loaded before running Vue app
+function initializeProgressApp() {
+    if (typeof Auth === 'undefined') {
+        // Auth not loaded yet, retry
+        setTimeout(initializeProgressApp, 100);
+        return;
+    }
+
+    const { createApp } = Vue;
+
+    createApp({
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                progress: {
+                total_phonemes: 0,
+                discovered_count: 0,
+                learning_count: 0,
+                discriminating_count: 0,
+                producing_count: 0,
+                mastered_count: 0,
+                mastery_percentage: 0,
+            },
+            recentlyPracticed: [],
+            recommendedNext: [],
+        };
+    },
+    methods: {
+        async loadProgress() {
+            try {
+                const response = await ApiClient.get('/pronunciation/progress/overall/');
+                if (response.success) {
+                    this.progress = response.data;
+                    this.recentlyPracticed = response.data.recently_practiced || [];
+                    this.recommendedNext = response.data.recommended_next || [];
+                }
+            } catch (error) {
+                console.error('Error loading progress:', error);
+            }
+        },
+        
+        formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 60) return `${diffMins} ph\u00fat tr\u01b0\u1edbc`;
+            if (diffHours < 24) return `${diffHours} gi\u1edd tr\u01b0\u1edbc`;
+            if (diffDays < 7) return `${diffDays} ng\u00e0y tr\u01b0\u1edbc`;
+            
+            return date.toLocaleDateString('vi-VN');
+        },
+        
+        getStageLabel(stage) {
+            const labels = {
+                'not_started': 'Ch\u01b0a b\u1eaft \u0111\u1ea7u',
+                'discovered': '\u0110\u00e3 kh\u00e1m ph\u00e1',
+                'learning': '\u0110ang h\u1ecdc',
+                'discriminating': 'Ph\u00e2n bi\u1ec7t',
+                'producing': 'Ph\u00e1t \u00e2m',
+                'mastered': 'Th\u00e0nh th\u1ea1o'
+            };
+            return labels[stage] || stage;
+        }
+    },
+    mounted() {
+        // Check authentication
+        if (!Auth.isAuthenticated()) {
+            window.location.href = '/login/?next=' + window.location.pathname;
+            return;
+        }
+        
+        this.loadProgress();
+    }
+    }).mount('#progressApp');
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeProgressApp);
+} else {
+    initializeProgressApp();
+}
+</script>
+{% endblock %}

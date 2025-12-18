@@ -1,0 +1,617 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .recording-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 32px;
+        color: white;
+        margin-bottom: 32px;
+        text-align: center;
+    }
+    
+    .phoneme-display {
+        font-size: 72px;
+        font-weight: 700;
+        margin: 16px 0;
+    }
+    
+    .phoneme-name {
+        font-size: 24px;
+        opacity: 0.95;
+    }
+    
+    .recording-card {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        margin-bottom: 24px;
+    }
+    
+    .recording-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+    }
+    
+    .record-button {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: none;
+        font-size: 48px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    
+    .record-button.idle {
+        background: linear-gradient(135deg, #dc3545, #e74c3c);
+        color: white;
+    }
+    
+    .record-button.recording {
+        background: #dc3545;
+        animation: pulse-red 1.5s ease-in-out infinite;
+    }
+    
+    .record-button.stopped {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+    
+    @keyframes pulse-red {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        50% { box-shadow: 0 0 0 20px rgba(220, 53, 69, 0); }
+    }
+    
+    .recording-status {
+        font-size: 18px;
+        font-weight: 600;
+        color: #666;
+        min-height: 30px;
+    }
+    
+    .recording-timer {
+        font-size: 32px;
+        font-weight: 700;
+        color: #dc3545;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .waveform-container {
+        width: 100%;
+        min-height: 128px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin: 24px 0;
+        position: relative;
+    }
+    
+    .waveform-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 128px;
+        color: #999;
+    }
+    
+    #waveform {
+        min-height: 128px;
+    }
+    
+    .rating-section {
+        text-align: center;
+        padding: 24px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin-top: 24px;
+    }
+    
+    .rating-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #2c3e50;
+    }
+    
+    .star-rating {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        font-size: 40px;
+        cursor: pointer;
+    }
+    
+    .star {
+        color: #ddd;
+        transition: all 0.2s ease;
+    }
+    
+    .star.active,
+    .star:hover {
+        color: #ffc107;
+    }
+    
+    .btn-save-recording {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        padding: 14px 48px;
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        border-radius: 10px;
+        margin-top: 16px;
+    }
+    
+    .btn-save-recording:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 16px;
+    }
+    
+    .btn-action {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    
+    .history-section {
+        margin-top: 32px;
+    }
+    
+    .history-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #2c3e50;
+    }
+    
+    .history-item {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .history-audio {
+        flex: 1;
+    }
+    
+    .history-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .history-stars {
+        color: #ffc107;
+    }
+    
+    .best-badge {
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        color: #000;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block extra_head %}
+<!-- WaveSurfer.js -->
+<script src="https://unpkg.com/wavesurfer.js@7.7.3/dist/wavesurfer.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" id="productionRecordApp">
+    <!-- Hero Section -->
+    <div class="recording-hero">
+        <div class="phoneme-display">/{{ phoneme.ipa_symbol }}/</div>
+        <div class="phoneme-name">{{ phoneme.name_vi }}</div>
+        <p class="mb-0 mt-2">{{ phoneme.description_vi }}</p>
+    </div>
+    
+    <!-- Recording Card -->
+    <div class="recording-card">
+        <div class="recording-controls">
+            <!-- Record Button -->
+            <button 
+                class="record-button"
+                :class="recordingState"
+                @click="toggleRecording"
+                :disabled="isProcessing"
+            >
+                <i class="bi" :class="buttonIcon"></i>
+            </button>
+            
+            <!-- Status & Timer -->
+            <div class="recording-status">[[ statusText ]]</div>
+            <div v-if="isRecording || recordingDuration > 0" class="recording-timer">
+                [[ formattedDuration ]]
+            </div>
+            
+            <!-- Waveform -->
+            <div class="waveform-container">
+                <div v-if="!hasRecording" class="waveform-placeholder">
+                    <i class="bi bi-mic me-2"></i>
+                    Bấm nút đỏ để bắt đầu ghi âm
+                </div>
+                <div id="waveform" v-show="hasRecording"></div>
+            </div>
+            
+            <!-- Playback Controls (shown after recording) -->
+            <div v-if="hasRecording && !isRecording" class="action-buttons">
+                <button 
+                    class="btn btn-primary btn-action"
+                    @click="playRecording"
+                    :disabled="isPlaying"
+                >
+                    <i class="bi" :class="isPlaying ? 'bi-pause-fill' : 'bi-play-fill'"></i>
+                    [[ isPlaying ? 'Đang phát' : 'Phát lại' ]]
+                </button>
+                <button 
+                    class="btn btn-outline-danger btn-action"
+                    @click="discardRecording"
+                >
+                    <i class="bi bi-trash"></i>
+                    Ghi lại
+                </button>
+            </div>
+        </div>
+        
+        <!-- Rating Section (shown after recording) -->
+        <div v-if="hasRecording && !isRecording" class="rating-section">
+            <div class="rating-title">Tự đánh giá phát âm của bạn</div>
+            <div class="star-rating">
+                <span 
+                    v-for="star in 5" 
+                    :key="star"
+                    class="star"
+                    :class="{ active: star <= rating }"
+                    @click="setRating(star)"
+                    @mouseenter="hoverRating = star"
+                    @mouseleave="hoverRating = 0"
+                >
+                    ★
+                </span>
+            </div>
+            <button 
+                class="btn btn-save-recording"
+                @click="saveRecording"
+                :disabled="isSaving || rating === 0"
+            >
+                <span v-if="!isSaving">
+                    <i class="bi bi-check-lg"></i>
+                    Lưu bản ghi
+                </span>
+                <span v-else>
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Đang lưu...
+                </span>
+            </button>
+            <div v-if="rating === 0" class="text-muted mt-2" style="font-size: 14px;">
+                Vui lòng đánh giá trước khi lưu
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Recordings -->
+    <div v-if="recentRecordings.length > 0" class="history-section">
+        <h3 class="history-title">
+            <i class="bi bi-clock-history"></i>
+            Các bản ghi gần đây
+        </h3>
+        
+        <div v-for="recording in recentRecordings" :key="recording.id" class="history-item">
+            <div class="history-audio" style="flex: 2;">
+                <audio :src="recording.recording_url" controls style="width: 100%;"></audio>
+            </div>
+            <div class="history-info">
+                <div>
+                    <i class="bi bi-clock"></i>
+                    [[ formatDate(recording.created_at) ]]
+                </div>
+                <div v-if="recording.self_assessment_score" class="history-stars">
+                    [[ '★'.repeat(recording.self_assessment_score) ]]
+                </div>
+            </div>
+            <div v-if="recording.is_best">
+                <span class="best-badge">🏆 Tốt nhất</span>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="{% url 'curriculum:production-history' %}?phoneme_id={{ phoneme.id }}" class="btn btn-outline-primary">
+                <i class="bi bi-list"></i>
+                Xem tất cả bản ghi
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            phonemeId: {{ phoneme.id }},
+            recordingState: 'idle', // idle, recording, stopped
+            isRecording: false,
+            hasRecording: false,
+            isProcessing: false,
+            isPlaying: false,
+            isSaving: false,
+            
+            // MediaRecorder
+            mediaRecorder: null,
+            audioChunks: [],
+            recordedBlob: null,
+            
+            // Timer
+            recordingDuration: 0,
+            timerInterval: null,
+            
+            // Rating
+            rating: 0,
+            hoverRating: 0,
+            
+            // WaveSurfer
+            wavesurfer: null,
+            
+            // Recent recordings
+            recentRecordings: {{ recordings|safe|default:"[]" }},
+        }
+    },
+    computed: {
+        buttonIcon() {
+            if (this.isRecording) return 'bi-stop-fill';
+            if (this.hasRecording) return 'bi-check-circle-fill';
+            return 'bi-mic-fill';
+        },
+        statusText() {
+            if (this.isRecording) return '🔴 Đang ghi âm...';
+            if (this.hasRecording) return '✅ Đã ghi xong. Hãy nghe lại và đánh giá!';
+            if (this.isProcessing) return 'Đang xử lý...';
+            return 'Sẵn sàng ghi âm';
+        },
+        formattedDuration() {
+            const minutes = Math.floor(this.recordingDuration / 60);
+            const seconds = this.recordingDuration % 60;
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+    },
+    async mounted() {
+        await this.requestMicrophonePermission();
+        this.initWaveSurfer();
+    },
+    beforeUnmount() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+        if (this.wavesurfer) {
+            this.wavesurfer.destroy();
+        }
+        if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+            this.mediaRecorder.stop();
+        }
+    },
+    methods: {
+        async requestMicrophonePermission() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => track.stop()); // Stop after permission
+                console.log('Microphone permission granted');
+            } catch (error) {
+                console.error('Microphone permission denied:', error);
+                alert('Cần quyền truy cập microphone để ghi âm. Vui lòng cho phép trong trình duyệt.');
+            }
+        },
+        
+        initWaveSurfer() {
+            this.wavesurfer = WaveSurfer.create({
+                container: '#waveform',
+                waveColor: '#667eea',
+                progressColor: '#764ba2',
+                height: 128,
+                barWidth: 3,
+                barGap: 2,
+                barRadius: 3,
+            });
+            
+            this.wavesurfer.on('finish', () => {
+                this.isPlaying = false;
+            });
+        },
+        
+        async toggleRecording() {
+            if (this.isRecording) {
+                this.stopRecording();
+            } else {
+                await this.startRecording();
+            }
+        },
+        
+        async startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 44100
+                    } 
+                });
+                
+                // Use webm format for better browser compatibility
+                const options = { mimeType: 'audio/webm' };
+                this.mediaRecorder = new MediaRecorder(stream, options);
+                this.audioChunks = [];
+                
+                this.mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        this.audioChunks.push(event.data);
+                    }
+                };
+                
+                this.mediaRecorder.onstop = () => {
+                    this.recordedBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(this.recordedBlob);
+                    
+                    // Load into WaveSurfer
+                    this.wavesurfer.load(audioUrl);
+                    this.hasRecording = true;
+                    this.recordingState = 'stopped';
+                    
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                this.mediaRecorder.start();
+                this.isRecording = true;
+                this.recordingState = 'recording';
+                this.recordingDuration = 0;
+                
+                // Start timer
+                this.timerInterval = setInterval(() => {
+                    this.recordingDuration++;
+                    
+                    // Auto-stop after 30 seconds
+                    if (this.recordingDuration >= 30) {
+                        this.stopRecording();
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                alert('Không thể bắt đầu ghi âm. Vui lòng kiểm tra microphone.');
+            }
+        },
+        
+        stopRecording() {
+            if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                this.mediaRecorder.stop();
+                this.isRecording = false;
+                
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+            }
+        },
+        
+        playRecording() {
+            if (this.wavesurfer) {
+                this.wavesurfer.playPause();
+                this.isPlaying = this.wavesurfer.isPlaying();
+            }
+        },
+        
+        discardRecording() {
+            if (confirm('Bạn có chắc muốn xóa và ghi lại?')) {
+                this.hasRecording = false;
+                this.recordedBlob = null;
+                this.recordingDuration = 0;
+                this.rating = 0;
+                this.recordingState = 'idle';
+                
+                if (this.wavesurfer) {
+                    this.wavesurfer.empty();
+                }
+            }
+        },
+        
+        setRating(stars) {
+            this.rating = stars;
+        },
+        
+        async saveRecording() {
+            if (!this.recordedBlob || this.rating === 0) {
+                alert('Vui lòng đánh giá bản ghi trước khi lưu!');
+                return;
+            }
+            
+            this.isSaving = true;
+            
+            try {
+                await Auth.waitUntilReady();
+                
+                // Create FormData
+                const formData = new FormData();
+                formData.append('phoneme_id', this.phonemeId);
+                formData.append('audio_file', this.recordedBlob, 'recording.webm');
+                formData.append('duration_seconds', this.recordingDuration);
+                formData.append('self_assessment_score', this.rating);
+                
+                // Upload
+                const response = await fetch('/api/v1/production/recordings/upload/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${Auth.getToken()}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Đã lưu bản ghi thành công!');
+                    
+                    // Add to recent recordings
+                    this.recentRecordings.unshift(data.data.recording);
+                    if (this.recentRecordings.length > 5) {
+                        this.recentRecordings.pop();
+                    }
+                    
+                    // Reset
+                    this.hasRecording = false;
+                    this.recordedBlob = null;
+                    this.recordingDuration = 0;
+                    this.rating = 0;
+                    this.recordingState = 'idle';
+                    this.wavesurfer.empty();
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+            } catch (error) {
+                console.error('Error saving recording:', error);
+                alert('Có lỗi xảy ra khi lưu bản ghi. Vui lòng thử lại.');
+            } finally {
+                this.isSaving = false;
+            }
+        },
+        
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000); // seconds
+            
+            if (diff < 60) return 'Vừa xong';
+            if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+            return `${Math.floor(diff / 86400)} ngày trước`;
+        }
+    }
+}).mount('#productionRecordApp');
+</script>
+{% endblock %}

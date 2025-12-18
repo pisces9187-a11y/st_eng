@@ -1257,10 +1257,223 @@ class AudioCache(models.Model):
     
     def get_age_days(self):
         """Get cache age in days."""
+        if not self.generated_at:
+            return 0
         delta = timezone.now() - self.generated_at
         return delta.days
     
     def is_stale(self, max_days=30):
         """Check if cache is stale (older than max_days)."""
         return self.get_age_days() > max_days
+
+
+class AudioVersion(models.Model):
+    """
+    Tracks all versions of audio for a phoneme over time.
+    
+    Supports intelligent version management with activation/deactivation,
+    allowing admins to switch between different audio versions easily.
+    
+    Example usage:
+        # Create new version
+        version = AudioVersion.objects.create(
+            phoneme=phoneme,
+            audio_source=audio_source,
+            change_reason="Better quality recording"
+        )
+        
+        # Activate it (auto-deactivates others)
+        version.activate(user=request.user)
+        
+        # View history
+        versions = AudioVersion.objects.filter(phoneme=phoneme)
+    """
+    
+    # Core fields
+    phoneme = models.ForeignKey(
+        Phoneme,
+        on_delete=models.CASCADE,
+        related_name='audio_versions',
+        verbose_name='Âm vị'
+    )
+    
+    audio_source = models.ForeignKey(
+        AudioSource,
+        on_delete=models.PROTECT,
+        related_name='versions',
+        verbose_name='Audio Source'
+    )
+    
+    # Version tracking
+    version_number = models.PositiveIntegerField(
+        verbose_name='Số phiên bản',
+        help_text='Auto-increment cho mỗi phoneme'
+    )
+    
+    # Activation status
+    is_active = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name='Đang sử dụng',
+        help_text='Chỉ có 1 version active cho mỗi phoneme'
+    )
+    
+    # Time tracking
+    effective_from = models.DateTimeField(
+        default=timezone.now,
+        verbose_name='Có hiệu lực từ',
+        help_text='Thời điểm version này được activate'
+    )
+    
+    effective_until = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Hết hiệu lực',
+        help_text='Thời điểm version này bị deactivate (None = vẫn active)'
+    )
+    
+    # Metadata
+    uploaded_by = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='uploaded_audio_versions',
+        verbose_name='Người upload'
+    )
+    
+    upload_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày upload'
+    )
+    
+    change_reason = models.TextField(
+        blank=True,
+        verbose_name='Lý do thay đổi',
+        help_text='Ví dụ: "Giọng rõ hơn", "Fix background noise"'
+    )
+    
+    # Analytics for A/B testing
+    usage_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Số lần phát',
+        help_text='Đếm số lần audio được phát'
+    )
+    
+    avg_user_rating = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name='Đánh giá TB',
+        help_text='Rating trung bình từ users (1-5 sao)'
+    )
+    
+    user_rating_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Số lượt đánh giá'
+    )
+    
+    class Meta:
+        db_table = 'curriculum_audio_version'
+        ordering = ['phoneme', '-version_number']
+        verbose_name = 'Audio Version'
+        verbose_name_plural = 'Audio Versions'
+        unique_together = [['phoneme', 'version_number']]
+        indexes = [
+            models.Index(fields=['phoneme', 'is_active']),
+            models.Index(fields=['effective_from']),
+            models.Index(fields=['-version_number']),
+        ]
+    
+    def __str__(self):
+        status = "✓ ACTIVE" if self.is_active else "✗ INACTIVE"
+        return f"/{self.phoneme.ipa_symbol}/ v{self.version_number} ({status})"
+    
+    def save(self, *args, **kwargs):
+        """Auto-increment version_number for phoneme"""
+        if not self.version_number:
+            last_version = AudioVersion.objects.filter(
+                phoneme=self.phoneme
+            ).aggregate(models.Max('version_number'))['version_number__max']
+            
+            self.version_number = (last_version or 0) + 1
+        
+        super().save(*args, **kwargs)
+    
+    def activate(self, user=None, reason=''):
+        """
+        Activate this version and deactivate all others for this phoneme.
+        
+        Args:
+            user: User who activated (for audit trail)
+            reason: Reason for activation
+        
+        Example:
+            version.activate(user=request.user, reason="Better quality")
+        """
+        from django.db import transaction
+        
+        with transaction.atomic():
+            # Deactivate all other versions
+            AudioVersion.objects.filter(
+                phoneme=self.phoneme,
+                is_active=True
+            ).exclude(
+                pk=self.pk
+            ).update(
+                is_active=False,
+                effective_until=timezone.now()
+            )
+            
+            # Activate this version
+            self.is_active = True
+            self.effective_from = timezone.now()
+            self.effective_until = None
+            
+            if reason:
+                self.change_reason = reason
+            
+            self.save(update_fields=[
+                'is_active', 
+                'effective_from', 
+                'effective_until',
+                'change_reason'
+            ])
+            
+            # Update phoneme's preferred_audio_source
+            self.phoneme.preferred_audio_source = self.audio_source
+            self.phoneme.save(update_fields=['preferred_audio_source'])
+    
+    def get_duration_text(self):
+        """Get human-readable duration"""
+        if not self.effective_until:
+            if self.is_active:
+                days = (timezone.now() - self.effective_from).days
+                return f"Active for {days} days"
+            else:
+                return "Never activated"
+        else:
+            days = (self.effective_until - self.effective_from).days
+            return f"Was active for {days} days"
+    
+    def increment_usage(self):
+        """Increment usage counter (called when audio is played)"""
+        self.usage_count = models.F('usage_count') + 1
+        self.save(update_fields=['usage_count'])
+    
+    def add_rating(self, rating):
+        """
+        Add user rating (1-5 stars).
+        
+        Args:
+            rating: Integer 1-5
+        """
+        if not 1 <= rating <= 5:
+            raise ValueError("Rating must be between 1 and 5")
+        
+        total = (self.avg_user_rating or 0) * self.user_rating_count
+        total += rating
+        self.user_rating_count += 1
+        self.avg_user_rating = total / self.user_rating_count
+        
+        self.save(update_fields=['avg_user_rating', 'user_rating_count'])
 

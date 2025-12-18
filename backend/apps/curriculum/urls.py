@@ -45,12 +45,42 @@ from .api_views import (
     PhonemeAudioURLAPIView
 )
 
+# Day 2: Pronunciation Learning Flow API Views
+from .api.pronunciation_api import (
+    PhonemeDiscoverAPIView,
+    PhonemeStartLearningAPIView,
+    DiscriminationQuizAPIView,
+    DiscriminationSubmitAPIView,
+    ProductionReferenceAPIView,
+    ProductionSubmitAPIView,
+    OverallProgressAPIView,
+)
+
 # Template Views (for page URLs)
 from .template_views import (
     PronunciationLibraryView, PronunciationLessonView,
     PhonemeChartView, PronunciationProgressView,
-    LessonLibraryView, LessonPlayerView
+    LessonLibraryView, LessonPlayerView,
+    PhonemeDetailView, MinimalPairPracticeView
 )
+
+# Day 4-5: New Pronunciation Learning Pages
+from .views_pronunciation import (
+    pronunciation_discovery_view,
+    pronunciation_learning_view,
+    pronunciation_discrimination_view,
+    pronunciation_production_view,
+    pronunciation_progress_dashboard_view,
+    discrimination_start_view,
+    discrimination_quiz_view,
+    discrimination_results_view,
+    production_record_view,
+    production_history_view,
+    learning_hub_dashboard_view,
+)
+
+# Other Views
+from .views import TestAudioView
 
 # Note: app_name is used for API URLs namespace
 # Page URLs will get namespace via include() in main urls.py
@@ -71,11 +101,43 @@ router.register(r'grammar', GrammarRuleViewSet, basename='grammar')
 # Usage in templates: {% url 'curriculum:pronunciation-library' %}
 # =========================================================================
 page_urlpatterns = [
+    # Teacher Dashboard (must be BEFORE curriculum paths to avoid conflicts)
+    path('teacher-dashboard/', 
+         __import__('apps.curriculum.views_teacher', fromlist=['teacher_dashboard']).teacher_dashboard,
+         name='teacher-dashboard'),
+    
+    # Autocomplete URLs (must come before admin URLs)
+    path('autocomplete/phoneme/', 
+         __import__('apps.curriculum.autocomplete', fromlist=['PhonemeAutocomplete']).PhonemeAutocomplete.as_view(), 
+         name='phoneme-autocomplete'),
+    
     # Pronunciation Learning Pages
     path('pronunciation/', PronunciationLibraryView.as_view(), name='pronunciation-library'),
     path('pronunciation/chart/', PhonemeChartView.as_view(), name='phoneme-chart'),
+    path('pronunciation/phoneme/<str:ipa_symbol>/', PhonemeDetailView.as_view(), name='phoneme-detail'),
+    path('pronunciation/minimal-pairs/', MinimalPairPracticeView.as_view(), name='minimal-pair-practice'),
     path('pronunciation/progress/', PronunciationProgressView.as_view(), name='pronunciation-progress'),
     path('pronunciation/lesson/<slug:slug>/', PronunciationLessonView.as_view(), name='pronunciation-lesson'),
+    path('test/audio/', TestAudioView.as_view(), name='test-audio'),
+    
+    # Day 4-5: New Pronunciation Learning Flow Pages (4-Stage Journey)
+    path('pronunciation/discovery/', pronunciation_discovery_view, name='pronunciation-discovery'),
+    path('pronunciation/learning/<int:phoneme_id>/', pronunciation_learning_view, name='pronunciation-learning'),
+    path('pronunciation/discrimination/<int:phoneme_id>/', pronunciation_discrimination_view, name='pronunciation-discrimination'),
+    path('pronunciation/production/<int:phoneme_id>/', pronunciation_production_view, name='pronunciation-production'),
+    path('pronunciation/dashboard/', pronunciation_progress_dashboard_view, name='pronunciation-dashboard'),
+    
+    # Day 6-7: Discrimination Quiz Pages
+    path('discrimination/start/', discrimination_start_view, name='discrimination-start'),
+    path('discrimination/quiz/<str:session_id>/', discrimination_quiz_view, name='discrimination-quiz'),
+    path('discrimination/results/<str:session_id>/', discrimination_results_view, name='discrimination-results'),
+    
+    # Day 8-9: Production Recording Pages
+    path('production/record/<int:phoneme_id>/', production_record_view, name='production-record'),
+    path('production/history/', production_history_view, name='production-history'),
+    
+    # Day 10: Learning Hub Dashboard
+    path('learning-hub/', learning_hub_dashboard_view, name='learning-hub'),
     
     # Lesson Library Pages (Grammar, Vocabulary A1-C1)
     path('lessons/', LessonLibraryView.as_view(), name='lesson-library'),
@@ -156,4 +218,41 @@ urlpatterns = [
     path('pronunciation/phonemes/', 
          PhonemeListWithProgressView.as_view(), 
          name='pronunciation-phonemes'),
+    
+    # =======================================================================
+    # DAY 2: PRONUNCIATION LEARNING FLOW API (4-Stage Journey)
+    # =======================================================================
+    
+    # Stage 1: Discovery
+    path('pronunciation/phoneme/<int:pk>/discover/', 
+         PhonemeDiscoverAPIView.as_view(), 
+         name='phoneme-discover'),
+    
+    # Stage 2: Learning
+    path('pronunciation/phoneme/<int:pk>/start-learning/', 
+         PhonemeStartLearningAPIView.as_view(), 
+         name='phoneme-start-learning'),
+    
+    # Stage 3: Discrimination Practice
+    path('pronunciation/phoneme/<int:pk>/discrimination/quiz/', 
+         DiscriminationQuizAPIView.as_view(), 
+         name='phoneme-discrimination-quiz'),
+    
+    path('pronunciation/phoneme/<int:pk>/discrimination/submit/', 
+         DiscriminationSubmitAPIView.as_view(), 
+         name='phoneme-discrimination-submit'),
+    
+    # Stage 4: Production Practice
+    path('pronunciation/phoneme/<int:pk>/production/reference/', 
+         ProductionReferenceAPIView.as_view(), 
+         name='phoneme-production-reference'),
+    
+    path('pronunciation/phoneme/<int:pk>/production/submit/', 
+         ProductionSubmitAPIView.as_view(), 
+         name='phoneme-production-submit'),
+    
+    # Overall Progress
+    path('pronunciation/progress/overall/', 
+         OverallProgressAPIView.as_view(), 
+         name='pronunciation-progress-overall'),
 ]

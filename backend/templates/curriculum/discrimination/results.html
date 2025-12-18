@@ -1,0 +1,178 @@
+{% extends 'base/_base_public.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .results-hero {
+        text-align: center;
+        padding: 48px 20px;
+        background: linear-gradient(135deg, #F47C26 0%, #ff9454 100%);
+        border-radius: 16px;
+        color: white;
+        margin-bottom: 32px;
+    }
+    
+    .results-score {
+        font-size: 72px;
+        font-weight: 700;
+        margin: 16px 0;
+    }
+    
+    .results-label {
+        font-size: 20px;
+        opacity: 0.95;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #F47C26;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #666;
+        margin-top: 8px;
+    }
+    
+    .attempts-list {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 32px;
+    }
+    
+    .attempt-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .attempt-item:last-child {
+        border-bottom: none;
+    }
+    
+    .attempt-icon {
+        font-size: 24px;
+        width: 40px;
+    }
+    
+    .attempt-details {
+        flex: 1;
+    }
+    
+    .attempt-words {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .attempt-phonemes {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Results Hero -->
+    <div class="results-hero">
+        <div class="results-label">Kết quả của bạn</div>
+        <div class="results-score">{{ session.accuracy|floatformat:0 }}%</div>
+        <div class="results-label">
+            {{ session.correct_answers }} / {{ session.total_questions }} câu đúng
+        </div>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ session.accuracy|floatformat:1 }}%</div>
+            <div class="stat-label">Độ chính xác</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_time|floatformat:0 }}s</div>
+            <div class="stat-label">Tổng thời gian</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ avg_response_time|floatformat:1 }}s</div>
+            <div class="stat-label">Thời gian TB/câu</div>
+        </div>
+    </div>
+    
+    <!-- Attempts List -->
+    <div class="attempts-list">
+        <h3 class="mb-4">
+            <i class="bi bi-list-check"></i>
+            Chi tiết các câu hỏi
+        </h3>
+        
+        {% for attempt in attempts %}
+        <div class="attempt-item">
+            <div class="attempt-icon">
+                {% if attempt.is_correct %}
+                    ✅
+                {% else %}
+                    ❌
+                {% endif %}
+            </div>
+            <div class="attempt-details">
+                <div class="attempt-words">
+                    Câu {{ attempt.question_number }}: 
+                    {{ attempt.minimal_pair.word_1 }} vs {{ attempt.minimal_pair.word_2 }}
+                </div>
+                <div class="attempt-phonemes">
+                    /{{ attempt.minimal_pair.phoneme_1.ipa_symbol }}/ vs 
+                    /{{ attempt.minimal_pair.phoneme_2.ipa_symbol }}/
+                </div>
+            </div>
+            <div>
+                <span class="badge" style="background: {% if attempt.is_correct %}#28a745{% else %}#dc3545{% endif %}">
+                    {{ attempt.response_time|floatformat:1 }}s
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Actions -->
+    <div class="actions">
+        <a href="{% url 'curriculum:discrimination-start' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-arrow-clockwise"></i>
+            Làm bài mới
+        </a>
+        <a href="{% url 'curriculum:pronunciation-dashboard' %}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-bar-chart"></i>
+            Xem dashboard
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house"></i>
+            Trang chủ
+        </a>
+    </div>
+</div>
+{% endblock %}

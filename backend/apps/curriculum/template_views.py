@@ -531,29 +531,59 @@ class PronunciationLessonView(TemplateView):
 
 class PhonemeChartView(TemplateView):
     """
-    View for IPA phoneme chart reference.
+    Interactive IPA phoneme chart with audio playback.
+    Phase 2 Day 1-2 implementation.
+    
+    Features:
+    - Visual phoneme grid organized by type
+    - Click-to-play audio for each phoneme
+    - Vietnamese approximations
+    - Category filtering
     """
-    template_name = 'pages/ipa_chart.html'
+    template_name = 'pages/phoneme_chart.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Bảng IPA - Phiên âm Quốc tế'
+        context['page_title'] = 'Bảng Phiên Âm IPA Tương Tác'
         
-        # Get all phonemes grouped by category
-        context['vowels'] = Phoneme.objects.filter(
-            category__category_type='vowel',
+        # Get all active phonemes with related data
+        all_phonemes = Phoneme.objects.filter(
             is_active=True
-        ).select_related('category')
+        ).select_related('category').prefetch_related('example_words')
         
-        context['diphthongs'] = Phoneme.objects.filter(
-            category__category_type='diphthong',
-            is_active=True
-        ).select_related('category')
+        # Group phonemes by category type
+        vowels = []
+        diphthongs = []
+        consonants = []
         
-        context['consonants'] = Phoneme.objects.filter(
-            category__category_type='consonant',
-            is_active=True
-        ).select_related('category')
+        for phoneme in all_phonemes:
+            phoneme_data = {
+                'id': phoneme.id,
+                'ipa_symbol': phoneme.ipa_symbol,
+                'vietnamese_approx': phoneme.vietnamese_approx,
+                'phoneme_type': phoneme.phoneme_type,
+                'voicing': phoneme.voicing,
+                'category_name': phoneme.category.name if phoneme.category else '',
+                'category_name_vi': phoneme.category.name_vi if phoneme.category else '',
+            }
+            
+            if phoneme.category:
+                if phoneme.category.category_type == 'vowel':
+                    vowels.append(phoneme_data)
+                elif phoneme.category.category_type == 'diphthong':
+                    diphthongs.append(phoneme_data)
+                elif phoneme.category.category_type == 'consonant':
+                    consonants.append(phoneme_data)
+        
+        # Pass data to template (both as context and JSON for Vue.js)
+        context['vowels'] = vowels
+        context['diphthongs'] = diphthongs
+        context['consonants'] = consonants
+        
+        # Serialize to JSON for Vue.js
+        context['vowels_json'] = json.dumps(vowels, ensure_ascii=False)
+        context['diphthongs_json'] = json.dumps(diphthongs, ensure_ascii=False)
+        context['consonants_json'] = json.dumps(consonants, ensure_ascii=False)
         
         return context
 
@@ -632,3 +662,193 @@ class LessonPlayerView(TemplateView):
                 context['lesson'] = None
         
         return context
+
+
+# =============================================================================
+# PHASE 2 DAY 3-4: MOUTH POSITION VISUALIZER
+# =============================================================================
+
+class PhonemeDetailView(TemplateView):
+    """
+    Detailed view for a single phoneme with mouth position visualization.
+    
+    Features:
+    - Mouth position diagram (SVG)
+    - Interactive tongue position slider
+    - Pronunciation tips
+    - Example words with audio
+    """
+    template_name = 'pages/phoneme_detail.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        ipa_symbol = kwargs.get('ipa_symbol')
+        
+        # Get phoneme by IPA symbol (without slashes)
+        try:
+            phoneme = Phoneme.objects.select_related(
+                'category',
+                'preferred_audio_source'
+            ).prefetch_related(
+                'example_words',
+                'audio_sources'
+            ).get(ipa_symbol=ipa_symbol)
+        except Phoneme.DoesNotExist:
+            context['phoneme'] = None
+            context['page_title'] = 'Phoneme Not Found'
+            context['error'] = f'Phoneme /{ipa_symbol}/ not found in database'
+            return context
+        
+        context['phoneme'] = phoneme
+        context['page_title'] = f'Phoneme: /{phoneme.ipa_symbol}/'
+        
+        # Get audio URL for this phoneme
+        audio_source = phoneme.preferred_audio_source or phoneme.audio_sources.filter(source_type='native').first()
+        context['audio_url'] = audio_source.audio_file.url if audio_source and audio_source.audio_file else None
+        
+        # Get example words for this phoneme
+        example_words = phoneme.example_words.all()[:5]
+        context['example_words'] = example_words
+        
+        # JSON format for JavaScript
+        context['example_words_json'] = json.dumps([
+            {
+                'id': w.id,
+                'word': w.word,
+                'ipa_transcription': w.ipa_transcription,
+                'meaning_vi': w.meaning_vi or 'Chưa có nghĩa',
+            }
+            for w in example_words
+        ])
+        
+        # Pronunciation tips và common mistakes
+        context['pronunciation_tips_vi'] = self._get_pronunciation_tips(phoneme)
+        context['common_mistakes_vi'] = self._get_common_mistakes(phoneme)
+        
+        # Mouth & tongue position descriptions
+        context['mouth_position_desc'] = phoneme.mouth_position_vi or phoneme.mouth_position or 'Chưa có mô tả'
+        context['tongue_position_desc'] = phoneme.tongue_position_vi or phoneme.tongue_position or 'Chưa có mô tả'
+        
+        # Get similar phonemes for navigation
+        context['similar_phonemes'] = Phoneme.objects.filter(
+            category=phoneme.category
+        ).exclude(id=phoneme.id)[:6]
+        
+        return context
+    
+    @staticmethod
+    def _get_pronunciation_tips(phoneme):
+        """Get pronunciation tips based on phoneme type."""
+        # Return từ database nếu có
+        if phoneme.pronunciation_tips_vi:
+            return phoneme.pronunciation_tips_vi
+        
+        # Fallback tips dựa vào phoneme type
+        type_tips = {
+            'short_vowel': f"Đây là nguyên âm ngắn. Miệng: {phoneme.mouth_position_vi or 'mở vừa'}. Lưỡi: {phoneme.tongue_position_vi or 'ở giữa'}.",
+            'long_vowel': f"Đây là nguyên âm dài. Giữ âm lâu hơn nguyên âm ngắn. Miệng: {phoneme.mouth_position_vi or 'mở vừa'}.",
+            'diphthong': f"Đây là nguyên âm đôi. Lưỡi di chuyển từ vị trí này sang vị trí khác một cách mượt mà.",
+            'plosive': f"Âm bật hơi ({phoneme.get_voicing_display()}). Chặn luồng khí rồi bật ra đột ngột.",
+            'fricative': f"Âm xát ({phoneme.get_voicing_display()}). Tạo ma sát khi khí đi qua.",
+            'nasal': f"Âm mũi. Khí đi qua mũi, miệng khép lại.",
+            'approximant': f"Âm tiếp cận. Lưỡi gần nhưng không chạm vào vòm miệng.",
+        }
+        return type_tips.get(phoneme.phoneme_type, "Nghe và bắt chước người bản ngữ cẩn thận.")
+    
+    @staticmethod
+    def _get_common_mistakes(phoneme):
+        """Get common mistakes for learners."""
+        # Return từ database nếu có
+        if phoneme.common_mistakes_vi:
+            return phoneme.common_mistakes_vi
+        
+        # Fallback mistakes dựa vào IPA
+        common_errors = {
+            'æ': "Đừng nhầm với /e/ - hàm phải hạ thấp hơn và miệng mở rộng hơn.",
+            'ɑː': "Đây là nguyên âm dài. Giữ âm lâu hơn /æ/.",
+            'θ': "Đặt lưỡi giữa hai hàm răng - đừng rút lưỡi vào trong.",
+            'ð': "Giống /θ/ nhưng có rung dây thanh.",
+            'r': "Đừng cuộn lưỡi như âm 'r' trong tiếng Tây Ban Nha - dùng môi.",
+            'l': "Chạm đầu lưỡi vào vòm miệng (phía sau răng trên).",
+            'v': "Người Việt hay phát âm thành /w/. Răng trên chạm vào môi dưới.",
+            'w': "Người Việt hay phát âm thành /v/. Môi chu tròn, không dùng răng.",
+        }
+        return common_errors.get(phoneme.ipa_symbol, "Nghe kỹ và so sánh với người bản ngữ.")
+
+
+# =============================================================================
+# PHASE 2 DAY 5-6: MINIMAL PAIR PRACTICE
+# =============================================================================
+
+class MinimalPairPracticeView(TemplateView):
+    """
+    Interactive minimal pair practice for phoneme discrimination.
+    
+    Features:
+    - Randomly selected minimal pairs
+    - Audio playback
+    - Score tracking
+    - Accuracy feedback
+    """
+    template_name = 'pages/minimal_pair_practice.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        context['page_title'] = 'Minimal Pair Practice'
+        
+        # Get minimal pairs from database or use demo data
+        context['minimal_pairs'] = self._get_minimal_pairs()
+        
+        return context
+    
+    @staticmethod
+    def _get_minimal_pairs():
+        """
+        Get minimal pairs from database.
+        If not enough data, use generated examples.
+        """
+        pairs = MinimalPair.objects.select_related(
+            'phoneme_1', 'phoneme_2'
+        ).all()[:10]
+        
+        if len(pairs) < 10:
+            # Use generated demo pairs
+            return PhonemeDetailView._generate_minimal_pairs_from_phonemes()
+        
+        return pairs
+    
+    @staticmethod
+    def _generate_minimal_pairs_from_phonemes():
+        """
+        Auto-generate minimal pairs from phoneme words.
+        Used when database has insufficient MinimalPair records.
+        """
+        phonemes = Phoneme.objects.prefetch_related('phoneme_words').all()
+        generated_pairs = []
+        
+        for i, p1 in enumerate(phonemes):
+            for p2 in phonemes[i+1:]:
+                word1 = p1.phoneme_words.first()
+                word2 = p2.phoneme_words.first()
+                
+                if word1 and word2:
+                    generated_pairs.append({
+                        'phoneme_1': p1.ipa_symbol,
+                        'phoneme_2': p2.ipa_symbol,
+                        'word_1': word1.word,
+                        'word_1_ipa': word1.ipa_transcription,
+                        'word_1_meaning': word1.meaning_vi or '',
+                        'word_2': word2.word,
+                        'word_2_ipa': word2.ipa_transcription,
+                        'word_2_meaning': word2.meaning_vi or '',
+                    })
+                
+                if len(generated_pairs) >= 10:
+                    break
+            
+            if len(generated_pairs) >= 10:
+                break
+        
+        return generated_pairs

@@ -721,3 +721,311 @@ class LearningGoal(models.Model):
             self.save(update_fields=['is_completed', 'completed_at'])
             return True
         return False
+
+
+# ============================================
+# DISCRIMINATION PRACTICE MODELS (Days 6-7)
+# ============================================
+
+class DiscriminationSession(models.Model):
+    """
+    Groups multiple discrimination attempts into a quiz session.
+    Tracks session-level statistics and timing.
+    """
+    STATUS_CHOICES = [
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('expired', 'Expired'),
+        ('abandoned', 'Abandoned'),
+    ]
+    
+    # Foreign Keys
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='discrimination_sessions',
+        verbose_name='Người dùng'
+    )
+    
+    # Session details
+    session_id = models.CharField(
+        max_length=36,
+        unique=True,
+        help_text='UUID for this session',
+        verbose_name='ID phiên',
+        db_index=True
+    )
+    total_questions = models.PositiveSmallIntegerField(
+        default=10,
+        verbose_name='Tổng số câu'
+    )
+    correct_answers = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name='Số câu đúng'
+    )
+    accuracy = models.FloatField(
+        default=0.0,
+        help_text='Percentage: 0-100',
+        verbose_name='Độ chính xác (%)'
+    )
+    
+    # Time tracking
+    started_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Bắt đầu'
+    )
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Hoàn thành'
+    )
+    time_limit_seconds = models.PositiveIntegerField(
+        default=300,  # 5 minutes
+        verbose_name='Giới hạn thời gian (giây)'
+    )
+    time_spent_seconds = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Thời gian đã dùng (giây)'
+    )
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='in_progress',
+        db_index=True,
+        verbose_name='Trạng thái'
+    )
+    
+    class Meta:
+        db_table = 'discrimination_sessions'
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['user', '-started_at']),
+            models.Index(fields=['status', '-started_at']),
+        ]
+        verbose_name = 'Phiên phân biệt âm'
+        verbose_name_plural = 'Phiên phân biệt âm'
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.accuracy:.1f}% ({self.status})"
+    
+    def calculate_accuracy(self):
+        """Calculate and update accuracy based on attempts."""
+        if self.total_questions > 0:
+            self.accuracy = (self.correct_answers / self.total_questions) * 100
+            self.save(update_fields=['accuracy'])
+    
+    def complete_session(self):
+        """Mark session as completed and calculate final stats."""
+        self.status = 'completed'
+        self.completed_at = timezone.now()
+        if self.started_at:
+            time_diff = self.completed_at - self.started_at
+            self.time_spent_seconds = int(time_diff.total_seconds())
+        self.calculate_accuracy()
+        self.save(update_fields=['status', 'completed_at', 'time_spent_seconds', 'accuracy'])
+
+
+class DiscriminationAttempt(models.Model):
+    """
+    Records user's answer to a single discrimination question.
+    Each question presents two words with different phonemes.
+    """
+    QUESTION_TYPE_CHOICES = [
+        ('which_word', 'Which word did you hear?'),
+        ('same_different', 'Are these the same or different?'),
+    ]
+    
+    ANSWER_CHOICES = [
+        ('word_1', 'Word 1'),
+        ('word_2', 'Word 2'),
+    ]
+    
+    # Foreign Keys
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='discrimination_attempts',
+        verbose_name='Người dùng'
+    )
+    session = models.ForeignKey(
+        DiscriminationSession,
+        on_delete=models.CASCADE,
+        related_name='attempts',
+        verbose_name='Phiên'
+    )
+    minimal_pair = models.ForeignKey(
+        'curriculum.MinimalPair',
+        on_delete=models.CASCADE,
+        related_name='attempts',
+        verbose_name='Cặp tối thiểu'
+    )
+    
+    # Question details
+    question_type = models.CharField(
+        max_length=20,
+        choices=QUESTION_TYPE_CHOICES,
+        default='which_word',
+        verbose_name='Loại câu hỏi'
+    )
+    question_number = models.PositiveSmallIntegerField(
+        help_text='Question number within session (1-10)',
+        verbose_name='Số câu hỏi'
+    )
+    
+    # Answer tracking
+    correct_word = models.CharField(
+        max_length=10,
+        choices=ANSWER_CHOICES,
+        verbose_name='Từ đúng'
+    )
+    user_answer = models.CharField(
+        max_length=10,
+        choices=ANSWER_CHOICES,
+        verbose_name='Câu trả lời'
+    )
+    
+    # Results
+    is_correct = models.BooleanField(
+        verbose_name='Đúng'
+    )
+    response_time = models.FloatField(
+        help_text='Time taken to answer in seconds',
+        verbose_name='Thời gian phản hồi (giây)'
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày tạo'
+    )
+    
+    class Meta:
+        db_table = 'discrimination_attempts'
+        ordering = ['session', 'question_number']
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['session', 'question_number']),
+        ]
+        verbose_name = 'Lần thử phân biệt âm'
+        verbose_name_plural = 'Lần thử phân biệt âm'
+    
+    def __str__(self):
+        status = "✓" if self.is_correct else "✗"
+        return f"{self.user.username} - Q{self.question_number} [{status}]"
+
+
+# ============================================
+# PRODUCTION PRACTICE MODELS (Days 8-9)
+# ============================================
+
+class ProductionRecording(models.Model):
+    """
+    Stores audio recording of user's pronunciation attempt.
+    Includes self-assessment and future AI scoring capability.
+    """
+    RATING_CHOICES = [
+        (1, '1 Star - Need more practice'),
+        (2, '2 Stars - Getting better'),
+        (3, '3 Stars - Good attempt'),
+        (4, '4 Stars - Very good'),
+        (5, '5 Stars - Native-like'),
+    ]
+    
+    # Foreign Keys
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='production_recordings',
+        verbose_name='Người dùng'
+    )
+    phoneme = models.ForeignKey(
+        'curriculum.Phoneme',
+        on_delete=models.CASCADE,
+        related_name='user_recordings',
+        verbose_name='Âm vị'
+    )
+    
+    # Recording file
+    recording_file = models.FileField(
+        upload_to='user_recordings/%Y/%m/%d/',
+        help_text='Audio file (WebM, MP4, etc.)',
+        verbose_name='File ghi âm'
+    )
+    duration_seconds = models.FloatField(
+        help_text='Recording duration in seconds',
+        verbose_name='Thời lượng (giây)'
+    )
+    file_size_bytes = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Kích thước file (bytes)'
+    )
+    mime_type = models.CharField(
+        max_length=50,
+        default='audio/webm',
+        verbose_name='Loại MIME'
+    )
+    
+    # Scoring
+    self_assessment_score = models.PositiveSmallIntegerField(
+        choices=RATING_CHOICES,
+        null=True,
+        blank=True,
+        help_text='User self-rating (1-5 stars)',
+        verbose_name='Tự đánh giá (1-5 sao)'
+    )
+    ai_score = models.FloatField(
+        null=True,
+        blank=True,
+        help_text='AI pronunciation analysis score (0-100). Future feature.',
+        verbose_name='Điểm AI (0-100)'
+    )
+    ai_feedback = models.TextField(
+        blank=True,
+        help_text='AI-generated pronunciation feedback. Future feature.',
+        verbose_name='Phản hồi từ AI'
+    )
+    
+    # Metadata
+    is_best = models.BooleanField(
+        default=False,
+        help_text='Mark as user\'s best recording for this phoneme',
+        verbose_name='Ghi âm tốt nhất',
+        db_index=True
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text='User notes about this recording',
+        verbose_name='Ghi chú'
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày tạo'
+    )
+    
+    class Meta:
+        db_table = 'production_recordings'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'phoneme', '-created_at']),
+            models.Index(fields=['user', 'is_best']),
+        ]
+        verbose_name = 'Ghi âm phát âm'
+        verbose_name_plural = 'Ghi âm phát âm'
+    
+    def __str__(self):
+        stars = '⭐' * (self.self_assessment_score or 0)
+        return f"{self.user.username} - {self.phoneme.ipa_symbol} {stars}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-unmark previous 'is_best' if this is marked as best."""
+        if self.is_best:
+            ProductionRecording.objects.filter(
+                user=self.user,
+                phoneme=self.phoneme,
+                is_best=True
+            ).exclude(pk=self.pk).update(is_best=False)
+        super().save(*args, **kwargs)

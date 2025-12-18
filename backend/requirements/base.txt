@@ -38,3 +38,7 @@ django-extensions>=3.2.3
 # Text-to-Speech (Neural TTS for pronunciation)
 edge-tts>=6.1.0
 aiofiles>=23.2.1
+
+# Audio Processing
+pydub>=0.25.1
+mutagen>=1.47.0

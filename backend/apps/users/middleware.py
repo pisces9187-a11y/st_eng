@@ -1,6 +1,7 @@
 """
 JWT Authentication Middleware for Template Views.
 Validates JWT tokens from cookies or Authorization header for protected pages.
+Automatically refreshes expired tokens using refresh token.
 """
 
 from django.shortcuts import redirect
@@ -8,6 +9,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 import logging
 
 logger = logging.getLogger(__name__)
@@ -31,6 +33,7 @@ class JWTAuthenticationMiddleware:
         # Try to authenticate via JWT
         request.jwt_user = None
         request.jwt_authenticated = False
+        request.should_clear_cookies = False
         
         token = self._get_token(request)
         
@@ -40,13 +43,63 @@ class JWTAuthenticationMiddleware:
                 user = self.jwt_auth.get_user(validated_token)
                 request.jwt_user = user
                 request.jwt_authenticated = True
-                # Also set request.user for compatibility
                 request.user = user
+                logger.debug(f"JWT authentication successful for user {user.username}")
             except (InvalidToken, TokenError) as e:
-                logger.debug(f"JWT validation failed: {e}")
-                request.jwt_authenticated = False
+                logger.info(f"Access token invalid/expired: {str(e)[:100]}")
+                # Try to refresh token if refresh token exists
+                refresh_token = request.COOKIES.get('refresh_token')
+                if refresh_token:
+                    logger.info("Attempting to refresh token...")
+                    try:
+                        new_tokens = self._refresh_access_token(refresh_token)
+                        if new_tokens:
+                            token = new_tokens['access']
+                            validated_token = self.jwt_auth.get_validated_token(token)
+                            user = self.jwt_auth.get_user(validated_token)
+                            request.jwt_user = user
+                            request.jwt_authenticated = True
+                            request.user = user
+                            request.new_tokens = new_tokens  # Pass to response for cookie update
+                            logger.info(f"Token refreshed successfully for user {user.username}")
+                        else:
+                            logger.warning("Token refresh failed - clearing cookies")
+                            request.should_clear_cookies = True
+                    except Exception as e:
+                        logger.warning(f"Token refresh exception: {str(e)[:100]}")
+                        request.should_clear_cookies = True
+                else:
+                    logger.info("No refresh token found - clearing cookies")
+                    request.should_clear_cookies = True
         
         response = self.get_response(request)
+        
+        # Clear invalid cookies if needed
+        if request.should_clear_cookies:
+            logger.info("Clearing invalid authentication cookies")
+            response.delete_cookie('access_token', samesite='Lax')
+            response.delete_cookie('refresh_token', samesite='Lax')
+        
+        # Update cookies with new tokens if refreshed
+        if hasattr(request, 'new_tokens'):
+            logger.info("Updating cookies with refreshed tokens")
+            response.set_cookie(
+                'access_token',
+                request.new_tokens['access'],
+                max_age=86400,  # 24 hours
+                httponly=True,
+                secure=False,  # Set to True in production
+                samesite='Lax'
+            )
+            response.set_cookie(
+                'refresh_token',
+                request.new_tokens['refresh'],
+                max_age=2592000,  # 30 days
+                httponly=True,
+                secure=False,  # Set to True in production
+                samesite='Lax'
+            )
+        
         return response
     
     def _get_token(self, request):
@@ -58,6 +111,18 @@ class JWTAuthenticationMiddleware:
         
         # Try cookie
         return request.COOKIES.get('access_token')
+    
+    def _refresh_access_token(self, refresh_token_str):
+        """Refresh access token using refresh token."""
+        try:
+            refresh = RefreshToken(refresh_token_str)
+            return {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            }
+        except Exception as e:
+            logger.debug(f"Could not refresh token: {e}")
+            return None
 
 
 class JWTRequiredMixin:

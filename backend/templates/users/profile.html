@@ -505,10 +505,11 @@ async function loadProfile() {
         if (!response || !response.ok) return;
         
         const user = await response.json();
+        console.log('Loaded profile data:', user);
         
         // Update avatar
         const avatarEl = document.getElementById('profileAvatar');
-        const displayName = user.full_name || user.username;
+        const displayName = user.full_name || user.display_name || user.username;
         
         if (user.avatar) {
             avatarEl.outerHTML = `<img src="${user.avatar}" alt="${displayName}" class="profile-avatar" id="profileAvatar">`;
@@ -536,30 +537,33 @@ async function loadProfile() {
         
         // Update stats
         document.getElementById('statStreak').textContent = user.streak_days || 0;
-        document.getElementById('statXP').textContent = formatNumber(user.total_xp || 0);
+        document.getElementById('statXP').textContent = formatNumber(user.xp_points || 0);
         document.getElementById('statLessons').textContent = user.completed_lessons || 0;
         document.getElementById('statRank').textContent = user.rank ? `#${user.rank}` : '-';
         
         // Update personal info
         document.getElementById('infoEmail').textContent = user.email || '---';
-        document.getElementById('infoPhone').textContent = user.phone_number || 'Chưa cập nhật';
+        document.getElementById('infoPhone').textContent = user.phone || 'Chưa cập nhật';
         document.getElementById('infoDob').textContent = user.date_of_birth ? formatDate(user.date_of_birth) : 'Chưa cập nhật';
         document.getElementById('infoGender').textContent = formatGender(user.gender);
         document.getElementById('infoBio').textContent = user.bio || 'Chưa có giới thiệu';
         
         // Update learning progress
-        document.getElementById('currentLevel').textContent = `Level ${user.current_level || 1}`;
-        const xpForNextLevel = (user.current_level || 1) * 100;
-        const xpProgress = ((user.level_xp || 0) / xpForNextLevel) * 100;
+        document.getElementById('currentLevel').textContent = user.level_display || `Level ${user.current_level || 'A1'}`;
+        const currentLevelNum = user.current_level_num || 1;
+        const xpForNextLevel = currentLevelNum * 100;
+        const currentXP = user.xp_points || 0;
+        const levelXP = currentXP % 100; // XP within current level
+        const xpProgress = (levelXP / xpForNextLevel) * 100;
         document.getElementById('levelProgressBar').style.width = `${Math.min(xpProgress, 100)}%`;
-        document.getElementById('levelProgressText').textContent = `${user.level_xp || 0}/${xpForNextLevel} XP`;
+        document.getElementById('levelProgressText').textContent = `${levelXP}/${xpForNextLevel} XP`;
         
         document.getElementById('vocabLearned').textContent = user.vocabulary_learned || 0;
         document.getElementById('totalTime').textContent = formatStudyTime(user.total_study_time || 0);
         document.getElementById('joinDate').textContent = user.date_joined ? formatDate(user.date_joined) : '---';
         
         // Update goals
-        document.getElementById('dailyGoal').textContent = `${user.daily_goal || 15} phút/ngày`;
+        document.getElementById('dailyGoal').textContent = `${user.daily_goal_minutes || 15} phút/ngày`;
         document.getElementById('targetLevel').textContent = user.target_level || 'B2';
         
     } catch (error) {

@@ -9,7 +9,8 @@ from django.utils.translation import gettext_lazy as _
 from .models import (
     UserCourseEnrollment, UserLessonProgress, UserFlashcard,
     UserSentenceProgress, PracticeSession, PracticeResult,
-    DailyStreak, LearningGoal
+    DailyStreak, LearningGoal,
+    DiscriminationSession, DiscriminationAttempt, ProductionRecording
 )
 
 
@@ -219,3 +220,150 @@ class LearningGoalAdmin(admin.ModelAdmin):
             color, obj.current_value, obj.target_value, percent
         )
     progress_display.short_description = 'Progress'
+
+
+# ============================================
+# DISCRIMINATION PRACTICE ADMIN (Days 6-7)
+# ============================================
+
+class DiscriminationAttemptInline(admin.TabularInline):
+    """Inline admin for discrimination attempts within a session."""
+    model = DiscriminationAttempt
+    extra = 0
+    fields = ['question_number', 'minimal_pair', 'correct_word', 'user_answer', 'is_correct', 'response_time']
+    readonly_fields = ['question_number', 'minimal_pair', 'correct_word', 'user_answer', 'is_correct', 'response_time']
+    can_delete = False
+
+
+@admin.register(DiscriminationSession)
+class DiscriminationSessionAdmin(admin.ModelAdmin):
+    """Admin for Discrimination Quiz Sessions."""
+    
+    list_display = [
+        'session_id_short', 'user', 'status', 'accuracy_display',
+        'correct_answers', 'total_questions', 'time_spent_display', 'started_at'
+    ]
+    list_filter = ['status', 'started_at', 'completed_at']
+    search_fields = ['user__username', 'session_id']
+    raw_id_fields = ['user']
+    date_hierarchy = 'started_at'
+    ordering = ['-started_at']
+    readonly_fields = ['session_id', 'started_at', 'completed_at', 'time_spent_seconds']
+    
+    inlines = [DiscriminationAttemptInline]
+    
+    fieldsets = (
+        ('Session Info', {
+            'fields': ('user', 'session_id', 'status')
+        }),
+        ('Results', {
+            'fields': ('total_questions', 'correct_answers', 'accuracy')
+        }),
+        ('Timing', {
+            'fields': ('started_at', 'completed_at', 'time_limit_seconds', 'time_spent_seconds')
+        }),
+    )
+    
+    def session_id_short(self, obj):
+        return obj.session_id[:8] + '...'
+    session_id_short.short_description = 'Session ID'
+    
+    def accuracy_display(self, obj):
+        accuracy = obj.accuracy
+        color = 'green' if accuracy >= 80 else 'orange' if accuracy >= 60 else 'red'
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{:.1f}%</span>',
+            color, accuracy
+        )
+    accuracy_display.short_description = 'Accuracy'
+    
+    def time_spent_display(self, obj):
+        if obj.time_spent_seconds:
+            minutes = obj.time_spent_seconds // 60
+            seconds = obj.time_spent_seconds % 60
+            return f"{minutes}:{seconds:02d}"
+        return "-"
+    time_spent_display.short_description = 'Time Spent'
+
+
+@admin.register(DiscriminationAttempt)
+class DiscriminationAttemptAdmin(admin.ModelAdmin):
+    """Admin for individual discrimination attempts."""
+    
+    list_display = [
+        'user', 'session', 'question_number', 'minimal_pair',
+        'is_correct_display', 'response_time', 'created_at'
+    ]
+    list_filter = ['is_correct', 'question_type', 'created_at']
+    search_fields = ['user__username', 'session__session_id']
+    raw_id_fields = ['user', 'session', 'minimal_pair']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Question Info', {
+            'fields': ('user', 'session', 'minimal_pair', 'question_type', 'question_number')
+        }),
+        ('Answer', {
+            'fields': ('correct_word', 'user_answer', 'is_correct')
+        }),
+        ('Timing', {
+            'fields': ('response_time', 'created_at')
+        }),
+    )
+    
+    def is_correct_display(self, obj):
+        if obj.is_correct:
+            return format_html('<span style="color: green; font-weight: bold;">✓ Correct</span>')
+        else:
+            return format_html('<span style="color: red; font-weight: bold;">✗ Incorrect</span>')
+    is_correct_display.short_description = 'Result'
+
+
+# ============================================
+# PRODUCTION PRACTICE ADMIN (Days 8-9)
+# ============================================
+
+@admin.register(ProductionRecording)
+class ProductionRecordingAdmin(admin.ModelAdmin):
+    """Admin for production recordings."""
+    
+    list_display = [
+        'user', 'phoneme', 'self_assessment_stars', 'is_best',
+        'duration_seconds', 'file_size_display', 'created_at'
+    ]
+    list_filter = ['is_best', 'self_assessment_score', 'created_at']
+    search_fields = ['user__username', 'phoneme__ipa_symbol']
+    raw_id_fields = ['user', 'phoneme']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'file_size_bytes', 'mime_type']
+    
+    fieldsets = (
+        ('Recording Info', {
+            'fields': ('user', 'phoneme', 'recording_file', 'duration_seconds')
+        }),
+        ('Assessment', {
+            'fields': ('self_assessment_score', 'ai_score', 'ai_feedback')
+        }),
+        ('Metadata', {
+            'fields': ('is_best', 'notes', 'mime_type', 'file_size_bytes', 'created_at')
+        }),
+    )
+    
+    def self_assessment_stars(self, obj):
+        if obj.self_assessment_score:
+            stars = '⭐' * obj.self_assessment_score
+            return format_html('<span style="font-size: 16px;">{}</span>', stars)
+        return '-'
+    self_assessment_stars.short_description = 'Rating'
+    
+    def file_size_display(self, obj):
+        if obj.file_size_bytes:
+            kb = obj.file_size_bytes / 1024
+            if kb > 1024:
+                mb = kb / 1024
+                return f"{mb:.2f} MB"
+            return f"{kb:.1f} KB"
+        return "-"
+    file_size_display.short_description = 'File Size'
