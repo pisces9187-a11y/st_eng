@@ -538,7 +538,7 @@ def pronunciation_discovery_view(request):
         'meta_description': 'Khám phá và học 44 âm IPA tiếng Anh qua hệ thống 4 giai đoạn SMART',
     }
     
-    return render(request, 'pages/pronunciation_discovery.html', context)
+    return render(request, 'curriculum/pronunciation/discovery.html', context)
 
 
 @jwt_required
@@ -599,7 +599,7 @@ def pronunciation_learning_view(request, phoneme_id):
         'meta_description': f'Học cách phát âm chuẩn âm IPA {phoneme.ipa_symbol} qua lý thuyết và thực hành',
     }
     
-    return render(request, 'pages/pronunciation_learning.html', context)
+    return render(request, 'curriculum/pronunciation/learning.html', context)
 
 
 def _get_pronunciation_tips(phoneme):
@@ -694,7 +694,7 @@ def pronunciation_discrimination_view(request, phoneme_id):
         'meta_description': f'Luyện tập phân biệt âm {phoneme.ipa_symbol} qua các cặp từ tối thiểu',
     }
     
-    return render(request, 'pages/pronunciation_discrimination.html', context)
+    return render(request, 'curriculum/pronunciation/discrimination.html', context)
 
 
 @jwt_required
@@ -713,7 +713,7 @@ def pronunciation_production_view(request, phoneme_id):
         'meta_description': f'Thực hành phát âm chuẩn âm {phoneme.ipa_symbol}',
     }
     
-    return render(request, 'pages/pronunciation_production.html', context)
+    return render(request, 'curriculum/pronunciation/production.html', context)
 
 
 @jwt_required
@@ -733,7 +733,7 @@ def pronunciation_progress_dashboard_view(request):
         'meta_description': 'Xem tiến độ học và thành tích phát âm tiếng Anh của bạn',
     }
     
-    return render(request, 'pages/pronunciation_progress.html', context)
+    return render(request, 'curriculum/pronunciation/progress.html', context)
 
 # ==================== Day 6-7: Discrimination Quiz Views ====================
 
@@ -766,7 +766,7 @@ def discrimination_start_view(request):
         'total_sessions': total_sessions,
     }
     
-    return render(request, 'pages/discrimination_start.html', context)
+    return render(request, 'curriculum/discrimination/start.html', context)
 
 # ==================== Day 10: Learning Hub Dashboard View ====================
 
@@ -787,7 +787,7 @@ def learning_hub_dashboard_view(request):
         'page_title': 'Learning Hub - Dashboard',
         'meta_description': 'Tổng quan tiến độ học phát âm tiếng Anh',
     }
-    return render(request, 'pages/learning_hub_dashboard.html', context)
+    return render(request, 'study/dashboard.html', context)
 # ==================== Day 8-9: Production Recording Views ====================
 
 @jwt_required
@@ -819,7 +819,7 @@ def production_record_view(request, phoneme_id):
         'phoneme': phoneme,
         'recordings': json.dumps(recordings_data),
     }
-    return render(request, 'pages/production_record.html', context)
+    return render(request, 'curriculum/production/record.html', context)
 
 
 @jwt_required
@@ -873,7 +873,7 @@ def production_history_view(request):
             'avg_score': round(avg_score, 2)
         }
     }
-    return render(request, 'pages/production_history.html', context)
+    return render(request, 'curriculum/production/history.html', context)
 
 @jwt_required
 @require_http_methods(["GET"])
@@ -905,7 +905,7 @@ def discrimination_quiz_view(request, session_id):
         'session_id': session_id,
     }
     
-    return render(request, 'pages/discrimination_quiz.html', context)
+    return render(request, 'curriculum/discrimination/quiz.html', context)
 
 
 @jwt_required
@@ -949,4 +949,4 @@ def discrimination_results_view(request, session_id):
         'avg_response_time': avg_response_time,
     }
     
-    return render(request, 'pages/discrimination_results.html', context)
+    return render(request, 'curriculum/discrimination/results.html', context)

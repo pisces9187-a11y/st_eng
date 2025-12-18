@@ -24,7 +24,7 @@ class PronunciationLibraryView(TemplateView):
     Public view for browsing pronunciation lessons.
     Shows all available IPA lessons organized by category.
     """
-    template_name = 'pages/pronunciation_library.html'
+    template_name = 'curriculum/pronunciation/library.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -46,7 +46,7 @@ class PronunciationLessonView(TemplateView):
     View for individual pronunciation lesson player.
     Provides JSON data for Vue.js frontend.
     """
-    template_name = 'pages/pronunciation_lesson.html'
+    template_name = 'curriculum/pronunciation/lesson_detail.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -540,7 +540,7 @@ class PhonemeChartView(TemplateView):
     - Vietnamese approximations
     - Category filtering
     """
-    template_name = 'pages/phoneme_chart.html'
+    template_name = 'curriculum/phoneme/chart.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -598,7 +598,7 @@ class PronunciationProgressView(JWTRequiredMixin, TemplateView):
     View for user's pronunciation learning progress.
     Requires authentication.
     """
-    template_name = 'pages/pronunciation_progress.html'
+    template_name = 'curriculum/pronunciation/progress.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -618,7 +618,7 @@ class LessonLibraryView(TemplateView):
     """
     View for browsing all lessons (grammar, vocabulary, etc.).
     """
-    template_name = 'pages/lesson_library.html'
+    template_name = 'curriculum/lesson/library.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -638,7 +638,7 @@ class LessonPlayerView(TemplateView):
     """
     View for lesson player (grammar, vocabulary lessons).
     """
-    template_name = 'pages/lesson_player.html'
+    template_name = 'curriculum/lesson/player.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -678,7 +678,7 @@ class PhonemeDetailView(TemplateView):
     - Pronunciation tips
     - Example words with audio
     """
-    template_name = 'pages/phoneme_detail.html'
+    template_name = 'curriculum/phoneme/detail.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -791,7 +791,7 @@ class MinimalPairPracticeView(TemplateView):
     - Score tracking
     - Accuracy feedback
     """
-    template_name = 'pages/minimal_pair_practice.html'
+    template_name = 'curriculum/minimal_pair/practice.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

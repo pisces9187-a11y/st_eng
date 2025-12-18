@@ -19,7 +19,7 @@ class HomePageView(TemplateView):
     Render home/landing page template.
     If user is already authenticated, redirect to dashboard.
     """
-    template_name = 'pages/home.html'
+    template_name = 'public/home.html'
     
     def dispatch(self, request, *args, **kwargs):
         # If user is authenticated via JWT, redirect to dashboard
