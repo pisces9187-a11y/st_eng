@@ -67,6 +67,12 @@ urlpatterns = [
     path('', include((curriculum_page_urlpatterns, 'curriculum'), namespace='curriculum')),
     
     # =========================================================================
+    # VOCABULARY PAGES (Django Templates) - Flashcard, decks, vocabulary dashboard
+    # Namespace: 'vocabulary_pages' - Usage: {% url 'vocabulary_pages:flashcard-study' %}
+    # =========================================================================
+    path('vocabulary/', include('apps.vocabulary.page_urls', namespace='vocabulary_pages')),
+    
+    # =========================================================================
     # API v1 - Authentication (includes token, register, logout, password-reset)
     # =========================================================================
     path('api/v1/auth/', include(auth_urlpatterns)),
@@ -79,6 +85,7 @@ urlpatterns = [
     path('api/v1/users/', include('apps.users.urls')),
     path('api/v1/', include('apps.curriculum.urls')),  # Fixed: removed namespace
     path('api/v1/', include('apps.study.urls', namespace='study')),
+    path('api/v1/vocabulary/', include('apps.vocabulary.urls', namespace='vocabulary')),
     
     # Frontend - Serve assets
     re_path(r'^assets/(?P<path>.*)$', serve_assets, name='serve_assets'),

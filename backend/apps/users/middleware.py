@@ -20,16 +20,34 @@ class JWTAuthenticationMiddleware:
     Middleware that authenticates users via JWT token.
     Sets request.jwt_user if valid token is found.
     
+    SECURITY: Skip /admin/ paths - admin must use Django session auth only.
+    This prevents JWT tokens from bypassing admin authentication.
+    
     Token can be provided via:
     1. Authorization header: Bearer <token>
     2. Cookie: access_token=<token>
     """
+    
+    # Paths that should skip JWT authentication
+    EXCLUDED_PATHS = [
+        '/admin/',
+        '/admin',
+        '/static/',
+        '/media/',
+    ]
     
     def __init__(self, get_response):
         self.get_response = get_response
         self.jwt_auth = JWTAuthentication()
     
     def __call__(self, request):
+        # SECURITY: Skip JWT auth for admin paths
+        # Admin should ONLY use Django session authentication
+        request_path = request.path
+        if any(request_path.startswith(path) for path in self.EXCLUDED_PATHS):
+            logger.debug(f"Skipping JWT auth for admin/static path: {request_path}")
+            return self.get_response(request)
+        
         # Try to authenticate via JWT
         request.jwt_user = None
         request.jwt_authenticated = False

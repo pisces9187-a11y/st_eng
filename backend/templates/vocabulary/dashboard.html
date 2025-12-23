@@ -1,0 +1,270 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Vocabulary Dashboard - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="app" class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">📊 Thống kê Từ vựng</h2>
+            <p class="text-muted">Theo dõi tiến độ học từ vựng của bạn</p>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3">Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div v-else class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Tổng từ đã học</p>
+                            <h3 class="mb-0">[[ stats.total_words_learned ]]</h3>
+                        </div>
+                        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Đã thành thạo</p>
+                            <h3 class="mb-0">[[ stats.words_mastered ]]</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 text-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Cần ôn tập</p>
+                            <h3 class="mb-0">[[ stats.cards_due_today ]]</h3>
+                        </div>
+                        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Streak</p>
+                            <h3 class="mb-0">[[ stats.best_streak ]] 🔥</h3>
+                        </div>
+                        <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">🚀 Bắt đầu học</h5>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'vocabulary_pages:deck-list' %}" class="btn btn-primary">
+                            <i class="fas fa-play me-2"></i>Chọn bộ thẻ
+                        </a>
+                        <a href="{% url 'vocabulary_pages:flashcard-study' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-random me-2"></i>Ôn tập ngẫu nhiên
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Statistics -->
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">📈 Hiệu suất</h5>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Độ chính xác</span>
+                            <strong>[[ stats.average_accuracy ]]%</strong>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" 
+                                 :style="{ width: stats.average_accuracy + '%' }">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <p class="text-muted mb-1">Tổng phiên học</p>
+                            <h4 class="mb-0">[[ stats.total_sessions ]]</h4>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-muted mb-1">Tổng thời gian</p>
+                            <h4 class="mb-0">[[ stats.total_study_time_minutes ]] phút</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">💡 Tiến độ</h5>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Đang học</span>
+                            <strong>[[ stats.words_learning ]] từ</strong>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" 
+                                 :style="{ width: learningPercent + '%' }">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <p class="text-muted mb-1">Streak hiện tại</p>
+                            <h4 class="mb-0">[[ stats.current_streak ]] ngày</h4>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-muted mb-1">Streak tốt nhất</p>
+                            <h4 class="mb-0">[[ stats.best_streak ]] ngày</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            loading: true,
+            stats: {
+                total_words_learned: 0,
+                words_mastered: 0,
+                words_learning: 0,
+                total_study_time_minutes: 0,
+                total_sessions: 0,
+                average_accuracy: 0,
+                current_streak: 0,
+                best_streak: 0,
+                cards_due_today: 0
+            }
+        }
+    },
+    computed: {
+        learningPercent() {
+            if (this.stats.total_words_learned === 0) return 0;
+            return (this.stats.words_learning / this.stats.total_words_learned) * 100;
+        }
+    },
+    methods: {
+        async loadStats() {
+            try {
+                const token = this.getAuthToken();
+                
+                // If no token, try to fetch stats anyway (Django session auth might work)
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch('/api/v1/vocabulary/sessions/stats/', {
+                    headers: headers,
+                    credentials: 'include'  // Include cookies for Django session auth
+                });
+                
+                if (response.ok) {
+                    this.stats = await response.json();
+                } else if (response.status === 401 && !token) {
+                    // Only redirect if we have no token AND got 401
+                    console.log('Unauthorized access, redirecting to login...');
+                    window.location.href = '{% url "users:login" %}?next=' + encodeURIComponent(window.location.pathname);
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        getAuthToken() {
+            const token = localStorage.getItem('access_token');
+            if (token) return token;
+            
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'access_token') return value;
+            }
+            return null;
+        }
+    },
+    mounted() {
+        this.loadStats();
+    }
+}).mount('#app');
+</script>
+{% endblock %}

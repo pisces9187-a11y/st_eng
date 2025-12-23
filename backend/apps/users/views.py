@@ -75,10 +75,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class LogoutView(APIView):
     """
     API endpoint for user logout - blacklists refresh token and clears cookies.
+    IMPORTANT: Also clears Django session to prevent auto-login in admin.
     
     POST /api/v1/auth/logout/
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]  # Allow even if token expired
     
     def post(self, request):
         try:
@@ -91,11 +92,17 @@ class LogoutView(APIView):
                 except Exception as e:
                     pass  # Token might already be invalid
             
+            # CRITICAL: Clear Django session to logout from admin too
+            from django.contrib.auth import logout as django_logout
+            if request.user.is_authenticated:
+                django_logout(request)
+            
             response = Response({'message': 'Đăng xuất thành công.'}, status=status.HTTP_200_OK)
             
-            # Clear authentication cookies
+            # Clear ALL authentication cookies (JWT + Django session)
             response.delete_cookie('access_token', samesite='Lax')
             response.delete_cookie('refresh_token', samesite='Lax')
+            response.delete_cookie('sessionid', samesite='Lax')  # Django session
             
             return response
         except Exception as e:

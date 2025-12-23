@@ -44,6 +44,7 @@ LOCAL_APPS = [
     'apps.users',
     'apps.curriculum',
     'apps.study',
+    'apps.vocabulary',
     # 'apps.gamification',  # TODO: Create later
     # 'apps.payments',      # TODO: Create later
 ]
