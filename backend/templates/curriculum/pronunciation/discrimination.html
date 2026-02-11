@@ -1,0 +1,489 @@
+{% extends 'base/_base_public.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Breadcrumb Styles */
+    .custom-breadcrumb {
+        background: #f8f9fa;
+        padding: 1rem 0;
+        margin-bottom: 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .custom-breadcrumb .breadcrumb {
+        margin-bottom: 0;
+        background: transparent;
+        padding: 0;
+    }
+    .custom-breadcrumb .breadcrumb-item {
+        font-size: 14px;
+    }
+    .custom-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        font-size: 18px;
+        color: #6c757d;
+        padding: 0 0.5rem;
+    }
+    .custom-breadcrumb .breadcrumb-item a {
+        color: #667eea;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .custom-breadcrumb .breadcrumb-item a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+    .custom-breadcrumb .breadcrumb-item.active {
+        color: #495057;
+        font-weight: 500;
+    }
+    .breadcrumb-phoneme {
+        font-family: 'Times New Roman', serif;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .phoneme-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    .ipa-large {
+        font-size: 6rem;
+        font-weight: 300;
+        margin: 0;
+    }
+    .discrimination-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    .discrimination-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+    .discrimination-card.selected {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    .discrimination-card.correct {
+        border-color: #10b981;
+        background: #d1fae5;
+    }
+    .discrimination-card.incorrect {
+        border-color: #ef4444;
+        background: #fee2e2;
+    }
+    .audio-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .audio-btn:hover {
+        transform: scale(1.1);
+    }
+    .audio-btn:active {
+        transform: scale(0.95);
+    }
+    .progress-ring {
+        width: 120px;
+        height: 120px;
+    }
+    .progress-ring-circle {
+        transition: stroke-dashoffset 0.35s;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<div class="custom-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/dashboard/">
+                        <i class="bi bi-house-door"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'curriculum:pronunciation-discovery' %}">
+                        <i class="bi bi-mic"></i> Phát âm
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'curriculum:pronunciation-learning' phoneme.id %}">
+                        <span class="breadcrumb-phoneme">/{{ phoneme.ipa_symbol }}/</span> {{ phoneme.name_vi }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bi bi-puzzle"></i> Luyện phân biệt
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div id="discriminationApp" v-cloak>
+    <!-- Hero Section -->
+    <div class="phoneme-hero text-center">
+        <div class="container">
+            <h1 class="ipa-large">/{{ phoneme.ipa_symbol }}/</h1>
+            <p class="lead mb-0">{{ phoneme.vietnamese_approx }}</p>
+            <p class="mt-2 opacity-75">Luyện phân biệt âm</p>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Instructions -->
+        <div class="alert alert-info mb-4" v-if="!practiceStarted">
+            <h5 class="alert-heading"><i class="bi bi-info-circle"></i> Hướng dẫn</h5>
+            <p class="mb-0">
+                Nghe âm thanh và chọn từ tương ứng. Luyện tập giúp bạn phân biệt các âm tương tự nhau.
+            </p>
+        </div>
+
+        <!-- Progress Stats -->
+        <div class="row mb-4" v-if="practiceStarted">
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="mb-0">[[ questionNumber ]]/[[ totalQuestions ]]</h3>
+                        <small class="text-muted">Câu hỏi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="mb-0 text-success">[[ correctCount ]]</h3>
+                        <small class="text-muted">Đúng</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="mb-0 text-danger">[[ incorrectCount ]]</h3>
+                        <small class="text-muted">Sai</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="mb-0">[[ accuracy ]]%</h3>
+                        <small class="text-muted">Độ chính xác</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Button -->
+        <div class="text-center py-5" v-if="!practiceStarted">
+            <button @click="startPractice" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-play-fill"></i> Bắt đầu luyện tập
+            </button>
+        </div>
+
+        <!-- Practice Question -->
+        <div v-if="practiceStarted && !showResults">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center py-5">
+                    <h5 class="mb-4">Nghe và chọn từ đúng:</h5>
+                    
+                    <!-- Play Audio Button -->
+                    <button @click="playQuestionAudio" class="audio-btn mx-auto mb-4" :disabled="isPlaying">
+                        <i class="bi" :class="isPlaying ? 'bi-volume-up-fill' : 'bi-volume-up'"></i>
+                    </button>
+                    
+                    <p class="text-muted">Bấm để nghe lại</p>
+                </div>
+            </div>
+
+            <!-- Answer Options -->
+            <div class="row">
+                <div class="col-md-6 mb-3" v-for="(option, index) in currentQuestion.options" :key="index">
+                    <div 
+                        class="card discrimination-card h-100"
+                        :class="{
+                            'selected': selectedAnswer === index,
+                            'correct': answerSubmitted && index === currentQuestion.correctIndex,
+                            'incorrect': answerSubmitted && selectedAnswer === index && index !== currentQuestion.correctIndex
+                        }"
+                        @click="selectAnswer(index)"
+                    >
+                        <div class="card-body text-center py-4">
+                            <h3 class="mb-2">[[ option.word ]]</h3>
+                            <p class="text-muted mb-0">/[[ option.phonetic ]]/</p>
+                            <p class="text-muted mb-0"><small>[[ option.meaning ]]</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit/Next Button -->
+            <div class="text-center mt-4">
+                <button 
+                    v-if="!answerSubmitted"
+                    @click="submitAnswer" 
+                    class="btn btn-primary btn-lg px-5"
+                    :disabled="selectedAnswer === null"
+                >
+                    <i class="bi bi-check-lg"></i> Kiểm tra
+                </button>
+                <button 
+                    v-else
+                    @click="nextQuestion" 
+                    class="btn btn-success btn-lg px-5"
+                >
+                    <i class="bi bi-arrow-right"></i> Câu tiếp theo
+                </button>
+            </div>
+
+            <!-- Feedback -->
+            <div v-if="answerSubmitted" class="alert mt-4" :class="lastAnswerCorrect ? 'alert-success' : 'alert-danger'">
+                <h5 class="alert-heading">
+                    <i class="bi" :class="lastAnswerCorrect ? 'bi-check-circle' : 'bi-x-circle'"></i>
+                    [[ lastAnswerCorrect ? 'Chính xác!' : 'Chưa đúng' ]]
+                </h5>
+                <p class="mb-0" v-if="!lastAnswerCorrect">
+                    Đáp án đúng là: <strong>[[ currentQuestion.options[currentQuestion.correctIndex].word ]]</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div v-if="showResults" class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <h2 class="mb-4">Hoàn thành!</h2>
+                    
+                    <svg class="progress-ring mx-auto mb-4" viewBox="0 0 120 120">
+                        <circle
+                            class="progress-ring-circle"
+                            stroke="#e5e7eb"
+                            stroke-width="8"
+                            fill="transparent"
+                            r="52"
+                            cx="60"
+                            cy="60"
+                        />
+                        <circle
+                            class="progress-ring-circle"
+                            :stroke="accuracy >= 80 ? '#10b981' : accuracy >= 60 ? '#f59e0b' : '#ef4444'"
+                            stroke-width="8"
+                            fill="transparent"
+                            r="52"
+                            cx="60"
+                            cy="60"
+                            :stroke-dasharray="326.56"
+                            :stroke-dashoffset="326.56 - (326.56 * accuracy / 100)"
+                        />
+                        <text x="60" y="70" text-anchor="middle" font-size="24" font-weight="bold" fill="#374151">
+                            [[ accuracy ]]%
+                        </text>
+                    </svg>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <h4 class="text-success">[[ correctCount ]]</h4>
+                            <p class="text-muted">Đúng</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4 class="text-danger">[[ incorrectCount ]]</h4>
+                            <p class="text-muted">Sai</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4>[[ totalQuestions ]]</h4>
+                            <p class="text-muted">Tổng số</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button @click="restartPractice" class="btn btn-primary btn-lg me-2">
+                            <i class="bi bi-arrow-clockwise"></i> Luyện lại
+                        </button>
+                        <a href="/pronunciation/discovery/" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            phoneme: {
+                id: {{ phoneme.id }},
+                ipa_symbol: '{{ phoneme.ipa_symbol|escapejs }}',
+                name_vi: '{{ phoneme.name_vi|escapejs }}',
+                vietnamese_approx: '{{ phoneme.vietnamese_approx|escapejs }}'
+            },
+            practiceStarted: false,
+            showResults: false,
+            
+            // Question state
+            currentQuestionIndex: 0,
+            selectedAnswer: null,
+            answerSubmitted: false,
+            lastAnswerCorrect: false,
+            
+            // Progress
+            correctCount: 0,
+            incorrectCount: 0,
+            
+            // Audio
+            isPlaying: false,
+            audioElement: null,
+            
+            // Mock questions (in production, fetch from API)
+            questions: []
+        }
+    },
+    computed: {
+        currentQuestion() {
+            return this.questions[this.currentQuestionIndex];
+        },
+        questionNumber() {
+            return this.currentQuestionIndex + 1;
+        },
+        totalQuestions() {
+            return this.questions.length;
+        },
+        accuracy() {
+            const total = this.correctCount + this.incorrectCount;
+            if (total === 0) return 0;
+            return Math.round((this.correctCount / total) * 100);
+        }
+    },
+    methods: {
+        async startPractice() {
+            // Generate mock questions
+            this.generateMockQuestions();
+            this.practiceStarted = true;
+        },
+        
+        generateMockQuestions() {
+            // Mock data - in production, fetch from API
+            const mockWords = [
+                { word: 'sit', phonetic: 'sɪt', meaning: 'ngồi' },
+                { word: 'seat', phonetic: 'siːt', meaning: 'chỗ ngồi' },
+                { word: 'bit', phonetic: 'bɪt', meaning: 'chút' },
+                { word: 'beat', phonetic: 'biːt', meaning: 'đánh' },
+                { word: 'ship', phonetic: 'ʃɪp', meaning: 'tàu' },
+                { word: 'sheep', phonetic: 'ʃiːp', meaning: 'cừu' }
+            ];
+            
+            this.questions = [];
+            for (let i = 0; i < 10; i++) {
+                const correctIndex = Math.floor(Math.random() * 4);
+                const options = this.getRandomOptions(mockWords, 4);
+                
+                this.questions.push({
+                    correctIndex: correctIndex,
+                    options: options,
+                    audioUrl: null // Mock - in production, real audio URL
+                });
+            }
+        },
+        
+        getRandomOptions(words, count) {
+            const shuffled = [...words].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        },
+        
+        playQuestionAudio() {
+            this.isPlaying = true;
+            
+            // Mock audio playback - in production, use real audio
+            setTimeout(() => {
+                this.isPlaying = false;
+            }, 1000);
+            
+            // TODO: Implement real audio playback
+            // const audio = new Audio(this.currentQuestion.audioUrl);
+            // audio.play();
+        },
+        
+        selectAnswer(index) {
+            if (!this.answerSubmitted) {
+                this.selectedAnswer = index;
+            }
+        },
+        
+        submitAnswer() {
+            if (this.selectedAnswer === null) return;
+            
+            this.answerSubmitted = true;
+            this.lastAnswerCorrect = this.selectedAnswer === this.currentQuestion.correctIndex;
+            
+            if (this.lastAnswerCorrect) {
+                this.correctCount++;
+            } else {
+                this.incorrectCount++;
+            }
+        },
+        
+        nextQuestion() {
+            this.currentQuestionIndex++;
+            this.selectedAnswer = null;
+            this.answerSubmitted = false;
+            
+            if (this.currentQuestionIndex >= this.questions.length) {
+                this.showResults = true;
+                this.saveProgress();
+            }
+        },
+        
+        async saveProgress() {
+            // TODO: Save progress to backend
+            const data = {
+                phoneme_id: this.phoneme.id,
+                correct_count: this.correctCount,
+                total_count: this.totalQuestions
+            };
+            
+            // await ApiClient.post('/pronunciation/discrimination/submit/', data);
+        },
+        
+        restartPractice() {
+            this.currentQuestionIndex = 0;
+            this.selectedAnswer = null;
+            this.answerSubmitted = false;
+            this.correctCount = 0;
+            this.incorrectCount = 0;
+            this.showResults = false;
+            this.generateMockQuestions();
+        }
+    },
+    mounted() {
+        console.log('Discrimination practice app mounted');
+    }
+}).mount('#discriminationApp');
+</script>
+{% endblock %}

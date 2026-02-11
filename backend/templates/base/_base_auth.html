@@ -1,0 +1,49 @@
+{% extends "base/_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% block page_css %}{% endblock %}
+{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<div class="auth-container">
+    <!-- Branding Side -->
+    <div class="auth-branding">
+        <div class="branding-content">
+            <a href="/" class="brand-logo">
+                <img src="{% static 'images/logo-white.svg' %}" alt="EnglishMaster" class="logo-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span class="logo-text" style="display:none; font-size:1.5rem; font-weight:700; color:#fff;">
+                    English<span style="color:#F47C26;">Master</span>
+                </span>
+            </a>
+            <h1 class="brand-slogan">
+                Chinh phục Tiếng Anh<br>sau 3 tháng
+            </h1>
+            <div class="brand-illustration">
+                <img src="{% static 'images/auth-illustration.svg' %}" alt="Learning"
+                     onerror="this.style.display='none';">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Form Side -->
+    <div class="auth-form-container">
+        <div class="auth-form-wrapper">
+            {% block auth_content %}{% endblock %}
+            
+            <!-- Footer -->
+            <div class="auth-footer">
+                {% block auth_footer %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% block page_js %}{% endblock %}
+{% endblock %}

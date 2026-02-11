@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Management - Admin Panel</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Admin Layout */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #183B56 0%, #0F2538 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar .logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-sidebar .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-item.active {
+            background: rgba(244, 124, 38, 0.2);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-icon {
+            width: 25px;
+            display: inline-block;
+        }
+        
+        .admin-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #F9FAFC;
+        }
+        
+        /* Flashcard Preview */
+        .flashcard-preview {
+            width: 200px;
+            height: 120px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .flashcard-preview-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flashcard-preview:hover .flashcard-preview-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-preview-front, .flashcard-preview-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .flashcard-preview-front {
+            background: white;
+            border: 2px solid #E0E6ED;
+        }
+        
+        .flashcard-preview-back {
+            background: var(--bs-secondary);
+            color: white;
+            transform: rotateY(180deg);
+        }
+        
+        /* Import Section */
+        .import-section {
+            border: 2px dashed var(--bs-primary);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(244, 124, 38, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .import-section:hover {
+            background: rgba(244, 124, 38, 0.1);
+            border-color: #D35400;
+        }
+        
+        .import-section.dragover {
+            background: rgba(244, 124, 38, 0.15);
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="logo">
+                <h4 class="fw-bold mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span>Admin Panel</span>
+                </h4>
+            </div>
+            
+            <nav class="mt-3">
+                <div class="nav-item" @click="goTo('admin-dashboard.html')">
+                    <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-lesson-editor.html')">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span>
+                    <span>Quản lý bài học</span>
+                </div>
+                <div class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span>Flashcard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-users.html')">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    <span>Học viên</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-revenue.html')">
+                    <span class="nav-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <span>Doanh thu</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-settings.html')">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span>Cài đặt</span>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.1);">
+                
+                <div class="nav-item" @click="logout">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span>Đăng xuất</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-secondary mb-1">Quản lý Flashcard</h2>
+                    <p class="text-muted mb-0">Tổng cộng {{ totalFlashcards }} từ vựng</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" @click="showImportModal">
+                        <i class="fas fa-upload me-2"></i>Import CSV/Excel
+                    </button>
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFlashcardModal">
+                        <i class="fas fa-plus me-2"></i>Thêm từ vựng
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #3498DB;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted small mb-1">Tổng flashcard</p>
+                                    <h4 class="fw-bold mb-0">{{ stats.total }}</h4>
+                                </div>
+                                <i class="fas fa-layer-group fa-2x text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #27AE60;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted small mb-1">Oxford 3000</p>
+                                    <h4 class="fw-bold mb-0">{{ stats.oxford }}</h4>
+                                </div>
+                                <i class="fas fa-star fa-2x text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #F39C12;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted small mb-1">Có audio</p>
+                                    <h4 class="fw-bold mb-0">{{ stats.withAudio }}</h4>
+                                </div>
+                                <i class="fas fa-volume-up fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #E74C3C;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted small mb-1">Cần review</p>
+                                    <h4 class="fw-bold mb-0">{{ stats.needReview }}</h4>
+                                </div>
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Search -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                placeholder="Tìm kiếm từ vựng..."
+                                v-model="searchQuery"
+                            >
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" v-model="filterLevel">
+                                <option value="">Tất cả cấp độ</option>
+                                <option value="A1">A1</option>
+                                <option value="A2">A2</option>
+                                <option value="B1">B1</option>
+                                <option value="B2">B2</option>
+                                <option value="C1">C1</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" v-model="filterType">
+                                <option value="">Loại từ</option>
+                                <option value="noun">Noun</option>
+                                <option value="verb">Verb</option>
+                                <option value="adjective">Adjective</option>
+                                <option value="adverb">Adverb</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" v-model="filterTag">
+                                <option value="">Tags</option>
+                                <option value="oxford3000">Oxford 3000</option>
+                                <option value="ielts">IELTS</option>
+                                <option value="toeic">TOEIC</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" @click="resetFilters">
+                                <i class="fas fa-redo me-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcard Grid -->
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4 col-xl-3" v-for="card in filteredFlashcards" :key="card.id">
+                    <div class="card border-0 shadow-sm h-100 card-hover">
+                        <div class="card-body">
+                            <!-- Preview -->
+                            <div class="flashcard-preview mx-auto mb-3">
+                                <div class="flashcard-preview-inner">
+                                    <div class="flashcard-preview-front">
+                                        {{ card.term }}
+                                    </div>
+                                    <div class="flashcard-preview-back">
+                                        {{ card.meaning }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Info -->
+                            <div class="text-center mb-3">
+                                <h6 class="fw-bold mb-1">{{ card.term }}</h6>
+                                <p class="text-muted small mb-2">{{ card.pronunciation }}</p>
+                                <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                    <span class="badge bg-primary">{{ card.type }}</span>
+                                    <span class="badge bg-secondary">{{ card.level }}</span>
+                                    <span v-if="card.isOxford" class="badge bg-warning text-dark">
+                                        <i class="fas fa-star"></i> Oxford
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary flex-grow-1" @click="editFlashcard(card)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" v-if="card.hasAudio">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @click="deleteFlashcard(card)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Trước</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </main>
+
+        <!-- Add Flashcard Modal -->
+        <div class="modal fade" id="addFlashcardModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">Thêm Flashcard mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Từ vựng (Term)</label>
+                                    <input type="text" class="form-control" v-model="newCard.term">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Nghĩa tiếng Việt</label>
+                                    <input type="text" class="form-control" v-model="newCard.meaning">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Phiên âm (IPA)</label>
+                                    <input type="text" class="form-control font-monospace" v-model="newCard.pronunciation">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Loại từ</label>
+                                    <select class="form-select" v-model="newCard.type">
+                                        <option value="noun">Noun</option>
+                                        <option value="verb">Verb</option>
+                                        <option value="adjective">Adjective</option>
+                                        <option value="adverb">Adverb</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Cấp độ</label>
+                                    <select class="form-select" v-model="newCard.level">
+                                        <option value="A1">A1</option>
+                                        <option value="A2">A2</option>
+                                        <option value="B1">B1</option>
+                                        <option value="B2">B2</option>
+                                        <option value="C1">C1</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Câu ví dụ (Example)</label>
+                                    <input type="text" class="form-control" v-model="newCard.example">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Ghi chú ngữ pháp</label>
+                                    <textarea class="form-control" rows="2" v-model="newCard.note"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Audio File</label>
+                                    <input type="file" class="form-control" accept="audio/*">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Tags</label>
+                                    <div class="d-flex gap-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" v-model="newCard.isOxford" id="oxfordCheck">
+                                            <label class="form-check-label" for="oxfordCheck">Oxford 3000</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" v-model="newCard.isIELTS" id="ieltsCheck">
+                                            <label class="form-check-label" for="ieltsCheck">IELTS</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-primary" @click="addFlashcard">
+                            <i class="fas fa-plus me-2"></i>Thêm Flashcard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Modal -->
+        <div class="modal fade" id="importModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">Import Flashcards từ CSV/Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="import-section mb-4" @click="triggerFileInput" @dragover.prevent @drop.prevent="handleDrop">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                            <h5 class="fw-bold">Kéo thả file hoặc Click để chọn</h5>
+                            <p class="text-muted mb-0">Hỗ trợ: .csv, .xlsx, .xls</p>
+                            <input type="file" ref="fileInput" @change="handleFileSelect" accept=".csv,.xlsx,.xls" style="display: none;">
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-info-circle me-2"></i>Format CSV/Excel:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Column 1: Term (Từ vựng)</li>
+                                <li>Column 2: Meaning (Nghĩa)</li>
+                                <li>Column 3: Pronunciation (IPA)</li>
+                                <li>Column 4: Type (noun/verb/adj/adv)</li>
+                                <li>Column 5: Level (A1/A2/B1/B2/C1)</li>
+                                <li>Column 6: Example (Câu ví dụ)</li>
+                            </ul>
+                        </div>
+                        
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-download me-2"></i>Tải file mẫu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    filterLevel: '',
+                    filterType: '',
+                    filterTag: '',
+                    stats: {
+                        total: 2847,
+                        oxford: 1523,
+                        withAudio: 2145,
+                        needReview: 127
+                    },
+                    flashcards: [
+                        { id: 1, term: 'Decision', meaning: 'Quyết định', pronunciation: '/dɪˈsɪʒ.ən/', type: 'noun', level: 'A2', example: 'Make a decision', note: 'Danh từ đếm được', isOxford: true, hasAudio: true },
+                        { id: 2, term: 'Improve', meaning: 'Cải thiện', pronunciation: '/ɪmˈpruːv/', type: 'verb', level: 'A2', example: 'Improve your skills', note: '', isOxford: true, hasAudio: true },
+                        { id: 3, term: 'Beautiful', meaning: 'Đẹp', pronunciation: '/ˈbjuː.tɪ.fəl/', type: 'adjective', level: 'A1', example: 'A beautiful day', note: '', isOxford: true, hasAudio: true },
+                        { id: 4, term: 'Quickly', meaning: 'Nhanh chóng', pronunciation: '/ˈkwɪk.li/', type: 'adverb', level: 'A2', example: 'Walk quickly', note: '', isOxford: false, hasAudio: true },
+                        { id: 5, term: 'Environment', meaning: 'Môi trường', pronunciation: '/ɪnˈvaɪ.rən.mənt/', type: 'noun', level: 'B1', example: 'Protect the environment', note: '', isOxford: true, hasAudio: true },
+                        { id: 6, term: 'Achieve', meaning: 'Đạt được', pronunciation: '/əˈtʃiːv/', type: 'verb', level: 'B1', example: 'Achieve your goals', note: '', isOxford: true, hasAudio: false }
+                    ],
+                    newCard: {
+                        term: '',
+                        meaning: '',
+                        pronunciation: '',
+                        type: 'noun',
+                        level: 'A1',
+                        example: '',
+                        note: '',
+                        isOxford: false,
+                        isIELTS: false
+                    }
+                };
+            },
+            computed: {
+                totalFlashcards() {
+                    return this.stats.total;
+                },
+                filteredFlashcards() {
+                    let filtered = this.flashcards;
+                    
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(card => 
+                            card.term.toLowerCase().includes(query) || 
+                            card.meaning.toLowerCase().includes(query)
+                        );
+                    }
+                    
+                    if (this.filterLevel) {
+                        filtered = filtered.filter(card => card.level === this.filterLevel);
+                    }
+                    
+                    if (this.filterType) {
+                        filtered = filtered.filter(card => card.type === this.filterType);
+                    }
+                    
+                    if (this.filterTag === 'oxford3000') {
+                        filtered = filtered.filter(card => card.isOxford);
+                    }
+                    
+                    return filtered;
+                }
+            },
+            methods: {
+                goTo(page) {
+                    window.location.href = page;
+                },
+                logout() {
+                    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                        window.location.href = 'logout.html';
+                    }
+                },
+                resetFilters() {
+                    this.searchQuery = '';
+                    this.filterLevel = '';
+                    this.filterType = '';
+                    this.filterTag = '';
+                },
+                editFlashcard(card) {
+                    alert(`Chỉnh sửa: ${card.term}`);
+                },
+                deleteFlashcard(card) {
+                    if (confirm(`Xóa từ vựng "${card.term}"?`)) {
+                        const index = this.flashcards.findIndex(c => c.id === card.id);
+                        this.flashcards.splice(index, 1);
+                        alert('Đã xóa thành công!');
+                    }
+                },
+                addFlashcard() {
+                    if (!this.newCard.term || !this.newCard.meaning) {
+                        alert('Vui lòng điền đầy đủ từ vựng và nghĩa');
+                        return;
+                    }
+                    
+                    const card = {
+                        id: this.flashcards.length + 1,
+                        ...this.newCard,
+                        hasAudio: false
+                    };
+                    
+                    this.flashcards.unshift(card);
+                    this.stats.total++;
+                    
+                    // Reset form
+                    this.newCard = {
+                        term: '',
+                        meaning: '',
+                        pronunciation: '',
+                        type: 'noun',
+                        level: 'A1',
+                        example: '',
+                        note: '',
+                        isOxford: false,
+                        isIELTS: false
+                    };
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addFlashcardModal'));
+                    modal.hide();
+                    
+                    alert('Đã thêm flashcard thành công!');
+                },
+                showImportModal() {
+                    const modal = new bootstrap.Modal(document.getElementById('importModal'));
+                    modal.show();
+                },
+                triggerFileInput() {
+                    this.$refs.fileInput.click();
+                },
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        alert(`Đã chọn file: ${file.name}\nChức năng import đang được phát triển...`);
+                    }
+                },
+                handleDrop(event) {
+                    const file = event.dataTransfer.files[0];
+                    if (file) {
+                        alert(`Đã nhận file: ${file.name}\nChức năng import đang được phát triển...`);
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

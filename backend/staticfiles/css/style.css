@@ -1,0 +1,797 @@
+/* ====================================
+   Color Palette - Energetic Orange Theme
+   ==================================== */
+:root {
+    /* Primary Colors */
+    --energetic-orange: #F47C26;
+    --charcoal-gray: #4A4A4A;
+    --navy-blue: #183B56;
+    
+    /* Supporting Colors */
+    --light-gray: #F9FAFC;
+    --white: #FFFFFF;
+    --dark-gray: #2C2C2C;
+    
+    /* Gradient */
+    --gradient-orange: linear-gradient(135deg, #F47C26 0%, #FFA500 100%);
+    
+    /* Typography */
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Open Sans', sans-serif;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(244, 124, 38, 0.15);
+    --shadow-md: 0 4px 16px rgba(244, 124, 38, 0.2);
+    --shadow-lg: 0 8px 32px rgba(244, 124, 38, 0.25);
+    --shadow-orange: 0 8px 24px rgba(244, 124, 38, 0.3);
+    
+    /* Spacing */
+    --section-padding: 100px;
+}
+
+/* ====================================
+   Global Styles
+   ==================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--charcoal-gray);
+    line-height: 1.7;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+a {
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ====================================
+   Utility Classes
+   ==================================== */
+.text-energetic-orange {
+    color: var(--energetic-orange) !important;
+}
+
+.text-primary-dark {
+    color: var(--navy-blue) !important;
+}
+
+.text-charcoal-gray {
+    color: var(--charcoal-gray) !important;
+}
+
+.text-light-gray {
+    color: #B0B0B0 !important;
+}
+
+.bg-energetic-orange {
+    background-color: var(--energetic-orange) !important;
+}
+
+.bg-primary-dark {
+    background-color: var(--navy-blue) !important;
+}
+
+.bg-light-gray {
+    background-color: var(--light-gray) !important;
+}
+
+.bg-gradient-orange {
+    background: var(--gradient-orange) !important;
+}
+
+.min-vh-80 {
+    min-height: 80vh;
+}
+
+/* ====================================
+   Navigation (Sticky Header)
+   ==================================== */
+.navbar {
+    padding: 0.6rem 0;
+    transition: all 0.3s ease;
+    overflow: visible;
+}
+
+.navbar > .container {
+    overflow: visible;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    white-space: nowrap;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: var(--navy-blue);
+    font-weight: 600;
+    padding: 0.5rem 0.8rem;
+    transition: color 0.3s ease;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: var(--energetic-orange);
+}
+
+.navbar.scrolled {
+    box-shadow: var(--shadow-sm);
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu-animate {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    padding: 0.5rem 0;
+    margin-top: 0;
+    min-width: 200px;
+}
+
+@media (min-width: 992px) {
+    .dropdown-menu-animate {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.25s ease;
+        display: block;
+    }
+    
+    .dropdown:hover .dropdown-menu-animate {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu-animate .dropdown-item {
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+    color: var(--navy-blue);
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.dropdown-menu-animate .dropdown-item:hover {
+    background-color: rgba(244, 124, 38, 0.1);
+    color: var(--energetic-orange);
+    padding-left: 1.3rem;
+}
+
+.dropdown-menu-animate .dropdown-item i {
+    width: 18px;
+    font-size: 0.8rem;
+}
+
+.dropdown-menu-animate .dropdown-divider {
+    margin: 0.3rem 0.8rem;
+    border-color: #eee;
+}
+
+/* Auth Buttons in Navbar */
+.navbar-auth {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-auth .btn {
+    padding: 0.45rem 1.2rem;
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+    border-radius: 25px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.navbar-auth .btn-outline-primary-dark {
+    border-width: 1.5px;
+}
+
+.navbar-auth .btn-outline-primary-dark:hover,
+.navbar-auth .btn-energetic-orange:hover {
+    transform: translateY(-2px);
+}
+
+/* Navbar Toggler */
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* Mobile Navigation */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #fff;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-top: 0.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .dropdown-menu-animate {
+        position: static;
+        box-shadow: none;
+        padding-left: 1rem;
+        border: none;
+        background: transparent;
+    }
+    
+    .navbar-auth {
+        flex-direction: column;
+        width: 100%;
+        padding-top: 0.5rem;
+        border-top: 1px solid #eee;
+        margin-top: 0.5rem;
+    }
+    
+    .navbar-auth .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        justify-content: center;
+    }
+}
+
+/* ====================================
+   Buttons
+   ==================================== */
+.btn {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.95rem;
+}
+
+.btn-energetic-orange {
+    background-color: var(--energetic-orange);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.btn-energetic-orange:hover {
+    background-color: #E66D15;
+    color: var(--white);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-orange);
+}
+
+.btn-outline-primary-dark {
+    border: 2px solid var(--navy-blue);
+    color: var(--navy-blue);
+    background-color: transparent;
+}
+
+.btn-outline-primary-dark:hover {
+    background-color: var(--navy-blue);
+    color: var(--white);
+    transform: translateY(-3px);
+}
+
+.btn-outline-energetic-orange {
+    border: 2px solid var(--energetic-orange);
+    color: var(--energetic-orange);
+    background-color: transparent;
+}
+
+.btn-outline-energetic-orange:hover {
+    background-color: var(--energetic-orange);
+    color: var(--white);
+    transform: translateY(-3px);
+}
+
+.btn-white-orange {
+    background-color: var(--white);
+    color: var(--energetic-orange);
+    font-weight: 700;
+}
+
+.btn-white-orange:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--energetic-orange);
+    transform: translateY(-3px) scale(1.05);
+}
+
+.btn-outline-light {
+    border: 2px solid var(--white);
+    color: var(--white);
+}
+
+.btn-outline-light:hover {
+    background-color: var(--white);
+    color: var(--energetic-orange);
+    border-color: var(--white);
+}
+
+.shadow-orange {
+    box-shadow: var(--shadow-orange) !important;
+}
+
+/* ====================================
+   Hero Section
+   ==================================== */
+.hero-section {
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--navy-blue);
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.hero-title .text-energetic-orange {
+    color: var(--energetic-orange);
+    font-weight: 800;
+}
+
+.hero-subtext {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 1.125rem;
+    color: #2C3E50;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+}
+
+.micro-copy {
+    padding: 0.5rem 0;
+}
+
+.micro-copy p {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.hero-image-wrapper {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-image {
+    position: relative;
+    z-index: 2;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.shape-bg {
+    position: absolute;
+    border-radius: 50%;
+    z-index: 1;
+    opacity: 0.1;
+}
+
+.shape-1 {
+    width: 300px;
+    height: 300px;
+    background-color: var(--energetic-orange);
+    top: -50px;
+    right: 100px;
+    animation: rotate 20s linear infinite;
+}
+
+.shape-2 {
+    width: 200px;
+    height: 200px;
+    background-color: var(--navy-blue);
+    bottom: 50px;
+    right: 50px;
+    animation: rotate 15s linear infinite reverse;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.trust-badge {
+    padding: 1rem 0;
+}
+
+.trust-badge .stars {
+    font-size: 1.2rem;
+}
+
+/* ====================================
+   Social Proof Section
+   ==================================== */
+.social-proof-section {
+    border-top: 1px solid #E0E0E0;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.partner-logos {
+    min-height: 80px;
+}
+
+.partner-logo {
+    max-height: 60px;
+    filter: grayscale(100%);
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.partner-logo:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+}
+
+/* ====================================
+   Value Proposition Section
+   ==================================== */
+.value-section {
+    padding: var(--section-padding) 0;
+}
+
+.feature-card {
+    background-color: var(--white);
+    border-radius: 20px;
+    border: 2px solid var(--light-gray);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--energetic-orange);
+}
+
+.feature-icon {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-card:hover .feature-icon i {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* ====================================
+   How It Works Section
+   ==================================== */
+.how-it-works-section {
+    padding: var(--section-padding) 0;
+}
+
+.step-badge .badge {
+    border-radius: 50px;
+    font-weight: 700;
+}
+
+.how-it-works-section img {
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+}
+
+.how-it-works-section img:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+}
+
+.how-it-works-section ul li {
+    font-size: 1.1rem;
+}
+
+/* ====================================
+   Teachers Section
+   ==================================== */
+.teachers-section {
+    padding: var(--section-padding) 0;
+}
+
+.teacher-card {
+    background-color: var(--white);
+    padding: 2rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.teacher-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+}
+
+.teacher-image img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border: 5px solid var(--energetic-orange);
+    transition: all 0.3s ease;
+}
+
+.teacher-card:hover .teacher-image img {
+    transform: scale(1.05);
+}
+
+.flag-icon {
+    width: 24px;
+    height: auto;
+    border-radius: 3px;
+}
+
+/* ====================================
+   Testimonials Section
+   ==================================== */
+.testimonials-section {
+    padding: var(--section-padding) 0;
+}
+
+.testimonial-card {
+    background-color: var(--white);
+    border-radius: 30px;
+    box-shadow: var(--shadow-md);
+}
+
+.testimonial-author img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: var(--energetic-orange);
+    border-radius: 50%;
+    padding: 20px;
+}
+
+.carousel-control-prev:hover .carousel-control-prev-icon,
+.carousel-control-next:hover .carousel-control-next-icon {
+    background-color: var(--navy-blue);
+}
+
+/* ====================================
+   Final CTA Section
+   ==================================== */
+.final-cta-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.final-cta-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: pulse 15s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ====================================
+   Footer
+   ==================================== */
+.footer {
+    padding: 60px 0 30px;
+}
+
+.footer-link {
+    color: #B0B0B0;
+    transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--energetic-orange);
+    padding-left: 5px;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    background-color: var(--energetic-orange);
+    color: var(--white);
+    transform: translateY(-3px);
+}
+
+/* ====================================
+   Responsive Design
+   ==================================== */
+@media (max-width: 991px) {
+    :root {
+        --section-padding: 60px;
+    }
+    
+    .hero-section {
+        padding: 40px 0;
+    }
+    
+    .display-3 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtext {
+        font-size: 1rem;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .display-5 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 767px) {
+    :root {
+        --section-padding: 40px;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .display-3 {
+        font-size: 1.75rem;
+        line-height: 1.3;
+    }
+    
+    .hero-subtext {
+        font-size: 0.95rem;
+    }
+    
+    .display-4 {
+        font-size: 1.75rem;
+    }
+    
+    .display-5 {
+        font-size: 1.5rem;
+    }
+    
+    .hero-image-wrapper {
+        margin-top: 2rem;
+    }
+    
+    .feature-card,
+    .teacher-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* ====================================
+   Animation & Micro-interactions
+   ==================================== */
+.btn,
+.feature-card,
+.teacher-card,
+.partner-logo,
+.social-link {
+    cursor: pointer;
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Loading animation for images */
+img {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* Hover effect for cards */
+.card,
+.feature-card,
+.teacher-card,
+.testimonial-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Text selection color */
+::selection {
+    background-color: var(--energetic-orange);
+    color: var(--white);
+}
+
+::-moz-selection {
+    background-color: var(--energetic-orange);
+    color: var(--white);
+}
+
+/* Focus states for accessibility */
+.btn:focus,
+a:focus,
+input:focus,
+textarea:focus {
+    outline: 3px solid rgba(244, 124, 38, 0.5);
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--energetic-orange);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #E66D15;
+}

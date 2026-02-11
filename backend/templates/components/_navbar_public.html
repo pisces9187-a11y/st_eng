@@ -1,0 +1,152 @@
+{% load static %}
+<!-- Public Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+    <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand" href="{% url 'users:home' %}">
+            <span class="logo-text" style="font-weight:700; font-size:1.5rem;">
+                <span style="color:#183B56;">English</span><span style="color:#F47C26;">Master</span>
+            </span>
+        </a>
+        
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Nav Items - Menu sát phải cùng với Auth buttons -->
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto me-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:forum' %}">
+                        <i class="fas fa-comments me-1"></i> Diễn đàn
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:leaderboard' %}">
+                        <i class="fas fa-trophy me-1"></i> Xếp hạng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:help-center' %}">
+                        <i class="fas fa-question-circle me-1"></i> Hỗ trợ
+                    </a>
+                </li>
+            </ul>
+            
+            <!-- Auth Buttons - Controlled by JavaScript based on JWT token -->
+            <div class="navbar-auth d-flex gap-2">
+                <!-- Guest State (default, hidden when logged in) -->
+                <div id="navbar-guest" class="d-flex gap-2">
+                    <a href="{% url 'users:login' %}" class="btn btn-outline-primary-dark">Đăng nhập</a>
+                    <a href="{% url 'users:signup' %}" class="btn btn-primary-orange">Đăng ký</a>
+                </div>
+                
+                <!-- Logged In State (hidden by default, shown when logged in) -->
+                <div id="navbar-user" class="d-none d-flex gap-2 align-items-center">
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2" 
+                                data-bs-toggle="dropdown" id="navbar-user-dropdown">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                 style="width:32px; height:32px; font-size:14px; font-weight:600;"
+                                 id="navbar-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="d-none d-md-inline" id="navbar-username">Người dùng</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'users:profile' %}">
+                                <i class="fas fa-user me-2"></i> Hồ sơ
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'users:profile-settings' %}">
+                                <i class="fas fa-cog me-2"></i> Cài đặt
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'users:logout' %}" id="navbar-logout">
+                                <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Navbar Auth State Script -->
+<script>
+(function() {
+    // Check auth state on page load
+    function checkAuthState() {
+        const token = localStorage.getItem('access_token');
+        // Support both 'user' and 'user_data' keys for compatibility
+        const userData = localStorage.getItem('user') || localStorage.getItem('user_data');
+        
+        const guestNav = document.getElementById('navbar-guest');
+        const userNav = document.getElementById('navbar-user');
+        
+        if (token && userData) {
+            // User is logged in
+            try {
+                const user = JSON.parse(userData);
+                
+                // Show user nav, hide guest nav
+                if (guestNav) guestNav.classList.add('d-none');
+                if (userNav) {
+                    userNav.classList.remove('d-none');
+                    userNav.classList.add('d-flex');
+                }
+                
+                // Update username display
+                const usernameEl = document.getElementById('navbar-username');
+                if (usernameEl) {
+                    usernameEl.textContent = user.first_name || user.username || 'Người dùng';
+                }
+                
+                // Update avatar with initials
+                const avatarEl = document.getElementById('navbar-avatar');
+                if (avatarEl && user.first_name) {
+                    const initials = getInitials(user.first_name, user.last_name);
+                    avatarEl.innerHTML = initials;
+                }
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+                showGuestNav();
+            }
+        } else {
+            showGuestNav();
+        }
+    }
+    
+    function showGuestNav() {
+        const guestNav = document.getElementById('navbar-guest');
+        const userNav = document.getElementById('navbar-user');
+        
+        if (guestNav) {
+            guestNav.classList.remove('d-none');
+            guestNav.classList.add('d-flex');
+        }
+        if (userNav) userNav.classList.add('d-none');
+    }
+    
+    function getInitials(firstName, lastName) {
+        let initials = '';
+        if (firstName) initials += firstName.charAt(0).toUpperCase();
+        if (lastName) initials += lastName.charAt(0).toUpperCase();
+        return initials || 'U';
+    }
+    
+    // Run on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkAuthState);
+    } else {
+        checkAuthState();
+    }
+    
+    // Listen for auth state changes (custom event)
+    window.addEventListener('authStateChanged', checkAuthState);
+})();
+</script>

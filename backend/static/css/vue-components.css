@@ -1,0 +1,523 @@
+/**
+ * =============================================================================
+ * VUE.JS COMPONENTS GUIDE - English Learning Platform
+ * =============================================================================
+ * 
+ * Hướng dẫn sử dụng Vue.js 3 với Django Templates
+ * 
+ * Version: 1.0.0
+ * Last Updated: December 10, 2025
+ * =============================================================================
+ */
+
+/* =============================================================================
+   1. VUE.JS SETUP PATTERN
+   =============================================================================
+   
+   QUAN TRỌNG: Sử dụng delimiters khác để tránh conflict với Django template
+   
+   ```javascript
+   const { createApp } = Vue;
+   
+   createApp({
+       // REQUIRED: Tránh conflict với Django {{ }}
+       delimiters: ['[[', ']]'],
+       
+       data() {
+           return {
+               // State
+           };
+       },
+       
+       computed: {
+           // Computed properties
+       },
+       
+       methods: {
+           // Methods
+       },
+       
+       mounted() {
+           // Lifecycle hooks
+       }
+   }).mount('#app');
+   ```
+   
+   ============================================================================= */
+
+/* =============================================================================
+   2. DATA PASSING PATTERN (Django → Vue)
+   =============================================================================
+   
+   CÁCH 1: Inline JSON trong template
+   
+   ```django
+   {% block extra_js %}
+   <script>
+       // Data từ Django context
+       const lessonData = {{ lesson_json|safe }};
+       const phonemesData = {{ phonemes_json|safe }};
+       
+       createApp({
+           delimiters: ['[[', ']]'],
+           data() {
+               return {
+                   lesson: lessonData,
+                   phonemes: phonemesData
+               };
+           }
+       }).mount('#app');
+   </script>
+   {% endblock %}
+   ```
+   
+   CÁCH 2: Data attributes
+   
+   ```html
+   <div id="app" 
+        data-lesson="{{ lesson_json }}"
+        data-user-id="{{ request.user.id }}">
+   </div>
+   
+   <script>
+       const appEl = document.getElementById('app');
+       const lesson = JSON.parse(appEl.dataset.lesson);
+       const userId = appEl.dataset.userId;
+   </script>
+   ```
+   
+   ============================================================================= */
+
+/* =============================================================================
+   3. API INTEGRATION PATTERN
+   =============================================================================
+   
+   ```javascript
+   const app = createApp({
+       delimiters: ['[[', ']]'],
+       
+       data() {
+           return {
+               loading: false,
+               error: null,
+               data: null
+           };
+       },
+       
+       methods: {
+           // GET Request
+           async fetchData() {
+               this.loading = true;
+               this.error = null;
+               
+               try {
+                   const response = await fetch('/api/v1/endpoint/', {
+                       headers: this.getHeaders()
+                   });
+                   
+                   if (!response.ok) {
+                       throw new Error(`HTTP ${response.status}`);
+                   }
+                   
+                   this.data = await response.json();
+               } catch (error) {
+                   this.error = error.message;
+                   console.error('Fetch error:', error);
+               } finally {
+                   this.loading = false;
+               }
+           },
+           
+           // POST Request
+           async saveData(payload) {
+               this.loading = true;
+               
+               try {
+                   const response = await fetch('/api/v1/endpoint/', {
+                       method: 'POST',
+                       headers: this.getHeaders(),
+                       body: JSON.stringify(payload)
+                   });
+                   
+                   if (!response.ok) {
+                       const errorData = await response.json();
+                       throw new Error(errorData.message || 'Save failed');
+                   }
+                   
+                   return await response.json();
+               } catch (error) {
+                   this.error = error.message;
+                   throw error;
+               } finally {
+                   this.loading = false;
+               }
+           },
+           
+           // Common headers
+           getHeaders() {
+               const headers = {
+                   'Content-Type': 'application/json'
+               };
+               
+               const token = localStorage.getItem('access_token');
+               if (token) {
+                   headers['Authorization'] = `Bearer ${token}`;
+               }
+               
+               return headers;
+           }
+       }
+   });
+   ```
+   
+   ============================================================================= */
+
+/* =============================================================================
+   4. COMMON COMPONENT PATTERNS
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   4.1 Loading Spinner
+   ----------------------------------------------------------------------------- */
+.vue-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+}
+
+.vue-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Template:
+   ```html
+   <div v-if="loading" class="vue-loading">
+       <div class="spinner"></div>
+   </div>
+   ```
+*/
+
+/* -----------------------------------------------------------------------------
+   4.2 Error Message
+   ----------------------------------------------------------------------------- */
+.vue-error {
+    background-color: var(--color-error-light);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: var(--color-error-dark);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.vue-error i {
+    font-size: var(--font-size-lg);
+}
+
+/* Template:
+   ```html
+   <div v-if="error" class="vue-error">
+       <i class="fas fa-exclamation-circle"></i>
+       <span>[[ error ]]</span>
+   </div>
+   ```
+*/
+
+/* -----------------------------------------------------------------------------
+   4.3 Empty State
+   ----------------------------------------------------------------------------- */
+.vue-empty {
+    text-align: center;
+    padding: var(--spacing-3xl);
+    color: var(--color-text-secondary);
+}
+
+.vue-empty i {
+    font-size: 48px;
+    color: var(--color-border);
+    margin-bottom: var(--spacing-md);
+}
+
+.vue-empty h4 {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Template:
+   ```html
+   <div v-if="!loading && items.length === 0" class="vue-empty">
+       <i class="fas fa-inbox"></i>
+       <h4>Không có dữ liệu</h4>
+       <p>Chưa có nội dung nào được tạo.</p>
+   </div>
+   ```
+*/
+
+/* -----------------------------------------------------------------------------
+   4.4 List Item with Transition
+   ----------------------------------------------------------------------------- */
+.vue-list-enter-active,
+.vue-list-leave-active {
+    transition: all 0.3s ease;
+}
+
+.vue-list-enter-from,
+.vue-list-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Template:
+   ```html
+   <transition-group name="vue-list" tag="div">
+       <div v-for="item in items" :key="item.id" class="list-item">
+           [[ item.name ]]
+       </div>
+   </transition-group>
+   ```
+*/
+
+/* =============================================================================
+   5. PRONUNCIATION SPECIFIC COMPONENTS
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   5.1 Screen Progress Indicator
+   ----------------------------------------------------------------------------- */
+.screen-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md) 0;
+}
+
+.screen-progress .step {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-border);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-normal);
+}
+
+.screen-progress .step.completed {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.screen-progress .step.current {
+    background-color: var(--color-primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.screen-progress .line {
+    flex: 1;
+    height: 3px;
+    background-color: var(--color-border);
+    transition: background-color var(--transition-normal);
+}
+
+.screen-progress .line.completed {
+    background-color: var(--color-success);
+}
+
+/* -----------------------------------------------------------------------------
+   5.2 Word Flashcard
+   ----------------------------------------------------------------------------- */
+.word-flashcard {
+    background: var(--color-bg-white);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    user-select: none;
+}
+
+.word-flashcard:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.word-flashcard:active {
+    transform: scale(0.98);
+}
+
+.word-flashcard .word {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.word-flashcard .ipa {
+    font-size: var(--font-size-xl);
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.word-flashcard .meaning {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+}
+
+.word-flashcard .play-btn {
+    margin-top: var(--spacing-md);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.word-flashcard .play-btn:hover {
+    background: var(--color-primary-dark);
+    transform: scale(1.1);
+}
+
+/* -----------------------------------------------------------------------------
+   5.3 Minimal Pair Challenge
+   ----------------------------------------------------------------------------- */
+.minimal-pair-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--color-bg-white);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.minimal-pair-option:hover {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+.minimal-pair-option.selected {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.minimal-pair-option.correct {
+    border-color: var(--color-success);
+    background: var(--color-success-light);
+}
+
+.minimal-pair-option.incorrect {
+    border-color: var(--color-error);
+    background: var(--color-error-light);
+}
+
+.minimal-pair-option .word {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-secondary);
+}
+
+.minimal-pair-option .ipa {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* -----------------------------------------------------------------------------
+   5.4 Score Display
+   ----------------------------------------------------------------------------- */
+.score-display {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
+}
+
+.score-item {
+    text-align: center;
+}
+
+.score-item .value {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-extrabold);
+    color: var(--color-primary);
+    line-height: 1;
+    margin-bottom: var(--spacing-xs);
+}
+
+.score-item .label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score-item.success .value {
+    color: var(--color-success);
+}
+
+.score-item.error .value {
+    color: var(--color-error);
+}
+
+/* =============================================================================
+   6. VUE.JS BEST PRACTICES
+   =============================================================================
+   
+   1. DELIMITERS
+      - Luôn sử dụng delimiters: ['[[', ']]']
+      - Không bao giờ dùng {{ }} trong Vue (conflict Django)
+   
+   2. DATA INITIALIZATION
+      - Khởi tạo tất cả data properties trong data()
+      - Không thêm reactive properties sau khi mount
+   
+   3. API CALLS
+      - Sử dụng async/await thay vì .then()
+      - Luôn có error handling
+      - Hiển thị loading state
+   
+   4. COMPUTED VS METHODS
+      - Computed: cho derived state (cached)
+      - Methods: cho actions, events
+   
+   5. WATCHERS
+      - Sử dụng deep watch cho objects/arrays
+      - Cleanup trong beforeUnmount
+   
+   6. EVENTS
+      - Sử dụng @click thay vì v-on:click
+      - Prevent default khi cần: @click.prevent
+   
+   7. CONDITIONAL RENDERING
+      - v-if cho toggle ít
+      - v-show cho toggle nhiều
+   
+   8. LIST RENDERING
+      - Luôn có :key unique
+      - Không dùng index làm key nếu list thay đổi
+   
+   ============================================================================= */

@@ -1,0 +1,382 @@
+/* ============================================
+   BASE.CSS - EnglishMaster Design System
+   Core variables, reset, and utilities
+   ============================================ */
+
+/* ============================================
+   CSS Custom Properties (Variables)
+   ============================================ */
+:root {
+    /* ===== Primary Colors ===== */
+    --primary-orange: #F47C26;
+    --primary-orange-hover: #E06B1F;
+    --primary-orange-light: rgba(244, 124, 38, 0.1);
+    --primary-dark: #183B56;
+    --primary-blue: #007BFF;
+    
+    /* ===== Neutral Colors ===== */
+    --text-dark: #2C2C2C;
+    --text-body: #4A4A4A;
+    --text-muted: #6C757D;
+    --text-light: #ADB5BD;
+    
+    /* ===== Background Colors ===== */
+    --bg-body: #F9FAFC;
+    --bg-white: #FFFFFF;
+    --bg-light: #F8F9FA;
+    --bg-dark: #183B56;
+    
+    /* ===== Border Colors ===== */
+    --border-color: #E8ECF0;
+    --border-light: #F0F0F0;
+    
+    /* ===== Status Colors ===== */
+    --success: #28A745;
+    --success-light: rgba(40, 167, 69, 0.1);
+    --warning: #FFC107;
+    --warning-light: rgba(255, 193, 7, 0.1);
+    --danger: #DC3545;
+    --danger-light: rgba(220, 53, 69, 0.1);
+    --info: #17A2B8;
+    --info-light: rgba(23, 162, 184, 0.1);
+    
+    /* ===== Typography ===== */
+    --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Font Sizes */
+    --fs-xs: 0.75rem;      /* 12px */
+    --fs-sm: 0.875rem;     /* 14px */
+    --fs-base: 1rem;       /* 16px */
+    --fs-md: 1.125rem;     /* 18px */
+    --fs-lg: 1.25rem;      /* 20px */
+    --fs-xl: 1.5rem;       /* 24px */
+    --fs-2xl: 2rem;        /* 32px */
+    --fs-3xl: 2.5rem;      /* 40px */
+    --fs-4xl: 3rem;        /* 48px */
+    
+    /* Font Weights */
+    --fw-normal: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+    --fw-extrabold: 800;
+    
+    /* Line Heights */
+    --lh-tight: 1.25;
+    --lh-normal: 1.5;
+    --lh-relaxed: 1.75;
+    
+    /* ===== Spacing ===== */
+    --spacing-xs: 0.25rem;    /* 4px */
+    --spacing-sm: 0.5rem;     /* 8px */
+    --spacing-md: 1rem;       /* 16px */
+    --spacing-lg: 1.5rem;     /* 24px */
+    --spacing-xl: 2rem;       /* 32px */
+    --spacing-2xl: 3rem;      /* 48px */
+    --spacing-3xl: 4rem;      /* 64px */
+    
+    /* ===== Border Radius ===== */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+    
+    /* ===== Shadows ===== */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
+    --shadow-orange: 0 4px 16px rgba(244, 124, 38, 0.3);
+    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    /* ===== Transitions ===== */
+    --transition-fast: 150ms ease;
+    --transition-normal: 300ms ease;
+    --transition-slow: 500ms ease;
+    
+    /* ===== Z-Index ===== */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+    
+    /* ===== Layout ===== */
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 80px;
+    --navbar-height: 64px;
+    --container-max: 1200px;
+}
+
+/* ============================================
+   CSS Reset & Base Styles
+   ============================================ */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    font-weight: var(--fw-normal);
+    line-height: var(--lh-normal);
+    color: var(--text-body);
+    background-color: var(--bg-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    line-height: var(--lh-tight);
+    color: var(--text-dark);
+}
+
+h1 { font-size: var(--fs-3xl); }
+h2 { font-size: var(--fs-2xl); }
+h3 { font-size: var(--fs-xl); }
+h4 { font-size: var(--fs-lg); }
+h5 { font-size: var(--fs-md); }
+h6 { font-size: var(--fs-base); }
+
+/* Paragraphs & Text */
+p {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+}
+
+a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-orange);
+}
+
+/* Lists */
+ul, ol {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-xl);
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+}
+
+/* Forms */
+button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* Vue.js cloak */
+[v-cloak] {
+    display: none !important;
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* Text Colors */
+.text-primary { color: var(--primary-orange) !important; }
+.text-primary-dark { color: var(--primary-dark) !important; }
+.text-dark { color: var(--text-dark) !important; }
+.text-body { color: var(--text-body) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-light { color: var(--text-light) !important; }
+.text-white { color: #fff !important; }
+.text-success { color: var(--success) !important; }
+.text-warning { color: var(--warning) !important; }
+.text-danger { color: var(--danger) !important; }
+.text-info { color: var(--info) !important; }
+
+/* Background Colors */
+.bg-primary { background-color: var(--primary-orange) !important; }
+.bg-primary-dark { background-color: var(--primary-dark) !important; }
+.bg-body { background-color: var(--bg-body) !important; }
+.bg-white { background-color: var(--bg-white) !important; }
+.bg-light { background-color: var(--bg-light) !important; }
+.bg-success { background-color: var(--success) !important; }
+.bg-warning { background-color: var(--warning) !important; }
+.bg-danger { background-color: var(--danger) !important; }
+.bg-info { background-color: var(--info) !important; }
+
+/* Gradient Backgrounds */
+.bg-gradient-orange {
+    background: linear-gradient(135deg, #F47C26 0%, #FFA500 100%) !important;
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(135deg, #183B56 0%, #2C5282 100%) !important;
+}
+
+/* Font Sizes */
+.fs-xs { font-size: var(--fs-xs) !important; }
+.fs-sm { font-size: var(--fs-sm) !important; }
+.fs-base { font-size: var(--fs-base) !important; }
+.fs-md { font-size: var(--fs-md) !important; }
+.fs-lg { font-size: var(--fs-lg) !important; }
+.fs-xl { font-size: var(--fs-xl) !important; }
+.fs-2xl { font-size: var(--fs-2xl) !important; }
+.fs-3xl { font-size: var(--fs-3xl) !important; }
+
+/* Font Weights */
+.fw-normal { font-weight: var(--fw-normal) !important; }
+.fw-medium { font-weight: var(--fw-medium) !important; }
+.fw-semibold { font-weight: var(--fw-semibold) !important; }
+.fw-bold { font-weight: var(--fw-bold) !important; }
+.fw-extrabold { font-weight: var(--fw-extrabold) !important; }
+
+/* Border Radius */
+.rounded-sm { border-radius: var(--radius-sm) !important; }
+.rounded-md { border-radius: var(--radius-md) !important; }
+.rounded-lg { border-radius: var(--radius-lg) !important; }
+.rounded-xl { border-radius: var(--radius-xl) !important; }
+.rounded-2xl { border-radius: var(--radius-2xl) !important; }
+.rounded-full { border-radius: var(--radius-full) !important; }
+
+/* Shadows */
+.shadow-xs { box-shadow: var(--shadow-xs) !important; }
+.shadow-sm { box-shadow: var(--shadow-sm) !important; }
+.shadow-md { box-shadow: var(--shadow-md) !important; }
+.shadow-lg { box-shadow: var(--shadow-lg) !important; }
+.shadow-xl { box-shadow: var(--shadow-xl) !important; }
+.shadow-orange { box-shadow: var(--shadow-orange) !important; }
+.shadow-none { box-shadow: none !important; }
+
+/* Transitions */
+.transition-fast { transition: all var(--transition-fast) !important; }
+.transition-normal { transition: all var(--transition-normal) !important; }
+.transition-slow { transition: all var(--transition-slow) !important; }
+
+/* Hover Effects */
+.hover-lift {
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.hover-scale {
+    transition: transform var(--transition-normal);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+/* Truncate Text */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ============================================
+   Responsive Utilities
+   ============================================ */
+@media (max-width: 767.98px) {
+    h1 { font-size: var(--fs-2xl); }
+    h2 { font-size: var(--fs-xl); }
+    h3 { font-size: var(--fs-lg); }
+    
+    .hide-mobile { display: none !important; }
+}
+
+@media (min-width: 768px) {
+    .hide-desktop { display: none !important; }
+}
+
+/* ============================================
+   Animation Keyframes
+   ============================================ */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Animation Classes */
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-fade-in-up { animation: fadeInUp 0.4s ease forwards; }
+.animate-slide-in-right { animation: slideInRight 0.4s ease forwards; }
+.animate-pulse { animation: pulse 2s infinite; }
+.animate-spin { animation: spin 1s linear infinite; }

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .phoneme { margin: 20px 0; padding: 10px; border: 1px solid #ddd; }
+        button { padding: 5px 10px; cursor: pointer; }
+        .status { margin: 10px 0; font-weight: bold; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Audio Playback Test</h1>
+    
+    <div class="phoneme">
+        <h3>Phoneme 45 (ɪ)</h3>
+        <button onclick="testAudio('/media/phonemes/audio/2025/12/15/phoneme_45_en_US_AriaNeural.mp3')">
+            Play Audio
+        </button>
+        <div id="status-45" class="status"></div>
+        <audio id="audio-45"></audio>
+    </div>
+
+    <div class="phoneme">
+        <h3>Phoneme 46 (e)</h3>
+        <button onclick="testAudio('/media/phonemes/audio/2025/12/15/phoneme_46_en_US_AriaNeural.mp3')">
+            Play Audio
+        </button>
+        <div id="status-46" class="status"></div>
+        <audio id="audio-46"></audio>
+    </div>
+
+    <div class="phoneme">
+        <h3>Phoneme 47 (æ)</h3>
+        <button onclick="testAudio('/media/phonemes/audio/2025/12/15/phoneme_47_en_US_AriaNeural.mp3')">
+            Play Audio
+        </button>
+        <div id="status-47" class="status"></div>
+        <audio id="audio-47"></audio>
+    </div>
+
+    <script>
+        function testAudio(url) {
+            console.log('Testing URL:', url);
+            
+            // Get the phoneme ID from URL
+            const match = url.match(/phoneme_(\d+)/);
+            const id = match ? match[1] : 'unknown';
+            const audioElement = document.getElementById(`audio-${id}`);
+            const statusElement = document.getElementById(`status-${id}`);
+            
+            // Test file load
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    statusElement.textContent = '✓ File loaded successfully (' + response.headers.get('content-length') + ' bytes)';
+                    statusElement.className = 'status success';
+                    
+                    // Try to play
+                    audioElement.src = url;
+                    audioElement.play().catch(e => {
+                        console.error('Playback error:', e);
+                        statusElement.textContent = '✗ Playback error: ' + e.message;
+                        statusElement.className = 'status error';
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusElement.textContent = '✗ Error: ' + error.message;
+                    statusElement.className = 'status error';
+                });
+        }
+    </script>
+</body>
+</html>

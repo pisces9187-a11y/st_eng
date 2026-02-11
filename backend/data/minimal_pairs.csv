@@ -1,0 +1,112 @@
+phoneme_1,phoneme_2,word_1,word_1_ipa,word_1_meaning,word_2,word_2_ipa,word_2_meaning,difficulty,difference_note_vi
+iː,ɪ,sheep,ʃiːp,con cừu,ship,ʃɪp,tàu thủy,1,/iː/ dài vs /ɪ/ ngắn - Lỗi phổ biến nhất của người Việt
+iː,ɪ,seat,siːt,chỗ ngồi,sit,sɪt,ngồi,1,Kéo dài âm /iː/ đủ thời gian
+iː,ɪ,heat,hiːt,nhiệt độ,hit,hɪt,đánh,1,Môi kéo dẹt cho /iː/ dài
+iː,ɪ,feel,fiːl,cảm thấy,fill,fɪl,lấp đầy,2,Phân biệt độ dài rõ ràng
+iː,ɪ,bead,biːd,hạt chuỗi,bid,bɪd,đấu giá,2,Nguyên âm dài vs ngắn
+p,b,pin,pɪn,ghim,bin,bɪn,thùng rác,1,/p/ bật hơi mạnh vs /b/ rung cổ
+p,b,cap,kæp,mũ lưỡi trai,cab,kæb,taxi,1,Đặt tay lên cổ để kiểm tra rung
+p,b,rope,rəʊp,dây thừng,robe,rəʊb,áo choàng,2,Âm cuối: /p/ giữ hơi vs /b/ rung nhẹ
+p,b,cup,kʌp,cốc,cub,kʌb,con thú non,2,Bật hơi mạnh cho /p/
+t,d,two,tuː,số hai,do,duː,làm,1,/t/ bật hơi vs /d/ rung
+t,d,try,traɪ,thử,dry,draɪ,khô,1,Lưỡi chạm vòm miệng
+t,d,town,taʊn,thị trấn,down,daʊn,xuống,1,Phân biệt vô thanh và hữu thanh
+t,d,cart,kɑːt,xe đẩy,card,kɑːd,thẻ,2,Âm cuối quan trọng
+t,d,bat,bæt,con dơi,bad,bæd,xấu,2,Không bỏ sót âm cuối
+k,g,back,bæk,lưng,bag,bæg,túi,1,/k/ bật hơi từ cuống lưỡi
+k,g,coat,kəʊt,áo khoác,goat,gəʊt,con dê,1,Cuống lưỡi chạm vòm miệng
+k,g,class,klɑːs,lớp học,glass,glɑːs,ly thủy tinh,2,Cluster đầu từ
+k,g,lock,lɒk,khóa,log,lɒg,khúc gỗ,2,Âm cuối: giữ hơi vs rung nhẹ
+s,z,bus,bʌs,xe buýt,buzz,bʌz,tiếng vo ve,1,/s/ xì hơi vs /z/ rung cổ
+s,z,rice,raɪs,gạo,rise,raɪz,tăng lên,2,Âm cuối dễ nhầm
+s,z,peace,piːs,hòa bình,peas,piːz,đậu Hà Lan,2,Phân biệt rõ ràng
+s,z,place,pleɪs,địa điểm,plays,pleɪz,chơi (số nhiều),2,Xì hơi vs rung
+f,v,fan,fæn,quạt,van,væn,xe tải,1,/f/ cắn môi không rung vs /v/ rung
+f,v,fine,faɪn,tốt,vine,vaɪn,dây leo,2,Người Việt hay nhầm
+f,v,half,hɑːf,một nửa,have,hæv,có,2,Cắn môi dưới
+θ,ð,think,θɪŋk,nghĩ,this,ðɪs,cái này,3,Lưỡi đưa ra giữa răng - Âm khó nhất với người Việt
+θ,ð,three,θriː,số ba,these,ðiːz,những cái này,3,/θ/ không rung vs /ð/ rung
+θ,s,think,θɪŋk,nghĩ,sink,sɪŋk,bồn rửa,3,Lưỡi giữa răng vs lưỡi sau răng
+θ,t,bath,bɑːθ,t목욕,bat,bæt,con dơi,3,Người Việt thường đọc /θ/ thành /t/
+ð,d,this,ðɪs,cái này,dis,dɪs,chê bai,3,Lưỡi ra ngoài răng
+ʃ,ʒ,pressure,ˈpreʃə,áp lực,pleasure,ˈpleʒə,niềm vui,3,Cong môi mạnh
+ʃ,s,she,ʃiː,cô ấy,sea,siː,biển,2,/ʃ/ cong môi vs /s/ môi dẹt
+ʃ,tʃ,shop,ʃɒp,cửa hàng,chop,tʃɒp,chặt,2,Ma sát vs tắc xát
+tʃ,dʒ,chain,tʃeɪn,dây xích,Jane,dʒeɪn,tên Jane,2,Vô thanh vs hữu thanh
+tʃ,dʒ,rich,rɪtʃ,giàu có,ridge,rɪdʒ,sườn núi,3,Bật hơi mạnh vs rung cổ
+tʃ,ʃ,catch,kætʃ,bắt,cash,kæʃ,tiền mặt,2,Tắc xát vs ma sát
+l,r,light,laɪt,ánh sáng,right,raɪt,đúng/phải,4,Lỗi đặc thù người Việt - Quan trọng!
+l,r,lock,lɒk,khóa,rock,rɒk,đá,4,/l/ lưỡi chạm vs /r/ lưỡi cong
+l,r,load,ləʊd,tải,road,rəʊd,đường,4,Lưỡi chạm vòm vs lưỡi cong không chạm
+l,r,lead,liːd,dẫn đầu,read,riːd,đọc,4,Kỹ thuật lưỡi hoàn toàn khác nhau
+l,n,light,laɪt,ánh sáng,night,naɪt,đêm,3,Hơi qua hai bên vs qua mũi
+l,n,long,lɒŋ,dài,wrong,rɒŋ,sai,3,Người miền Nam Việt Nam hay nhầm
+æ,e,bad,bæd,xấu,bed,bed,giường,1,/æ/ miệng mở rộng vs /e/ vừa
+æ,e,man,mæn,đàn ông,men,men,những người đàn ông,2,Số ít vs số nhiều
+æ,ʌ,cap,kæp,mũ,cup,kʌp,cốc,2,Miệng rộng vs thả lỏng
+æ,ɑː,cat,kæt,mèo,cart,kɑːt,xe đẩy,2,Ngắn vs dài
+ɑː,ʌ,calm,kɑːm,bình tĩnh,come,kʌm,đến,2,Dài ngân vang vs ngắn
+ɒ,ɔː,not,nɒt,không,nought,nɔːt,số không,2,Ngắn vs dài
+ʊ,uː,look,lʊk,nhìn,Luke,luːk,tên Luke,2,Chu môi nhẹ vs mạnh
+ʊ,uː,pull,pʊl,kéo,pool,puːl,hồ bơi,2,Ngắn vs dài - Lỗi thường gặp
+ɜː,ə,bird,bɜːd,chim,about,əˈbaʊt,về (schwa),2,Dài căng vs ngắn lười
+eɪ,e,late,leɪt,muộn,let,let,để,2,Nguyên âm đôi vs đơn
+eɪ,aɪ,bay,beɪ,vịnh,buy,baɪ,mua,2,Trượt lên /ɪ/ khác nhau
+aɪ,ɪ,I,aɪ,tôi,eat,iːt,ăn,1,Nguyên âm đôi vs đơn
+aɪ,aʊ,bite,baɪt,cắn,bout,baʊt,trận đấu,3,Trượt lên /ɪ/ vs về /ʊ/
+aʊ,əʊ,now,naʊ,bây giờ,no,nəʊ,không,2,Bắt đầu khác nhau
+əʊ,ɔː,coat,kəʊt,áo khoác,caught,kɔːt,bắt (quá khứ),3,Nguyên âm đôi vs dài
+m,n,some,sʌm,một số,sun,sʌn,mặt trời,1,Qua môi vs qua mũi
+n,ŋ,sin,sɪn,tội lỗi,sing,sɪŋ,hát,2,Lưỡi trên vs cuống lưỡi
+w,v,west,west,phương tây,vest,vest,áo gi-lê,2,Chu môi mạnh vs cắn môi
+w,r,wet,wet,ướt,ret,ret,ngâm,3,Chu môi vs cong lưỡi
+j,dʒ,yes,jes,vâng,jess,dʒes,tên Jess,3,Bán nguyên âm vs phụ âm
+j,z,yes,jes,vâng,zest,zest,nhiệt tình,3,Lỗi người Việt - "yes" thành "zét"
+b,v,ban,bæn,cấm,van,væn,xe tải,2,Môi mím vs cắn môi dưới
+d,ð,day,deɪ,ngày,they,ðeɪ,họ,2,Lưỡi sau răng vs giữa răng
+eɪ,æ,came,keɪm,đến (quá khứ),cam,kæm,máy quay phim,2,Nguyên âm đôi vs ngắn
+aɪ,e,tide,taɪd,thủy triều,Ted,ted,tên Ted,2,Trượt âm vs đơn
+ɔɪ,ɔː,boy,bɔɪ,con trai,bore,bɔː,chán,2,Nguyên âm đôi vs dài
+uː,ʊ,pool,puːl,hồ bơi,pull,pʊl,kéo,2,Dài vs ngắn - Quan trọng
+iː,eɪ,beat,biːt,đánh,bait,beɪt,mồi câu,3,Nguyên âm dài vs đôi
+ɑː,æ,barn,bɑːn,chuồng,ban,bæn,cấm,2,Dài ngân vang vs ngắn rộng
+ɪə,ɪ,fear,fɪə,sợ,fit,fɪt,vừa vặn,3,Nguyên âm đôi vs ngắn
+eə,e,fair,feə,công bằng,fed,fed,cho ăn (quá khứ),3,Nguyên âm đôi vs ngắn
+ʊə,ʊ,tour,tʊə,du lịch,took,tʊk,lấy (quá khứ),4,Nguyên âm đôi hiếm
+p,f,pin,pɪn,ghim,fin,fɪn,vây cá,2,Môi mím vs cắn môi
+t,θ,tin,tɪn,thiếc,thin,θɪn,mỏng,3,Sau răng vs giữa răng
+k,h,cold,kəʊld,lạnh,hold,həʊld,giữ,2,Bật hơi mạnh vs hơi thở nhẹ
+b,m,cab,kæb,taxi,cam,kæm,máy quay,2,Phụ âm bật vs mũi
+d,n,bad,bæd,xấu,ban,bæn,cấm,2,Phụ âm bật vs mũi
+g,ŋ,bag,bæg,túi,bang,bæŋ,tiếng nổ,2,Phụ âm bật vs mũi
+s,θ,sink,sɪŋk,bồn rửa,think,θɪŋk,nghĩ,3,Sau răng vs giữa răng - Người Việt hay nhầm
+z,ð,zee,ziː,chữ z,thee,ðiː,ngươi (cổ),3,Rung sau răng vs giữa răng
+ʃ,s,sheep,ʃiːp,cừu,seep,siːp,thấm,2,Cong môi vs môi dẹt
+ʒ,z,vision,ˈvɪʒən,tầm nhìn,raisin,ˈreɪzn,nho khô,4,Cong môi rung vs dẹt rung
+l,w,light,laɪt,ánh sáng,white,waɪt,trắng,2,Lưỡi chạm vs chu môi
+r,w,right,raɪt,phải,white,waɪt,trắng,3,Cong lưỡi vs chu môi
+j,i,yes,jes,vâng,ease,iːz,dễ dàng,2,Bán nguyên âm vs nguyên âm
+eɪ,ɪ,wait,weɪt,đợi,wit,wɪt,trí thông minh,2,Nguyên âm đôi vs ngắn
+aɪ,ɑː,bite,baɪt,cắn,bat,bɑːt,con dơi,3,Nguyên âm đôi vs dài
+ɔɪ,aɪ,boy,bɔɪ,con trai,buy,baɪ,mua,2,Bắt đầu khác nhau
+aʊ,ɑː,down,daʊn,xuống,dawn,dɔːn,bình minh,3,Nguyên âm đôi vs dài
+əʊ,ʌ,code,kəʊd,mã,cud,kʌd,thức ăn nhai lại,3,Nguyên âm đôi vs ngắn
+ɪə,iː,dear,dɪə,thân yêu,deer,dɪə,hươu,3,Âm giống nhau - Đồng âm
+eə,eɪ,hair,heə,tóc,hate,heɪt,ghét,3,Nguyên âm đôi vs đôi
+ʊə,ɔː,poor,pʊə,nghèo,pour,pɔː,đổ,4,Hiếm gặp
+e,ɪ,pen,pen,bút,pin,pɪn,ghim,1,Miệng mở vừa vs nhẹ
+ʌ,ə,but,bʌt,nhưng,about,əˈbaʊt,về,2,Ngắn căng vs lười
+ɒ,ʌ,hot,hɒt,nóng,hut,hʌt,túp lều,2,Tròn miệng vs thả lỏng
+ɔː,ɒ,caught,kɔːt,bắt (q.khứ),cot,kɒt,cũi,2,Dài vs ngắn
+uː,ʊə,pool,puːl,hồ bơi,poor,pʊə,nghèo,4,Nguyên âm dài vs đôi
+ɜː,ɑː,bird,bɜːd,chim,bard,bɑːd,nhà thơ,3,Độ mở miệng khác nhau
+iː,ɪə,seed,siːd,hạt giống,seared,sɪəd,đốt cháy,4,Nguyên âm dài vs đôi
+æ,aɪ,bat,bæt,con dơi,bite,baɪt,cắn,2,Ngắn vs đôi
+e,eɪ,pen,pen,bút,pain,peɪn,đau,2,Ngắn vs đôi
+ɪ,aɪ,bit,bɪt,chút,bite,baɪt,cắn,2,Ngắn vs đôi
+ɒ,aʊ,not,nɒt,không,knout,naʊt,roi da,4,Ngắn vs đôi hiếm
+ʊ,aʊ,book,bʊk,sách,bout,baʊt,trận đấu,3,Ngắn vs đôi
+ə,əʊ,about,əˈbaʊt,về,oboe,ˈəʊbəʊ,kèn ô-boa,4,Schwa vs nguyên âm đôi
+p,b,rope,rəʊp,dây,robe,rəʊb,áo choàng,2,Âm cuối quan trọng
+t,d,bet,bet,đặt cược,bed,bed,giường,1,Âm cuối dễ nhầm
+k,g,back,bæk,lưng,bag,bæg,túi,1,Giữ hơi vs rung nhẹ

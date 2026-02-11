@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống học Tiếng Anh</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#F47C26">
+    <link rel="manifest" href="../manifest.json">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <!-- Facebook SDK -->
+    <script async defer crossorigin="anonymous" 
+            src="https://connect.facebook.net/vi_VN/sdk.js"></script>
+    
+    <style>
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #E0E6ED;
+            border-top-color: #F47C26;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error Message */
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: 14px;
+        }
+        .error-message.show {
+            display: block;
+        }
+        
+        /* Success Message */
+        .success-message {
+            background: #dcfce7;
+            border: 1px solid #22c55e;
+            color: #16a34a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: 14px;
+        }
+        .success-message.show {
+            display: block;
+        }
+        
+        /* Remember Me Checkbox */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .remember-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .remember-checkbox input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .remember-checkbox label {
+            font-size: 14px;
+            color: #64748b;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Branding Area (Left Side) -->
+        <div class="auth-branding">
+            <div class="branding-content">
+                <img src="../assets/images/logo-white.svg" alt="Logo" class="logo">
+                <h1 class="slogan">
+                    Chinh phục Tiếng Anh<br>sau 3 tháng
+                </h1>
+                <img src="../assets/images/illustration-learning.svg" alt="Learning" class="illustration">
+            </div>
+        </div>
+        
+        <!-- Form Area (Right Side) -->
+        <div class="auth-form-container">
+            <h2 class="form-title">Chào mừng trở lại!</h2>
+            
+            <!-- Social Login Buttons -->
+            <div class="social-login">
+                <button class="btn-social btn-google" type="button">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19.8 10.2273C19.8 9.52045 19.7364 8.83636 19.6182 8.18182H10.2V12.05H15.6382C15.4 13.3 14.6727 14.3591 13.5864 15.0682V17.5773H16.8182C18.7091 15.8364 19.8 13.2727 19.8 10.2273Z" fill="#4285F4"/>
+                        <path d="M10.2 20C12.9 20 15.1727 19.1045 16.8182 17.5773L13.5864 15.0682C12.6864 15.6682 11.5455 16.0227 10.2 16.0227C7.59545 16.0227 5.38182 14.2636 4.58636 11.9H1.24545V14.4909C2.88182 17.7591 6.25455 20 10.2 20Z" fill="#34A853"/>
+                        <path d="M4.58636 11.9C4.38636 11.3 4.27273 10.6591 4.27273 10C4.27273 9.34091 4.38636 8.7 4.58636 8.1V5.50909H1.24545C0.554545 6.88636 0.159091 8.4 0.159091 10C0.159091 11.6 0.554545 13.1136 1.24545 14.4909L4.58636 11.9Z" fill="#FBBC05"/>
+                        <path d="M10.2 3.97727C11.6727 3.97727 13.0045 4.48182 14.0364 5.47273L16.9091 2.6C15.1682 0.954545 12.8955 0 10.2 0C6.25455 0 2.88182 2.24091 1.24545 5.50909L4.58636 8.1C5.38182 5.73636 7.59545 3.97727 10.2 3.97727Z" fill="#EA4335"/>
+                    </svg>
+                    <span>Tiếp tục với Google</span>
+                </button>
+                
+                <button class="btn-social btn-facebook" type="button">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 10C20 4.477 15.523 0 10 0S0 4.477 0 10c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V10h2.54V7.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V10h2.773l-.443 2.89h-2.33v6.988C16.343 19.128 20 14.991 20 10z" fill="white"/>
+                    </svg>
+                    <span>Tiếp tục với Facebook</span>
+                </button>
+            </div>
+            
+            <!-- Divider -->
+            <div class="divider">
+                <span>Hoặc đăng nhập bằng Email</span>
+            </div>
+            
+            <!-- Email/Password Form -->
+            <form class="auth-form" id="loginForm">
+                <!-- Error Message -->
+                <div class="error-message" id="errorMessage"></div>
+                
+                <!-- Success Message -->
+                <div class="success-message" id="successMessage"></div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        class="form-input" 
+                        placeholder="example@email.com"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <div style="position: relative;">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password"
+                            class="form-input" 
+                            placeholder="••••••••"
+                            required
+                        >
+                        <button type="button" id="togglePassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #64748b;">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="remember-row">
+                    <div class="remember-checkbox">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <label for="rememberMe">Ghi nhớ đăng nhập</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="submitBtn">
+                    <span class="btn-text">ĐĂNG NHẬP</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+                    </span>
+                </button>
+            </form>
+            
+            <!-- Footer Links -->
+            <div class="auth-footer">
+                <a href="password-reset.html" class="link-secondary">
+                    Quên mật khẩu?
+                </a>
+                
+                <p class="signup-prompt">
+                    Chưa có tài khoản? 
+                    <a href="signup.html" class="link-primary">Đăng ký ngay</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Phase 4: Backend Integration -->
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/django-api.js"></script>
+    <!-- Fallback to mock API for offline development -->
+    <script src="../assets/js/mock-api.js"></script>
+    <script src="../assets/js/api-service.js"></script>
+    <script src="../assets/js/auth-service.js"></script>
+    
+    <script>
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const rememberMe = document.getElementById('rememberMe');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const togglePassword = document.getElementById('togglePassword');
+            
+            // Use Django API if available, fallback to mock
+            const api = window.djangoApi || window.api;
+            
+            // Check if already logged in
+            if (api && api.isAuthenticated()) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            // Toggle password visibility
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                this.querySelector('i').className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+            });
+            
+            // Form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Reset messages
+                errorMessage.classList.remove('show');
+                successMessage.classList.remove('show');
+                
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                const remember = rememberMe.checked;
+                
+                // Basic validation
+                if (!email || !password) {
+                    showError('Vui lòng nhập đầy đủ email và mật khẩu');
+                    return;
+                }
+                
+                // Show loading
+                setLoading(true);
+                
+                try {
+                    // Use Django API directly for login
+                    const result = await api.login(email, password);
+                    
+                    console.log('Login result:', result);
+                    
+                    if (result.success) {
+                        // Store remember me preference
+                        if (remember) {
+                            localStorage.setItem('auth_remember', 'true');
+                        }
+                        
+                        showSuccess('Đăng nhập thành công! Đang chuyển hướng...');
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1000);
+                    } else {
+                        // Extract error message properly
+                        console.log('Login failed. Error:', result.error);
+                        console.log('Error type:', typeof result.error);
+                        
+                        let errorMsg = 'Email hoặc mật khẩu không đúng';
+                        
+                        if (result.error) {
+                            if (typeof result.error === 'string') {
+                                errorMsg = result.error;
+                            } else if (typeof result.error === 'object') {
+                                // Handle nested error object
+                                if (result.error.detail) {
+                                    errorMsg = result.error.detail;
+                                } else if (result.error.non_field_errors) {
+                                    errorMsg = Array.isArray(result.error.non_field_errors) 
+                                        ? result.error.non_field_errors[0] 
+                                        : result.error.non_field_errors;
+                                } else if (result.error.message) {
+                                    errorMsg = result.error.message;
+                                }
+                            }
+                        }
+                        
+                        console.log('Final error message:', errorMsg);
+                        showError(errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Login exception:', error);
+                    
+                    // Extract error message from various formats
+                    let errorMsg = 'Đã xảy ra lỗi khi đăng nhập';
+                    if (error.message) {
+                        errorMsg = error.message;
+                    } else if (typeof error === 'string') {
+                        errorMsg = error;
+                    }
+                    
+                    showError(errorMsg);
+                } finally {
+                    setLoading(false);
+                }
+            });
+            
+            // Google login
+            document.querySelector('.btn-google').addEventListener('click', function() {
+                handleGoogleLogin();
+            });
+            
+            // Facebook login
+            document.querySelector('.btn-facebook').addEventListener('click', function() {
+                handleFacebookLogin();
+            });
+            
+            // ================================
+            // GOOGLE LOGIN HANDLER
+            // ================================
+            function handleGoogleLogin() {
+                const googleConfig = window.AppConfig?.socialAuth?.google;
+                
+                if (!googleConfig || googleConfig.clientId === 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com') {
+                    showError('Google OAuth chưa được cấu hình. Vui lòng cấu hình Client ID trong config.js');
+                    return;
+                }
+                
+                setLoading(true);
+                
+                // Initialize Google Identity Services
+                try {
+                    google.accounts.oauth2.initTokenClient({
+                        client_id: googleConfig.clientId,
+                        scope: googleConfig.scope,
+                        callback: async (response) => {
+                            if (response.error) {
+                                setLoading(false);
+                                showError('Đăng nhập Google thất bại: ' + response.error);
+                                return;
+                            }
+                            
+                            // Send access token to backend
+                            try {
+                                const result = await api.loginWithGoogle(response.access_token);
+                                
+                                if (result.success) {
+                                    const message = result.data.created 
+                                        ? 'Tạo tài khoản và đăng nhập thành công!' 
+                                        : 'Đăng nhập thành công!';
+                                    showSuccess(message + ' Đang chuyển hướng...');
+                                    setTimeout(() => {
+                                        window.location.href = 'dashboard.html';
+                                    }, 1000);
+                                } else {
+                                    showError(result.error || 'Đăng nhập Google thất bại');
+                                }
+                            } catch (error) {
+                                console.error('Google login error:', error);
+                                showError('Đã xảy ra lỗi khi đăng nhập bằng Google');
+                            } finally {
+                                setLoading(false);
+                            }
+                        }
+                    }).requestAccessToken();
+                } catch (error) {
+                    setLoading(false);
+                    console.error('Google SDK error:', error);
+                    showError('Không thể khởi tạo Google Sign-In. Vui lòng thử lại sau.');
+                }
+            }
+            
+            // ================================
+            // FACEBOOK LOGIN HANDLER
+            // ================================
+            function handleFacebookLogin() {
+                const fbConfig = window.AppConfig?.socialAuth?.facebook;
+                
+                if (!fbConfig || fbConfig.appId === 'YOUR_FACEBOOK_APP_ID') {
+                    showError('Facebook OAuth chưa được cấu hình. Vui lòng cấu hình App ID trong config.js');
+                    return;
+                }
+                
+                // Initialize Facebook SDK if not initialized
+                if (typeof FB === 'undefined') {
+                    showError('Facebook SDK chưa được tải. Vui lòng thử lại sau.');
+                    return;
+                }
+                
+                setLoading(true);
+                
+                // Login with Facebook
+                FB.login(async function(response) {
+                    if (response.authResponse) {
+                        const accessToken = response.authResponse.accessToken;
+                        
+                        // Send access token to backend
+                        try {
+                            const result = await api.loginWithFacebook(accessToken);
+                            
+                            if (result.success) {
+                                const message = result.data.created 
+                                    ? 'Tạo tài khoản và đăng nhập thành công!' 
+                                    : 'Đăng nhập thành công!';
+                                showSuccess(message + ' Đang chuyển hướng...');
+                                setTimeout(() => {
+                                    window.location.href = 'dashboard.html';
+                                }, 1000);
+                            } else {
+                                showError(result.error || 'Đăng nhập Facebook thất bại');
+                            }
+                        } catch (error) {
+                            console.error('Facebook login error:', error);
+                            showError('Đã xảy ra lỗi khi đăng nhập bằng Facebook');
+                        } finally {
+                            setLoading(false);
+                        }
+                    } else {
+                        setLoading(false);
+                        showError('Người dùng đã hủy đăng nhập Facebook');
+                    }
+                }, { scope: fbConfig.scope });
+            }
+            
+            // Initialize Facebook SDK
+            window.fbAsyncInit = function() {
+                const fbConfig = window.AppConfig?.socialAuth?.facebook;
+                if (fbConfig && fbConfig.appId !== 'YOUR_FACEBOOK_APP_ID') {
+                    FB.init({
+                        appId: fbConfig.appId,
+                        cookie: true,
+                        xfbml: true,
+                        version: fbConfig.version
+                    });
+                }
+            };
+            
+            // Helper functions
+            function showError(message) {
+                console.log('showError called with:', message, 'Type:', typeof message);
+                
+                // Handle various message formats
+                let displayMessage = 'Đã xảy ra lỗi';
+                
+                if (typeof message === 'string') {
+                    displayMessage = message;
+                } else if (message && typeof message === 'object') {
+                    // Try to extract message from object
+                    if (message.detail) {
+                        displayMessage = message.detail;
+                    } else if (message.error) {
+                        displayMessage = message.error;
+                    } else if (message.message) {
+                        displayMessage = message.message;
+                    } else if (message.non_field_errors && Array.isArray(message.non_field_errors)) {
+                        displayMessage = message.non_field_errors[0];
+                    } else {
+                        // Last resort: convert to JSON string for debugging
+                        displayMessage = JSON.stringify(message);
+                    }
+                }
+                
+                console.log('Displaying error:', displayMessage);
+                errorMessage.textContent = displayMessage;
+                errorMessage.classList.add('show');
+            }
+            
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.classList.add('show');
+            }
+            
+            function setLoading(loading) {
+                if (loading) {
+                    loadingOverlay.classList.add('active');
+                    submitBtn.querySelector('.btn-text').style.display = 'none';
+                    submitBtn.querySelector('.btn-loading').style.display = 'inline';
+                    submitBtn.disabled = true;
+                } else {
+                    loadingOverlay.classList.remove('active');
+                    submitBtn.querySelector('.btn-text').style.display = 'inline';
+                    submitBtn.querySelector('.btn-loading').style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            }
+            
+            // API ready
+            console.log('API Base URL:', window.AppConfig ? window.AppConfig.api.baseUrl : 'N/A');
+        });
+    </script>
+</body>
+</html>

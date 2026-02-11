@@ -1,0 +1,38 @@
+{% extends "base/_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/public.css' %}">
+{% block page_css %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+<div id="app">
+    <!-- Navbar -->
+    {% include "components/_navbar_public.html" %}
+    
+    <!-- Flash Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    {% include "components/_footer_public.html" %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% block page_js %}{% endblock %}
+{% endblock %}

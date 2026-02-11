@@ -1,0 +1,824 @@
+{% extends "base/_base_auth.html" %}
+{% load static %}
+
+{% block title %}Đăng ký - EnglishMaster{% endblock %}
+{% block meta_description %}Đăng ký tài khoản EnglishMaster miễn phí để bắt đầu học tiếng Anh{% endblock %}
+
+{% block auth_content %}
+<div class="auth-header">
+    <h1 class="auth-title">Bắt đầu học ngay!</h1>
+</div>
+
+<!-- Alert messages -->
+<div id="alertContainer"></div>
+
+<!-- Step indicators -->
+<div class="step-indicator" id="stepIndicators">
+    <div class="step active" data-step="1">
+        <span class="step-circle">1</span>
+    </div>
+    <span class="step-line"></span>
+    <div class="step" data-step="2">
+        <span class="step-circle">2</span>
+    </div>
+    <span class="step-line"></span>
+    <div class="step" data-step="3">
+        <span class="step-circle">3</span>
+    </div>
+</div>
+
+<!-- Step 1: Email -->
+<div class="step-content" id="step1">
+    <div class="text-center mb-4">
+        <h5 style="color: #183B56; font-weight: 600;">Nhập email của bạn</h5>
+        <p class="text-muted small">Chúng tôi sẽ gửi mã xác nhận đến email này</p>
+    </div>
+    
+    <form class="auth-form" id="emailForm">
+        <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" 
+                   class="form-control custom-input" 
+                   id="email" 
+                   name="email"
+                   placeholder="example@email.com"
+                   required
+                   autocomplete="email">
+            <div class="invalid-feedback">Vui lòng nhập email hợp lệ</div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary-orange auth-submit" id="sendCodeBtn">
+            <span class="btn-text">GỬI MÃ XÁC NHẬN</span>
+            <span class="btn-loader d-none">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Đang gửi...
+            </span>
+        </button>
+    </form>
+</div>
+
+<!-- Step 2: Verify OTP -->
+<div class="step-content d-none" id="step2">
+    <div class="text-center mb-4">
+        <div class="verification-icon pending">
+            <i class="fas fa-envelope"></i>
+        </div>
+        <h5 style="color: #183B56; font-weight: 600;">Nhập mã xác nhận</h5>
+        <p class="text-muted small">
+            Mã 6 số đã được gửi đến<br>
+            <strong id="displayEmail" style="color: #F47C26;"></strong>
+        </p>
+    </div>
+    
+    <form class="auth-form" id="otpForm">
+        <div class="otp-inputs">
+            <input type="text" class="otp-input" maxlength="1" data-index="0" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="1" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="2" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="3" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="4" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" data-index="5" autocomplete="off">
+        </div>
+        
+        <button type="submit" class="btn btn-primary-orange auth-submit" id="verifyBtn">
+            <span class="btn-text">XÁC NHẬN</span>
+            <span class="btn-loader d-none">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Đang xác thực...
+            </span>
+        </button>
+    </form>
+    
+    <div class="resend-code text-center mt-3">
+        <span class="text-muted" id="resendTimer">Gửi lại mã sau <span id="countdown">60</span>s</span>
+        <button type="button" class="btn btn-link p-0 d-none" id="resendBtn" onclick="resendCode()">
+            Gửi lại mã
+        </button>
+    </div>
+    
+    <div class="text-center mt-3">
+        <button type="button" class="btn btn-link" style="color: #F47C26;" onclick="goToStep(1)">
+            <i class="fas fa-arrow-left me-2"></i>Đổi email
+        </button>
+    </div>
+</div>
+
+<!-- Step 3: Complete Registration -->
+<div class="step-content d-none" id="step3">
+    <div class="text-center mb-4">
+        <h5 style="color: #183B56; font-weight: 600;">Hoàn tất thông tin</h5>
+        <p class="text-muted small">Điền thông tin để hoàn tất đăng ký</p>
+    </div>
+    
+    <form class="auth-form" id="registerForm">
+        <div class="form-group">
+            <label for="fullName" class="form-label">Họ và tên</label>
+            <input type="text" 
+                   class="form-control custom-input" 
+                   id="fullName" 
+                   name="full_name"
+                   placeholder="Nguyễn Văn A"
+                   required>
+            <div class="invalid-feedback">Vui lòng nhập họ tên</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="regPassword" class="form-label">Mật khẩu</label>
+            <div class="password-input-wrapper">
+                <input type="password" 
+                       class="form-control custom-input" 
+                       id="regPassword" 
+                       name="password"
+                       placeholder="Tối thiểu 8 ký tự"
+                       required
+                       minlength="8">
+                <button type="button" class="password-toggle" onclick="togglePassword('regPassword')">
+                    <i class="fas fa-eye" id="regPasswordIcon"></i>
+                </button>
+            </div>
+            <div class="password-strength mt-2">
+                <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+                <small class="strength-text" id="strengthText">Nhập mật khẩu</small>
+            </div>
+            <div class="invalid-feedback">Mật khẩu phải có ít nhất 8 ký tự</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
+            <div class="password-input-wrapper">
+                <input type="password" 
+                       class="form-control custom-input" 
+                       id="confirmPassword" 
+                       name="confirm_password"
+                       placeholder="Nhập lại mật khẩu"
+                       required>
+                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                    <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                </button>
+            </div>
+            <div class="invalid-feedback" id="confirmError">Mật khẩu không khớp</div>
+        </div>
+        
+        <div class="form-group">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                <label class="form-check-label" for="agreeTerms">
+                    Tôi đồng ý với <a href="/terms/" target="_blank">Điều khoản sử dụng</a> 
+                    và <a href="/privacy/" target="_blank">Chính sách bảo mật</a>
+                </label>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary-orange auth-submit" id="registerBtn">
+            <span class="btn-text">Hoàn tất đăng ký</span>
+            <span class="btn-loader d-none">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Đang xử lý...
+            </span>
+        </button>
+    </form>
+</div>
+
+<!-- Social login -->
+<div class="auth-divider" id="socialDivider">
+    <span>Hoặc đăng ký với</span>
+</div>
+
+<div class="social-login" id="socialLogin">
+    <button type="button" class="social-btn" id="googleSignup">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        <span>Google</span>
+    </button>
+    <button type="button" class="social-btn" id="facebookSignup">
+        <i class="fab fa-facebook-f" style="color: #1877F2; font-size: 1.2rem;"></i>
+        <span>Facebook</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block auth_footer %}
+<p>Đã có tài khoản? <a href="{% url 'users:login' %}">Đăng nhập ngay</a></p>
+{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Step Indicators */
+    .step-indicators {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+    
+    .step-number {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-full);
+        background: var(--border-color);
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: var(--fw-bold);
+        font-size: var(--fs-sm);
+        transition: all var(--transition-fast);
+    }
+    
+    .step-item.active .step-number {
+        background: var(--primary-orange);
+        color: #fff;
+    }
+    
+    .step-item.completed .step-number {
+        background: var(--success);
+        color: #fff;
+    }
+    
+    .step-item.completed .step-number::after {
+        content: '✓';
+    }
+    
+    .step-label {
+        font-size: var(--fs-xs);
+        color: var(--text-muted);
+        text-align: center;
+    }
+    
+    .step-item.active .step-label {
+        color: var(--primary-orange);
+        font-weight: var(--fw-medium);
+    }
+    
+    .step-line {
+        width: 60px;
+        height: 2px;
+        background: var(--border-color);
+        margin: 0 var(--spacing-sm);
+        margin-bottom: 20px;
+    }
+    
+    /* OTP Inputs */
+    .otp-inputs {
+        display: flex;
+        gap: var(--spacing-sm);
+        justify-content: center;
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .otp-input {
+        width: 48px;
+        height: 56px;
+        text-align: center;
+        font-size: var(--fs-xl);
+        font-weight: var(--fw-bold);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+    
+    .otp-input:focus {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 3px var(--primary-orange-light);
+        outline: none;
+    }
+    
+    .otp-input.filled {
+        border-color: var(--primary-orange);
+        background: var(--primary-orange-light);
+    }
+    
+    /* Responsive */
+    @media (max-width: 575.98px) {
+        .step-label {
+            display: none;
+        }
+        
+        .step-line {
+            width: 40px;
+            margin-bottom: 0;
+        }
+        
+        .otp-input {
+            width: 42px;
+            height: 50px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// ================================
+// API Configuration
+// ================================
+const API_BASE_URL = '/api/v1';
+
+// Storage keys
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+    USER: 'user'
+};
+
+// ================================
+// State Management
+// ================================
+let currentStep = 1;
+let userEmail = '';
+let verificationCode = '';
+let countdownTimer = null;
+
+// ================================
+// Utility Functions
+// ================================
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function validatePassword(password) {
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const isLongEnough = password.length >= 8;
+    
+    let score = 0;
+    if (hasLower) score++;
+    if (hasUpper) score++;
+    if (hasNumber) score++;
+    if (hasSpecial) score++;
+    if (password.length >= 12) score++;
+    
+    let strength = 'weak';
+    if (score >= 4) strength = 'strong';
+    else if (score >= 3) strength = 'good';
+    else if (score >= 2) strength = 'fair';
+    
+    return {
+        valid: isLongEnough,
+        strength: strength
+    };
+}
+
+function showAlert(message, type = 'danger') {
+    const container = document.getElementById('alertContainer');
+    const alertClass = type === 'danger' ? 'alert-danger' : 
+                       type === 'success' ? 'alert-success' : 'alert-info';
+    const iconClass = type === 'danger' ? 'fa-times-circle' : 
+                      type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+    
+    container.innerHTML = `
+        <div class="alert ${alertClass} custom-alert d-flex align-items-center" role="alert">
+            <i class="fas ${iconClass} alert-icon me-2"></i>
+            <div>${message}</div>
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    // Auto hide after 5s
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 5000);
+}
+
+function setButtonLoading(btn, loading) {
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoader = btn.querySelector('.btn-loader');
+    btn.disabled = loading;
+    btnText.classList.toggle('d-none', loading);
+    btnLoader.classList.toggle('d-none', !loading);
+}
+
+// ================================
+// Step Navigation
+// ================================
+function goToStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.step-content').forEach(el => el.classList.add('d-none'));
+    
+    // Show target step
+    document.getElementById('step' + step).classList.remove('d-none');
+    
+    // Update step indicators
+    const steps = document.querySelectorAll('.step-indicator .step');
+    steps.forEach((el, index) => {
+        const stepNum = index + 1;
+        el.classList.remove('active', 'completed');
+        
+        if (stepNum < step) {
+            el.classList.add('completed');
+            el.querySelector('.step-circle').innerHTML = '✓';
+        } else if (stepNum === step) {
+            el.classList.add('active');
+        } else {
+            el.querySelector('.step-circle').innerHTML = stepNum;
+        }
+    });
+    
+    currentStep = step;
+}
+
+// Toggle password visibility
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(inputId + 'Icon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// ================================
+// Countdown Timer
+// ================================
+function startCountdown() {
+    let seconds = 60;
+    const timerEl = document.getElementById('resendTimer');
+    const countdownEl = document.getElementById('countdown');
+    const resendBtn = document.getElementById('resendBtn');
+    
+    timerEl.classList.remove('d-none');
+    resendBtn.classList.add('d-none');
+    countdownEl.textContent = seconds;
+    
+    if (countdownTimer) clearInterval(countdownTimer);
+    
+    countdownTimer = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        
+        if (seconds <= 0) {
+            clearInterval(countdownTimer);
+            timerEl.classList.add('d-none');
+            resendBtn.classList.remove('d-none');
+        }
+    }, 1000);
+}
+
+// Resend verification code
+async function resendCode() {
+    const resendBtn = document.getElementById('resendBtn');
+    resendBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/send-verification/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Mã xác nhận mới đã được gửi!', 'success');
+            startCountdown();
+            clearOtpInputs();
+        } else {
+            showAlert(data.error || 'Không thể gửi lại mã. Vui lòng thử lại.', 'danger');
+        }
+    } catch (error) {
+        showAlert('Không thể kết nối đến server.', 'danger');
+    } finally {
+        resendBtn.disabled = false;
+    }
+}
+
+// ================================
+// OTP Input Handling
+// ================================
+function setupOtpInputs() {
+    const inputs = document.querySelectorAll('.otp-input');
+    
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            const value = e.target.value;
+            
+            // Only allow numbers
+            this.value = value.replace(/[^0-9]/g, '');
+            
+            if (this.value) {
+                this.classList.add('filled');
+                // Move to next input
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            } else {
+                this.classList.remove('filled');
+            }
+        });
+        
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+        
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+            
+            pastedData.split('').forEach((char, i) => {
+                if (inputs[i]) {
+                    inputs[i].value = char;
+                    inputs[i].classList.add('filled');
+                }
+            });
+            
+            if (pastedData.length === 6) {
+                inputs[5].focus();
+            }
+        });
+    });
+}
+
+function getOtpValue() {
+    const inputs = document.querySelectorAll('.otp-input');
+    return Array.from(inputs).map(i => i.value).join('');
+}
+
+function clearOtpInputs() {
+    const inputs = document.querySelectorAll('.otp-input');
+    inputs.forEach(input => {
+        input.value = '';
+        input.classList.remove('filled');
+    });
+    inputs[0].focus();
+}
+
+// ================================
+// Step 1: Send Verification Code
+// ================================
+document.getElementById('emailForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value.trim();
+    const btn = document.getElementById('sendCodeBtn');
+    
+    // Validate email
+    if (!email || !validateEmail(email)) {
+        document.getElementById('email').classList.add('is-invalid');
+        showAlert('Vui lòng nhập email hợp lệ', 'danger');
+        return;
+    }
+    document.getElementById('email').classList.remove('is-invalid');
+    
+    setButtonLoading(btn, true);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/send-verification/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            userEmail = email;
+            document.getElementById('displayEmail').textContent = email;
+            goToStep(2);
+            startCountdown();
+            
+            // Focus first OTP input
+            setTimeout(() => {
+                document.querySelector('.otp-input').focus();
+            }, 300);
+            
+            showAlert(data.message || 'Mã xác nhận đã được gửi!', 'success');
+        } else {
+            showAlert(data.error || data.email?.[0] || 'Không thể gửi mã xác nhận', 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Không thể kết nối đến server. Vui lòng thử lại.', 'danger');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+});
+
+// ================================
+// Step 2: Verify OTP
+// ================================
+document.getElementById('otpForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const code = getOtpValue();
+    const btn = document.getElementById('verifyBtn');
+    
+    if (code.length !== 6) {
+        showAlert('Vui lòng nhập đầy đủ mã xác nhận', 'danger');
+        return;
+    }
+    
+    setButtonLoading(btn, true);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/verify-email/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                email: userEmail, 
+                code: code 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.verified) {
+            verificationCode = code;
+            clearInterval(countdownTimer);
+            goToStep(3);
+            showAlert('Email đã được xác nhận!', 'success');
+        } else {
+            showAlert(data.error || 'Mã xác nhận không đúng', 'danger');
+            clearOtpInputs();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Không thể kết nối đến server.', 'danger');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+});
+
+// ================================
+// Password Strength Checker
+// ================================
+document.getElementById('regPassword').addEventListener('input', function(e) {
+    const password = e.target.value;
+    const validation = validatePassword(password);
+    
+    const fill = document.getElementById('strengthFill');
+    const text = document.getElementById('strengthText');
+    
+    fill.className = 'strength-fill ' + validation.strength;
+    
+    const strengthTexts = {
+        weak: 'Yếu - Cần cải thiện',
+        fair: 'Trung bình',
+        good: 'Tốt',
+        strong: 'Mạnh - Rất tốt!'
+    };
+    
+    text.textContent = password ? strengthTexts[validation.strength] : 'Nhập mật khẩu';
+    
+    // Also check confirm password
+    const confirmInput = document.getElementById('confirmPassword');
+    if (confirmInput.value) {
+        if (password !== confirmInput.value) {
+            confirmInput.classList.add('is-invalid');
+        } else {
+            confirmInput.classList.remove('is-invalid');
+        }
+    }
+});
+
+// Confirm password validation
+document.getElementById('confirmPassword').addEventListener('input', function(e) {
+    const password = document.getElementById('regPassword').value;
+    const confirm = e.target.value;
+    
+    if (confirm && password !== confirm) {
+        this.classList.add('is-invalid');
+    } else {
+        this.classList.remove('is-invalid');
+    }
+});
+
+// ================================
+// Step 3: Complete Registration
+// ================================
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const fullName = document.getElementById('fullName').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const agreeTerms = document.getElementById('agreeTerms').checked;
+    const btn = document.getElementById('registerBtn');
+    
+    // Validations
+    let isValid = true;
+    
+    if (!fullName) {
+        document.getElementById('fullName').classList.add('is-invalid');
+        isValid = false;
+    } else {
+        document.getElementById('fullName').classList.remove('is-invalid');
+    }
+    
+    if (!password || password.length < 8) {
+        document.getElementById('regPassword').classList.add('is-invalid');
+        showAlert('Mật khẩu phải có ít nhất 8 ký tự', 'danger');
+        isValid = false;
+    } else {
+        document.getElementById('regPassword').classList.remove('is-invalid');
+    }
+    
+    if (password !== confirmPassword) {
+        document.getElementById('confirmPassword').classList.add('is-invalid');
+        showAlert('Mật khẩu xác nhận không khớp', 'danger');
+        isValid = false;
+    } else {
+        document.getElementById('confirmPassword').classList.remove('is-invalid');
+    }
+    
+    if (!agreeTerms) {
+        showAlert('Vui lòng đồng ý với điều khoản sử dụng', 'danger');
+        isValid = false;
+    }
+    
+    if (!isValid) return;
+    
+    setButtonLoading(btn, true);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: userEmail,
+                full_name: fullName,
+                password: password,
+                password_confirm: confirmPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Save tokens
+            if (data.access) {
+                localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access);
+                // Save to cookie for server-side auth
+                document.cookie = `access_token=${data.access}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
+            }
+            if (data.refresh) {
+                localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh);
+            }
+            if (data.user) {
+                localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+            }
+            
+            showAlert('Đăng ký thành công! Đang chuyển hướng...', 'success');
+            
+            // Dispatch event to update navbar
+            window.dispatchEvent(new Event('authStateChanged'));
+            
+            setTimeout(() => {
+                window.location.href = '/onboarding/';
+            }, 1500);
+        } else {
+            const errorMsg = data.error || 
+                data.email?.[0] || 
+                data.password?.[0] || 
+                data.password_confirm?.[0] ||
+                data.full_name?.[0] ||
+                'Đăng ký thất bại. Vui lòng thử lại.';
+            showAlert(errorMsg, 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Không thể kết nối đến server. Vui lòng thử lại.', 'danger');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+});
+
+// ================================
+// Initialize
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+    setupOtpInputs();
+    
+    // Check if already logged in
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (token) {
+        window.location.href = '/dashboard/';
+    }
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+    }
+});
+</script>
+{% endblock %}

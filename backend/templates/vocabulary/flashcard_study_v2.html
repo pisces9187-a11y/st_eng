@@ -1,0 +1,1919 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Smart Flashcard Study - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/flashcard-audio-player.css' %}">
+<style>
+    /* Flashcard 3D Flip Animation */
+    .flashcard-container {
+        width: 100%;
+        max-width: 600px;
+        height: 400px;
+        perspective: 1000px;
+        margin: 2rem auto;
+    }
+    
+    .flashcard-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        cursor: pointer;
+    }
+    
+    .flashcard-inner.flipped {
+        transform: rotateY(180deg);
+    }
+    
+    .flashcard-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    
+    .flashcard-front {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .flashcard-back {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        transform: rotateY(180deg);
+    }
+    
+    .word-text {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .word-ipa {
+        font-size: 1.5rem;
+        opacity: 0.9;
+        font-style: italic;
+        margin-bottom: 1rem;
+    }
+    
+    .word-meaning {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .word-example {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        text-align: center;
+        font-style: italic;
+        margin-top: 1rem;
+    }
+    
+    /* Quality Rating Buttons */
+    .rating-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .btn-rating {
+        flex: 1;
+        min-width: 100px;
+        padding: 1rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-rating:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-rating-again {
+        background: #ff4444;
+        color: white;
+    }
+    
+    .btn-rating-hard {
+        background: #ffbb33;
+        color: white;
+    }
+    
+    .btn-rating-good {
+        background: #00C851;
+        color: white;
+    }
+    
+    .btn-rating-easy {
+        background: #33b5e5;
+        color: white;
+    }
+    
+    /* Session Stats */
+    .session-stats {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        min-width: 120px;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #666;
+        font-weight: 600;
+    }
+    
+    /* Auto-Play Mode Controls */
+    .auto-play-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        color: white;
+        flex-wrap: wrap;
+    }
+    
+    /* Navigation buttons styling */
+    .auto-play-controls .d-flex.gap-2 .btn {
+        min-width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        border: 2px solid rgba(255,255,255,0.4);
+        background: rgba(255,255,255,0.2);
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .auto-play-controls .d-flex.gap-2 .btn:hover {
+        transform: scale(1.15);
+        background: rgba(255,255,255,0.35);
+        border-color: white;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    
+    .auto-play-controls .d-flex.gap-2 .btn:active {
+        transform: scale(0.95);
+    }
+    
+    .btn-auto-play {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-auto-play:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+    }
+    
+    .btn-auto-play.active {
+        background: #00C851;
+        border-color: #00C851;
+        box-shadow: 0 0 20px rgba(0, 200, 81, 0.5);
+    }
+    
+    .speed-control {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .speed-slider {
+        width: 150px;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.3);
+        outline: none;
+        -webkit-appearance: none;
+    }
+    
+    .speed-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .speed-slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .timer-display {
+        font-size: 1.2rem;
+        font-weight: 600;
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    /* Card Timer Progress */
+    .card-timer {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        margin: 1rem auto;
+    }
+    
+    .timer-circle {
+        transform: rotate(-90deg);
+    }
+    
+    .timer-circle-bg {
+        fill: none;
+        stroke: #e9ecef;
+        stroke-width: 4;
+    }
+    
+    .timer-circle-progress {
+        fill: none;
+        stroke: #667eea;
+        stroke-width: 4;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.1s linear;
+    }
+    
+    .timer-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+        margin: 1rem 0 2rem;
+    }
+    
+    .progress {
+        height: 30px;
+        border-radius: 15px;
+        background: #e9ecef;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Streak Display */
+    .streak-display {
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        margin-bottom: 1rem;
+    }
+    
+    .streak-icon {
+        font-size: 1.5rem;
+        animation: flicker 1.5s infinite;
+    }
+    
+    @keyframes flicker {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .streak-text {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .flashcard-container {
+            height: 350px;
+        }
+        
+        .word-text {
+            font-size: 2.5rem;
+        }
+        
+        .word-meaning {
+            font-size: 1.5rem;
+        }
+        
+        .rating-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-rating {
+            min-width: auto;
+            width: 100%;
+        }
+    }
+    
+    /* Loading State */
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+    }
+    
+    /* Session Complete */
+    .session-complete {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+    
+    .complete-icon {
+        font-size: 5rem;
+        color: #00C851;
+        margin-bottom: 1rem;
+    }
+    
+    .complete-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    /* Recent Decks Cards */
+    .recent-deck-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .recent-deck-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        border-color: #667eea;
+    }
+    
+    .recent-deck-header {
+        padding: 1rem;
+        color: white;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .recent-deck-body {
+        padding: 1rem;
+        background: white;
+    }
+    
+    .progress-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: conic-gradient(#4CAF50 var(--progress), #e0e0e0 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        position: relative;
+    }
+    
+    .progress-circle::before {
+        content: attr(data-progress);
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .deck-stats-small {
+        display: flex;
+        justify-content: space-around;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    
+    .stat-mini {
+        text-align: center;
+    }
+    
+    .stat-mini .value {
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: block;
+    }
+    
+    .stat-mini .label {
+        color: #666;
+        font-size: 0.75rem;
+    }
+    
+    /* Tag Button */
+    .tag-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        z-index: 10;
+    }
+    
+    .tag-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+    }
+    
+    .tag-button.tagged {
+        background: #FF6B6B;
+        border-color: #FF6B6B;
+    }
+    
+    /* Deck Selection Cards */
+    .deck-selection-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        position: relative;
+    }
+    
+    .deck-selection-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+    
+    .deck-selection-card.selected {
+        border-color: #667eea;
+        background: #f0f3ff;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .deck-card-header {
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .deck-card-body {
+        padding: 1rem;
+    }
+    
+    .progress-ring-small {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: conic-gradient(#4CAF50 var(--progress), #e0e0e0 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        position: relative;
+    }
+    
+    .progress-ring-small::before {
+        content: attr(data-progress);
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #333;
+    }
+    
+    .deck-stats-row {
+        display: flex;
+        justify-content: space-around;
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .deck-stat-item {
+        text-align: center;
+    }
+    
+    .deck-stat-item .value {
+        display: block;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    
+    .deck-stat-item .label {
+        display: block;
+        color: #666;
+        font-size: 0.7rem;
+    }
+    
+    .selected-deck-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #4CAF50;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Session Header -->
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold mb-3">
+            <i class="fas fa-cards-blank me-2 text-primary"></i>
+            Flashcard Study Session
+        </h1>
+        
+        <!-- Streak Display -->
+        <div class="streak-display">
+            <i class="fas fa-fire streak-icon"></i>
+            <span class="streak-text" id="streakCount">0 day streak</span>
+        </div>
+        
+        <!-- Daily Progress -->
+        <div class="row justify-content-center mb-3 mt-3">
+            <div class="col-md-6">
+                <div class="progress-container">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">
+                            <i class="fas fa-target"></i>
+                            Daily Goal
+                        </span>
+                        <span class="fw-bold" id="dailyProgressText">0/20 cards</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" id="dailyProgressBar" role="progressbar" style="width: 0%">
+                            0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Stats -->
+        <div class="session-stats" id="sessionStats">
+            <div class="stat-card">
+                <div class="stat-value" id="statReviewed">0</div>
+                <div class="stat-label">Reviewed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statCorrect">0</div>
+                <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statAccuracy">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statRemaining">20</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deck Selection (shown if no deck selected) -->
+    <div id="deckSelection" class="text-center" style="display: none;">
+        <!-- Recent Decks Carousel -->
+        <div id="recentDecksSection" class="mb-5" style="display: none;">
+            <h4 class="mb-3">
+                <i class="fas fa-history text-primary"></i>
+                Continue Studying
+            </h4>
+            <div class="row g-3" id="recentDecksContainer">
+                <!-- Recent decks will be loaded here -->
+            </div>
+        </div>
+
+        <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+            <div class="card-body p-4">
+                <h3 class="mb-4">
+                    <i class="fas fa-layer-group text-primary"></i>
+                    Choose a Deck to Study
+                </h3>
+                
+                <!-- Review Mode Selector -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Study Mode:</label>
+                    <div class="btn-group w-100" role="group" id="reviewModeSelector">
+                        <input type="radio" class="btn-check" name="reviewMode" id="modeNormal" value="normal" checked>
+                        <label class="btn btn-outline-primary" for="modeNormal">
+                            <i class="fas fa-book"></i> Normal
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="reviewMode" id="modeDifficult" value="difficult">
+                        <label class="btn btn-outline-danger" for="modeDifficult">
+                            <i class="fas fa-exclamation-circle"></i> Difficult
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="reviewMode" id="modeDue" value="due">
+                        <label class="btn btn-outline-warning" for="modeDue">
+                            <i class="fas fa-clock"></i> Due
+                        </label>
+                    </div>
+                    <small class="text-muted d-block mt-2" id="reviewModeHint">
+                        Mix of due cards and new cards for review
+                    </small>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Select Deck:</label>
+                    <div id="deckCardsContainer" class="row g-3 mb-3">
+                        <!-- Deck cards with progress will be loaded here -->
+                    </div>
+                    <input type="hidden" id="selectedDeckId" value="">
+                    <div id="selectedDeckInfo" class="alert alert-info" style="display: none;">
+                        <!-- Selected deck info -->
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Number of Cards:</label>
+                    <input type="number" class="form-control form-control-lg" id="cardCountInput" 
+                           value="20" min="5" max="50" />
+                    <small class="text-muted">Study 5-50 cards per session</small>
+                </div>
+                
+                <button class="btn btn-primary btn-lg" onclick="startSelectedDeck()">
+                    <i class="fas fa-play"></i>
+                    Start Study Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingContainer" class="loading-container" style="display: none;">
+        <div class="spinner-border text-primary mb-3" style="width: 4rem; height: 4rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted fs-5">Loading flashcards...</p>
+    </div>
+
+    <!-- Flashcard Container -->
+    <div id="flashcardContainer" style="display: none;">
+        <!-- Audio Player -->
+        <div id="audioPlayerContainer"></div>
+
+        <!-- Flashcard -->
+        <div class="flashcard-container" id="flashcard">
+            <!-- Tag Button -->
+            <button class="tag-button" id="tagButton" onclick="event.stopPropagation(); toggleTag()">
+                <i class="fas fa-star"></i>
+                <span id="tagText">Difficult</span>
+            </button>
+            
+            <div class="flashcard-inner" id="flashcardInner">
+                <!-- Front Side -->
+                <div class="flashcard-face flashcard-front">
+                    <div class="word-text" id="wordText">Loading...</div>
+                    <div class="word-ipa" id="wordIpa"></div>
+                    <p class="text-center mt-3 opacity-75">
+                        <i class="fas fa-hand-pointer"></i>
+                        Click to flip or press Space
+                    </p>
+                </div>
+                
+                <!-- Back Side -->
+                <div class="flashcard-face flashcard-back">
+                    <div class="word-meaning" id="wordMeaning">Meaning</div>
+                    <div class="word-example" id="wordExample"></div>
+                    <p class="text-center mt-3 opacity-75">
+                        <i class="fas fa-hand-pointer"></i>
+                        Click to flip back
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation & Auto-Play Controls -->
+        <div class="auto-play-controls" id="autoPlayControls">
+            <!-- Manual Navigation -->
+            <div class="d-flex gap-2 me-3">
+                <button class="btn btn-outline-secondary btn-sm" onclick="previousCard()" title="Previous card (← key)">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="nextCardManual()" title="Next card (→ key)">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            
+            <button class="btn-auto-play" id="btnAutoPlay" onclick="toggleAutoPlay()">
+                <i class="fas fa-play" id="autoPlayIcon"></i>
+                <span id="autoPlayText">Auto Play</span>
+            </button>
+            
+            <div class="speed-control">
+                <i class="fas fa-clock"></i>
+                <input type="range" class="speed-slider" id="speedSlider" 
+                       min="3" max="10" value="5" step="0.5">
+                <span class="timer-display" id="speedDisplay">5.0s</span>
+            </div>
+        </div>
+
+        <!-- Card Timer (visible during auto-play) -->
+        <div class="card-timer" id="cardTimer" style="display: none;">
+            <svg width="60" height="60" class="timer-circle">
+                <circle class="timer-circle-bg" cx="30" cy="30" r="26"></circle>
+                <circle class="timer-circle-progress" id="timerProgress" 
+                        cx="30" cy="30" r="26"
+                        stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="timer-text" id="timerText">5</div>
+        </div>
+
+        <!-- Rating Buttons (Always Visible) -->
+        <div class="rating-buttons" id="ratingButtons">
+            <button class="btn-rating btn-rating-again" onclick="rateCard(0)" 
+                    title="I didn't remember this word at all. Show it again soon.">
+                <span>😞</span>
+                <span>Again</span>
+                <span class="rating-label">&lt;1 day</span>
+                <span class="text-white-50 small">[1]</span>
+            </button>
+            <button class="btn-rating btn-rating-hard" onclick="rateCard(3)" 
+                    title="I struggled to remember this. Review in 3 days.">
+                <span>🤔</span>
+                <span>Hard</span>
+                <span class="rating-label">3 days</span>
+                <span class="text-white-50 small">[2]</span>
+            </button>
+            <button class="btn-rating btn-rating-good" onclick="rateCard(4)" 
+                    title="I remembered this well. Review in 7 days.">
+                <span>😊</span>
+                <span>Good</span>
+                <span class="rating-label">7 days</span>
+                <span class="text-white-50 small">[3]</span>
+            </button>
+            <button class="btn-rating btn-rating-easy" onclick="rateCard(5)" 
+                    title="This was very easy. Review in 14 days.">
+                <span>😎</span>
+                <span>Easy</span>
+                <span class="rating-label">14 days</span>
+                <span class="text-white-50 small">[4]</span>
+            </button>
+        </div>
+
+        <!-- Help Text -->
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                <i class="fas fa-keyboard"></i> Keyboard: <strong>A</strong> Auto-Play, <strong>Space</strong> Flip/Pause, <strong>P</strong> Play Audio, <strong>1-4</strong> Rate (Easy to Hard), <strong>←→</strong> Navigate
+            </small>
+        </div>
+
+        <!-- Help Text -->
+        <div class="text-center mt-3">
+            <p class="text-muted">
+                <i class="fas fa-keyboard"></i>
+                Keyboard: <strong>A</strong> Auto-Play, 
+                <strong>Space</strong> Flip/Pause, 
+                <strong>P</strong> Play Audio, 
+                <strong>1-4</strong> Rate (Easy to Hard)
+            </p>
+        </div>
+    </div>
+
+    <!-- Session Complete -->
+    <div id="sessionComplete" style="display: none;">
+        <div class="session-complete">
+            <div class="complete-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h2 class="complete-title">Session Complete!</h2>
+            <p class="complete-subtitle">Great work! You've reviewed all cards.</p>
+            
+            <!-- Final Stats -->
+            <div class="session-stats mb-4">
+                <div class="stat-card">
+                    <div class="stat-value" id="finalReviewed">0</div>
+                    <div class="stat-label">Cards Reviewed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="finalAccuracy">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="finalTime">0m</div>
+                    <div class="stat-label">Time Spent</div>
+                </div>
+            </div>
+
+            <!-- Deck Info -->
+            <div class="mb-4">
+                <p class="text-muted" id="completedDeckInfo">
+                    <i class="fas fa-layer-group"></i>
+                    <span id="completedDeckName"></span>
+                </p>
+            </div>
+
+            <!-- Deck Progress (if available) -->
+            <div id="deckProgressSection" style="display: none;" class="mb-4">
+                <h5 class="mb-3">Your Progress in This Deck</h5>
+                <div class="deck-progress-card p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="progress mb-3" style="height: 30px; background: rgba(255,255,255,0.2);">
+                                <div class="progress-bar" id="deckProgressBar" style="background: #00C851;"></div>
+                            </div>
+                            <h4 id="deckProgressText">0% Complete</h4>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="stat-value" id="deckMastered">0</div>
+                                    <div class="stat-label">Mastered</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-value" id="deckLearning">0</div>
+                                    <div class="stat-label">Learning</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-value" id="deckNew">0</div>
+                                    <div class="stat-label">New</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <button class="btn btn-primary btn-lg" onclick="restartSession()">
+                    <i class="fas fa-redo"></i>
+                    Study Same Deck Again
+                </button>
+                <button class="btn btn-outline-primary btn-lg" onclick="showDeckSelector()">
+                    <i class="fas fa-layer-group"></i>
+                    Choose Different Deck
+                </button>
+                <a href="{% url 'users:dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-home"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Confetti Library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- Copy assets from public folder to static -->
+<script src="{% static 'js/django-api.js' %}"></script>
+<script src="{% static 'js/flashcard-audio-player.js' %}"></script>
+<script src="{% static 'js/flashcard-study-session.js' %}"></script>
+
+<script>
+    // Simple API wrapper (if not already defined)
+    if (typeof window.djangoApi === 'undefined') {
+        window.djangoApi = {
+            async startFlashcardSession(deckId, cardCount, reviewMode = 'normal') {
+                const response = await fetch('/api/v1/vocabulary/flashcards/study/start_session/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify({
+                        deck_id: deckId,
+                        card_count: cardCount,
+                        review_mode: reviewMode
+                    })
+                });
+                const data = await response.json();
+                return { success: true, data: data };
+            },
+            
+            async reviewFlashcardCard(cardId, quality, timeSpent) {
+                const response = await fetch(`/api/v1/vocabulary/flashcards/${cardId}/review/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify({
+                        quality: quality,
+                        time_spent: timeSpent
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to review card');
+                }
+                
+                const data = await response.json();
+                return { success: true, data: data };
+            },
+            
+            async endFlashcardSession(sessionId) {
+                const response = await fetch(`/api/v1/vocabulary/flashcards/study/${sessionId}/end/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        cards_studied: window.FlashcardStudySession?.session?.stats?.cardsStudied || 0,
+                        cards_correct: window.FlashcardStudySession?.session?.stats?.cardsCorrect || 0,
+                        time_spent: window.FlashcardStudySession?.session?.stats?.timeSpent || 0
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to end session');
+                }
+                
+                const data = await response.json();
+                return { 
+                    success: true, 
+                    session_stats: data.session_stats,
+                    daily_progress: data.daily_progress,
+                    deck_progress: data.deck_progress,
+                    streak: data.streak,
+                    achievements_unlocked: data.achievements_unlocked || []
+                };
+            }
+        };
+    }
+
+    // Initialize with Django template context
+    let audioPlayer = null;
+    let currentCard = null;
+    let isFlipped = false;
+
+    // Session State
+    let sessionState = {
+        currentDeckId: null,
+        currentCardCount: 20,
+        deckName: null,
+        lastDeckId: null,
+        lastDeckName: null,
+        reviewMode: 'normal'  // Track review mode for replay
+    };
+
+    // Auto-Play Mode State
+    let autoPlayMode = {
+        enabled: false,
+        interval: 5000, // ms
+        timer: null,
+        flipTimer: null,
+        startTime: null,
+        circleCircumference: 163.36, // 2 * PI * radius (26)
+    };
+
+    // DOM Elements
+    const loadingContainer = document.getElementById('loadingContainer');
+    const flashcardContainer = document.getElementById('flashcardContainer');
+    const sessionComplete = document.getElementById('sessionComplete');
+    const flashcardInner = document.getElementById('flashcardInner');
+    const ratingButtons = document.getElementById('ratingButtons');
+    const speedSlider = document.getElementById('speedSlider');
+    const speedDisplay = document.getElementById('speedDisplay');
+    const btnAutoPlay = document.getElementById('btnAutoPlay');
+    const autoPlayIcon = document.getElementById('autoPlayIcon');
+    const autoPlayText = document.getElementById('autoPlayText');
+    const cardTimer = document.getElementById('cardTimer');
+    const timerProgress = document.getElementById('timerProgress');
+    const timerText = document.getElementById('timerText');
+
+    // Start session on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize audio player
+        audioPlayer = Object.create(FlashcardAudioPlayer);
+        audioPlayer.init('#audioPlayerContainer');
+
+        // Load recent decks and deck selection cards
+        loadRecentDecks();
+        loadDeckSelectionCards();
+
+        // Check if deck is pre-selected
+        const deckId = {{ deck.id|default:'null' }};
+        
+        if (deckId) {
+            // Auto-start with pre-selected deck
+            startNewSession(deckId);
+        } else {
+            // Show deck selector
+            showDeckSelector();
+        }
+
+        // Setup keyboard shortcuts
+        setupKeyboardShortcuts();
+
+        // Setup touch gestures
+        setupTouchGestures();
+        
+        // Speed slider listener
+        speedSlider.addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            autoPlayMode.interval = value * 1000;
+            speedDisplay.textContent = value.toFixed(1) + 's';
+        });
+        
+        // Review mode hint updates
+        document.querySelectorAll('input[name="reviewMode"]').forEach(radio => {
+            radio.addEventListener('change', updateReviewModeHint);
+        });
+    });
+
+    function showDeckSelector() {
+        document.getElementById('deckSelection').style.display = 'block';
+        document.getElementById('loadingContainer').style.display = 'none';
+        document.getElementById('flashcardContainer').style.display = 'none';
+        document.getElementById('sessionComplete').style.display = 'none';
+    }
+
+    function startSelectedDeck() {
+        const deckId = document.getElementById('selectedDeckId').value;
+        const cardCount = parseInt(document.getElementById('cardCountInput').value) || 20;
+        const reviewMode = document.querySelector('input[name="reviewMode"]:checked')?.value || 'normal';
+        
+        if (!deckId) {
+            alert('Please select a deck first!');
+            return;
+        }
+        
+        startNewSession(deckId, cardCount, reviewMode);
+    }
+
+    async function startNewSession(deckId = null, cardCount = 20, reviewMode = 'normal') {
+        document.getElementById('deckSelection').style.display = 'none';
+        document.getElementById('loadingContainer').style.display = 'flex';
+        flashcardContainer.style.display = 'none';
+        sessionComplete.style.display = 'none';
+
+        // Save session state
+        sessionState.currentDeckId = deckId;
+        sessionState.currentCardCount = cardCount;
+        sessionState.lastDeckId = deckId;  // Store for "Study Same Deck Again"
+        sessionState.reviewMode = reviewMode;  // Store review mode
+
+        // Start session with review mode
+        const result = await FlashcardStudySession.startSession(deckId, cardCount, reviewMode);
+
+        if (result.success) {
+            updateSessionUI();
+            loadCurrentCard();
+            document.getElementById('loadingContainer').style.display = 'none';
+            flashcardContainer.style.display = 'block';
+        } else {
+            document.getElementById('loadingContainer').style.display = 'none';
+            
+            if (result.error && result.error.includes('No cards available')) {
+                alert('No cards available for study. Please try a different deck or level.');
+                showDeckSelector();
+            } else {
+                alert('Failed to start session: ' + (result.error || 'Unknown error'));
+                showDeckSelector();
+            }
+        }
+    }
+
+    async function loadCurrentCard() {
+        currentCard = FlashcardStudySession.getCurrentCard();
+        
+        if (!currentCard) {
+            showSessionComplete();
+            return;
+        }
+
+        // Stop any existing timers
+        stopAutoPlayTimers();
+
+        // Reset flip state
+        isFlipped = false;
+        flashcardInner.classList.remove('flipped');
+
+        // Update card content
+        document.getElementById('wordText').textContent = currentCard.word.text;
+        document.getElementById('wordIpa').textContent = currentCard.word.ipa ? `/${currentCard.word.ipa}/` : '';
+        document.getElementById('wordMeaning').textContent = currentCard.word.meaning_vi || '';
+        document.getElementById('wordExample').textContent = currentCard.word.example_en ? `"${currentCard.word.example_en}"` : '';
+
+        // Reset tag button state for new card
+        const tagButton = document.getElementById('tagButton');
+        if (tagButton) {
+            tagButton.classList.remove('tagged');
+            tagButton.innerHTML = '<i class="fas fa-star"></i> <span id="tagText">Difficult</span>';
+        }
+        
+        // Load audio and wait for it to be ready
+        if (currentCard.word.text && audioPlayer) {
+            console.log('[Flashcard] Loading audio for:', currentCard.word.text);
+            await audioPlayer.loadWord(currentCard.word.text);
+            console.log('[Flashcard] Audio loaded successfully for:', currentCard.word.text);
+        } else {
+            console.warn('[Flashcard] Cannot load audio:', {
+                hasWord: !!currentCard.word.text,
+                hasAudioPlayer: !!audioPlayer
+            });
+        }
+
+        // Update stats
+        updateStatsUI();
+        
+        // If auto-play is enabled, start the sequence AFTER audio is loaded
+        if (autoPlayMode.enabled) {
+            startAutoPlaySequence();
+        }
+    }
+
+    function flipCard() {
+        isFlipped = !isFlipped;
+        flashcardInner.classList.toggle('flipped');
+        
+        // Auto-play audio when flipping to back (showing meaning)
+        if (isFlipped && audioPlayer && audioPlayer.state && audioPlayer.state.audioElement) {
+            // Check if audio is loaded by checking if audioElement has valid src
+            const audioEl = audioPlayer.state.audioElement;
+            if (audioEl && audioEl.src && audioEl.readyState >= 2) {
+                // Small delay to let flip animation start
+                setTimeout(() => {
+                    audioPlayer.play();
+                    console.log('[Flashcard] Auto-playing audio on flip');
+                }, 300);
+            } else {
+                console.warn('[Flashcard] Audio not ready for autoplay');
+            }
+        }
+    }
+
+    // ====================================
+    // AUTO-PLAY MODE
+    // ====================================
+    
+    function toggleAutoPlay() {
+        autoPlayMode.enabled = !autoPlayMode.enabled;
+        
+        if (autoPlayMode.enabled) {
+            // Start auto-play
+            btnAutoPlay.classList.add('active');
+            autoPlayIcon.className = 'fas fa-pause';
+            autoPlayText.textContent = 'Pause Auto';
+            cardTimer.style.display = 'block';
+            
+            // Start sequence for current card
+            startAutoPlaySequence();
+        } else {
+            // Stop auto-play
+            btnAutoPlay.classList.remove('active');
+            autoPlayIcon.className = 'fas fa-play';
+            autoPlayText.textContent = 'Auto Play';
+            cardTimer.style.display = 'none';
+            
+            // Clear timers
+            stopAutoPlayTimers();
+        }
+    }
+    
+    function startAutoPlaySequence() {
+        console.log('[AutoPlay] Starting sequence for:', currentCard?.word?.text);
+        
+        // Wait a bit for audio to be fully loaded, then play
+        setTimeout(() => {
+            if (audioPlayer && currentCard) {
+                console.log('[AutoPlay] Playing audio for:', currentCard.word.text);
+                audioPlayer.play();
+            }
+        }, 300); // Small delay to ensure audio is loaded
+        
+        // Flip card after 2 seconds
+        autoPlayMode.flipTimer = setTimeout(() => {
+            if (!isFlipped) {
+                flipCard();
+            }
+        }, 2000);
+        
+        // Start countdown timer
+        autoPlayMode.startTime = Date.now();
+        startCardTimer();
+        
+        // Auto-advance to next card after interval
+        autoPlayMode.timer = setTimeout(() => {
+            autoAdvanceCard();
+        }, autoPlayMode.interval);
+    }
+    
+    function stopAutoPlayTimers() {
+        if (autoPlayMode.timer) {
+            clearTimeout(autoPlayMode.timer);
+            autoPlayMode.timer = null;
+        }
+        if (autoPlayMode.flipTimer) {
+            clearTimeout(autoPlayMode.flipTimer);
+            autoPlayMode.flipTimer = null;
+        }
+    }
+    
+    function startCardTimer() {
+        const updateTimer = () => {
+            if (!autoPlayMode.enabled || !autoPlayMode.startTime) return;
+            
+            const elapsed = Date.now() - autoPlayMode.startTime;
+            const remaining = Math.max(0, autoPlayMode.interval - elapsed);
+            const progress = 1 - (remaining / autoPlayMode.interval);
+            
+            // Update circle progress
+            const offset = autoPlayMode.circleCircumference * progress;
+            timerProgress.style.strokeDashoffset = offset;
+            
+            // Update text
+            const seconds = Math.ceil(remaining / 1000);
+            timerText.textContent = seconds;
+            
+            if (remaining > 0) {
+                requestAnimationFrame(updateTimer);
+            }
+        };
+        
+        updateTimer();
+    }
+    
+    async function autoAdvanceCard() {
+        // Auto-rate as "Good" (quality 4)
+        const result = await FlashcardStudySession.reviewCard(4);
+        
+        if (result.success) {
+            // Update UI including daily goal
+            updateStatsUI();
+            updateSessionUI();
+            
+            FlashcardStudySession.nextCard();
+            
+            if (FlashcardStudySession.isComplete()) {
+                autoPlayMode.enabled = false;
+                showSessionComplete();
+            } else {
+                loadCurrentCard();
+            }
+        }
+    }
+
+    async function rateCard(quality) {
+        // Stop auto-play when user manually rates (they're taking control)
+        if (autoPlayMode.enabled) {
+            stopAutoPlayTimers();
+            // Don't disable auto-play mode, just stop current timers
+            // User can resume by pressing A again
+        }
+        
+        // Allow rating without flipping now
+        const result = await FlashcardStudySession.reviewCard(quality);
+
+        if (result.success) {
+            // Update UI including daily goal
+            updateStatsUI();
+            updateSessionUI();
+            
+            // Move to next card
+            FlashcardStudySession.nextCard();
+            
+            if (FlashcardStudySession.isComplete()) {
+                autoPlayMode.enabled = false;
+                showSessionComplete();
+            } else {
+                loadCurrentCard();
+            }
+        } else {
+            // Only log error - don't show alert on session complete
+            console.error('Review failed:', result.error);
+        }
+    }
+
+    function updateStatsUI() {
+        const stats = FlashcardStudySession.getStats();
+        const progress = FlashcardStudySession.getProgress();
+
+        document.getElementById('statReviewed').textContent = stats.cardsReviewed;
+        document.getElementById('statCorrect').textContent = stats.cardsCorrect;
+        document.getElementById('statAccuracy').textContent = stats.accuracy + '%';
+        document.getElementById('statRemaining').textContent = progress.remaining;
+    }
+
+    function updateSessionUI() {
+        const session = FlashcardStudySession.session;
+
+        // Update streak
+        if (session.streak) {
+            const streakText = session.streak.current === 1 ? '1 day streak' : `${session.streak.current} days streak`;
+            document.getElementById('streakCount').textContent = streakText;
+        }
+
+        // Update daily progress with safe defaults
+        if (session.dailyProgress) {
+            const cardsToday = session.dailyProgress.cardsToday || session.dailyProgress.cards_today || 0;
+            const dailyGoal = session.dailyProgress.dailyGoal || session.dailyProgress.daily_goal || 20;
+            const progressPercentage = session.dailyProgress.progressPercentage || session.dailyProgress.progress_percentage || 0;
+            
+            console.log('[UpdateSessionUI] Daily Progress:', { cardsToday, dailyGoal, progressPercentage });
+            
+            document.getElementById('dailyProgressText').textContent = `${cardsToday}/${dailyGoal} cards`;
+            document.getElementById('dailyProgressBar').style.width = progressPercentage + '%';
+            document.getElementById('dailyProgressBar').textContent = progressPercentage + '%';
+        } else {
+            console.warn('[UpdateSessionUI] No dailyProgress data available');
+            // Set defaults if no data
+            document.getElementById('dailyProgressText').textContent = '0/20 cards';
+            document.getElementById('dailyProgressBar').style.width = '0%';
+            document.getElementById('dailyProgressBar').textContent = '0%';
+        }
+    }
+
+    async function showSessionComplete() {
+        // IMPORTANT: Store last deck BEFORE ending session
+        if (sessionState.currentDeckId) {
+            sessionState.lastDeckId = sessionState.currentDeckId;
+            sessionState.lastDeckName = sessionState.deckName;
+            console.log('[Session] Stored last deck:', sessionState.lastDeckId, sessionState.lastDeckName);
+        }
+        
+        const summary = await FlashcardStudySession.endSession();
+
+        flashcardContainer.style.display = 'none';
+        sessionComplete.style.display = 'block';
+
+        if (summary.success) {
+            const stats = summary.summary;
+            document.getElementById('finalReviewed').textContent = stats.cardsReviewed || 0;
+            document.getElementById('finalAccuracy').textContent = (stats.accuracy || 0) + '%';
+            document.getElementById('finalTime').textContent = Math.round((stats.timeSpent || 0) / 60) + 'm';
+            
+            // Show deck name if available
+            if (sessionState.deckName) {
+                document.getElementById('completedDeckName').textContent = sessionState.deckName;
+            } else if (sessionState.currentDeckId) {
+                // Try to get deck name from selector
+                const deckSelector = document.getElementById('deckSelector');
+                const selectedOption = deckSelector?.querySelector(`option[value="${sessionState.currentDeckId}"]`);
+                if (selectedOption) {
+                    document.getElementById('completedDeckName').textContent = selectedOption.textContent;
+                }
+            }
+            
+            // Show deck progress if available
+            if (summary.data?.deck_progress) {
+                const progress = summary.data.deck_progress;
+                document.getElementById('deckProgressSection').style.display = 'block';
+                document.getElementById('deckProgressBar').style.width = progress.progress_percentage + '%';
+                document.getElementById('deckProgressBar').textContent = progress.progress_percentage + '%';
+                document.getElementById('deckProgressText').textContent = 
+                    `${progress.cards_learned} / ${progress.total_cards} cards (${progress.progress_percentage}%)`;
+                document.getElementById('deckMastered').textContent = progress.cards_mastered;
+                document.getElementById('deckLearning').textContent = progress.cards_learning;
+                document.getElementById('deckNew').textContent = progress.cards_new;
+            }
+
+            // Trigger confetti
+            if (typeof confetti !== 'undefined') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+    }
+
+    // Manual navigation functions
+    function previousCard() {
+        if (FlashcardStudySession.session.currentIndex > 0) {
+            FlashcardStudySession.session.currentIndex--;
+            loadCurrentCard();
+            showToast('Previous card', 'info');
+        } else {
+            showToast('Already at first card', 'warning');
+        }
+    }
+    
+    function nextCardManual() {
+        const session = FlashcardStudySession.session;
+        const currentIdx = session.currentIndex;
+        const totalCards = session.cards.length;
+        
+        console.log('[NextCardManual] Current:', currentIdx, 'Total:', totalCards);
+        
+        if (currentIdx >= totalCards - 1) {
+            // At last card - ask if they want to finish
+            const shouldFinish = confirm('You\'re at the last card. Do you want to finish this session?');
+            if (shouldFinish) {
+                showSessionComplete();
+            } else {
+                showToast('At last card. Review earlier cards or finish session', 'info');
+            }
+        } else {
+            // Move to next card
+            session.currentIndex++;
+            loadCurrentCard();
+            showToast(`Card ${session.currentIndex + 1}/${totalCards}`, 'info');
+        }
+    }
+    
+    function restartSession() {
+        console.log('[RestartSession] lastDeckId:', sessionState.lastDeckId, 'currentDeckId:', sessionState.currentDeckId);
+        
+        // Restart with same deck, card count, and review mode
+        const deckId = sessionState.lastDeckId || sessionState.currentDeckId;
+        const reviewMode = sessionState.reviewMode || 'normal';
+        
+        if (deckId) {
+            console.log('[RestartSession] Starting session with deck:', deckId, 'mode:', reviewMode);
+            startNewSession(deckId, sessionState.currentCardCount, reviewMode);
+        } else {
+            console.warn('[RestartSession] No deck ID found, showing selector');
+            // Fallback to deck selector if no deck saved
+            showDeckSelector();
+        }
+    }
+
+    function setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ignore if in input field
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                return;
+            }
+
+            switch(e.key.toLowerCase()) {
+                case ' ':  // Space - flip card or pause auto-play
+                    e.preventDefault();
+                    if (autoPlayMode.enabled) {
+                        toggleAutoPlay(); // Pause auto-play
+                    } else {
+                        flipCard();
+                    }
+                    break;
+                case 'a':  // A - toggle auto-play
+                    e.preventDefault();
+                    toggleAutoPlay();
+                    break;
+                case 'p':  // P - play audio manually
+                    e.preventDefault();
+                    if (audioPlayer) audioPlayer.play();
+                    break;
+                case '1':  // Rate: Again
+                    e.preventDefault();
+                    rateCard(0);
+                    break;
+                case '2':  // Rate: Hard
+                    e.preventDefault();
+                    rateCard(3);
+                    break;
+                case '3':  // Rate: Good
+                    e.preventDefault();
+                    rateCard(4);
+                    break;
+                case '4':  // Rate: Easy
+                    e.preventDefault();
+                    rateCard(5);
+                    break;
+                case 'arrowleft':  // Left arrow - previous card
+                    e.preventDefault();
+                    previousCard();
+                    break;
+                case 'arrowright':  // Right arrow - next card
+                    e.preventDefault();
+                    nextCardManual();
+                    break;
+            }
+        });
+    }
+
+    function setupTouchGestures() {
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        flashcardInner.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        flashcardInner.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeDistance = touchEndX - touchStartX;
+            
+            if (Math.abs(swipeDistance) > 50) {
+                flipCard();
+            }
+        }
+    }
+
+    // Click to flip
+    document.getElementById('flashcard').addEventListener('click', flipCard);
+
+    // Setup session callbacks
+    FlashcardStudySession.on('goalReached', () => {
+        updateSessionUI();
+    });
+
+    FlashcardStudySession.on('achievementUnlocked', (achievements) => {
+        console.log('Achievements unlocked:', achievements);
+    });
+
+    // ========== PHASE 2: NEW FEATURES ==========
+    
+    // Load Recent Decks
+    async function loadRecentDecks() {
+        try {
+            const response = await fetch('/api/v1/vocabulary/flashcards/decks/recent/', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            });
+            
+            if (!response.ok) {
+                console.log('No recent decks found');
+                return;
+            }
+            
+            const recentDecks = await response.json();
+            
+            if (recentDecks.length === 0) {
+                return;
+            }
+            
+            // Show recent decks section
+            document.getElementById('recentDecksSection').style.display = 'block';
+            
+            const container = document.getElementById('recentDecksContainer');
+            container.innerHTML = '';
+            
+            recentDecks.forEach(history => {
+                const deck = history.deck;
+                const progressColor = deck.color || '#667eea';
+                const progressPercent = Math.round(history.progress_percentage) || 0;
+                
+                const card = document.createElement('div');
+                card.className = 'col-md-6 col-lg-4';
+                card.innerHTML = `
+                    <div class="card recent-deck-card h-100" onclick="startRecentDeck(${deck.id})">
+                        <div class="recent-deck-header" style="background: ${progressColor}">
+                            <span>${deck.icon} ${deck.name}</span>
+                            <span class="badge bg-white text-dark">${deck.level}</span>
+                        </div>
+                        <div class="recent-deck-body">
+                            <div class="progress-circle" style="--progress: ${progressPercent}%" data-progress="${progressPercent}%"></div>
+                            
+                            <div class="deck-stats-small">
+                                <div class="stat-mini">
+                                    <span class="value text-success">${history.cards_mastered}</span>
+                                    <span class="label">Mastered</span>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="value text-warning">${history.cards_learning}</span>
+                                    <span class="label">Learning</span>
+                                </div>
+                                <div class="stat-mini">
+                                    <span class="value text-muted">${history.cards_new}</span>
+                                    <span class="label">New</span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-2 text-muted small">
+                                <i class="fas fa-clock"></i>
+                                ${formatLastStudied(history.last_studied_at)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+        } catch (error) {
+            console.error('Error loading recent decks:', error);
+        }
+    }
+    
+    // Start deck from recent decks
+    function startRecentDeck(deckId) {
+        startNewSession(deckId, 20);
+    }
+    
+    // Format last studied time
+    function formatLastStudied(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = Math.floor((now - date) / 1000); // seconds
+        
+        if (diff < 3600) {
+            const minutes = Math.floor(diff / 60);
+            return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+        } else if (diff < 86400) {
+            const hours = Math.floor(diff / 3600);
+            return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        } else if (diff < 604800) {
+            const days = Math.floor(diff / 86400);
+            return `${days} day${days !== 1 ? 's' : ''} ago`;
+        } else {
+            return date.toLocaleDateString();
+        }
+    }
+    
+    // Update review mode hint
+    function updateReviewModeHint() {
+        const mode = document.querySelector('input[name="reviewMode"]:checked').value;
+        const hint = document.getElementById('reviewModeHint');
+        
+        const hints = {
+            'normal': 'Mix of due cards and new cards for balanced learning',
+            'difficult': 'Only cards you marked as "Difficult" (⭐ button) - perfect for focused review',
+            'due': 'Only cards that are scheduled for review today based on your progress'
+        };
+        
+        hint.textContent = hints[mode] || hints.normal;
+    }
+    
+    // Load deck selection cards with progress
+    async function loadDeckSelectionCards() {
+        const container = document.getElementById('deckCardsContainer');
+        
+        // Get all decks
+        const decks = [
+            {% for deck in decks %}
+            {
+                id: {{ deck.id }},
+                name: '{{ deck.name }}',
+                level: '{{ deck.level }}',
+                icon: '{{ deck.icon }}',
+                color: '{{ deck.color }}',
+                card_count: {{ deck.card_count }}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        // Load progress for each deck
+        for (const deck of decks) {
+            try {
+                const response = await fetch(`/api/v1/vocabulary/flashcards/decks/${deck.id}/progress/`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const progress = data.progress;
+                    const history = data.history;
+                    
+                    renderDeckCard(deck, progress, history, container);
+                } else {
+                    // Render without progress data
+                    renderDeckCard(deck, null, null, container);
+                }
+            } catch (error) {
+                console.error('Error loading deck progress:', error);
+                renderDeckCard(deck, null, null, container);
+            }
+        }
+    }
+    
+    // Render individual deck card
+    function renderDeckCard(deck, progress, history, container) {
+        const progressPercent = progress ? Math.round(progress.progress_percentage) : 0;
+        const mastered = progress ? progress.cards_mastered : 0;
+        const learning = progress ? progress.cards_learning : 0;
+        const newCards = progress ? progress.cards_new : deck.card_count;
+        const totalSessions = history ? history.total_sessions : 0;
+        
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        
+        col.innerHTML = `
+            <div class="card deck-selection-card h-100" onclick="selectDeck(${deck.id}, '${deck.name}', ${deck.card_count})">
+                <div class="deck-card-header" style="background: ${deck.color || '#667eea'}">
+                    <span>${deck.icon} ${deck.name}</span>
+                    <span class="badge bg-white text-dark">${deck.level}</span>
+                </div>
+                <div class="deck-card-body">
+                    <div class="progress-ring-small" style="--progress: ${progressPercent}%" data-progress="${progressPercent}%"></div>
+                    
+                    <div class="text-center mb-2">
+                        <small class="text-muted">${deck.card_count} cards total</small>
+                    </div>
+                    
+                    <div class="deck-stats-row">
+                        <div class="deck-stat-item">
+                            <span class="value text-success">${mastered}</span>
+                            <span class="label">Mastered</span>
+                        </div>
+                        <div class="deck-stat-item">
+                            <span class="value text-warning">${learning}</span>
+                            <span class="label">Learning</span>
+                        </div>
+                        <div class="deck-stat-item">
+                            <span class="value text-muted">${newCards}</span>
+                            <span class="label">New</span>
+                        </div>
+                    </div>
+                    
+                    ${totalSessions > 0 ? `
+                        <div class="text-center mt-2 text-primary small">
+                            <i class="fas fa-history"></i> ${totalSessions} sessions
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(col);
+    }
+    
+    // Select deck
+    function selectDeck(deckId, deckName, cardCount) {
+        // Update hidden input
+        document.getElementById('selectedDeckId').value = deckId;
+        
+        // Update selected state
+        document.querySelectorAll('.deck-selection-card').forEach(card => {
+            card.classList.remove('selected');
+            // Remove existing badge
+            const existingBadge = card.querySelector('.selected-deck-badge');
+            if (existingBadge) existingBadge.remove();
+        });
+        
+        // Mark as selected
+        event.currentTarget.classList.add('selected');
+        
+        // Add checkmark badge
+        const badge = document.createElement('div');
+        badge.className = 'selected-deck-badge';
+        badge.innerHTML = '<i class="fas fa-check"></i>';
+        event.currentTarget.appendChild(badge);
+        
+        // Show deck info
+        const infoDiv = document.getElementById('selectedDeckInfo');
+        infoDiv.style.display = 'block';
+        infoDiv.innerHTML = `
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <i class="fas fa-check-circle text-success"></i>
+                    <strong>${deckName}</strong> selected
+                </div>
+                <small class="text-muted">${cardCount} cards available</small>
+            </div>
+        `;
+    }
+    
+    // Toggle tag on current card
+    async function toggleTag() {
+        const card = FlashcardStudySession.getCurrentCard();
+        if (!card) {
+            showToast('No card to tag', 'warning');
+            return;
+        }
+        const button = document.getElementById('tagButton');
+        const isTagged = button.classList.contains('tagged');
+        
+        try {
+            const response = await fetch(`/api/v1/vocabulary/flashcards/${card.id}/tag-card/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tag: 'difficult',
+                    action: isTagged ? 'remove' : 'add',
+                    notes: 'Marked during study session'
+                })
+            });
+            
+            if (response.ok) {
+                button.classList.toggle('tagged');
+                button.innerHTML = isTagged 
+                    ? '<i class="fas fa-star"></i> <span>Difficult</span>'
+                    : '<i class="fas fa-star"></i> <span>✓ Tagged</span>';
+                
+                // Show feedback
+                showToast(isTagged ? 'Tag removed' : 'Marked as difficult!', 'success');
+            }
+        } catch (error) {
+            console.error('Error toggling tag:', error);
+            showToast('Failed to tag card', 'error');
+        }
+    }
+    
+    // Show toast notification
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} 
+                          position-fixed top-0 start-50 translate-middle-x mt-3`;
+        toast.style.zIndex = '9999';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    }
+
+</script>
+{% endblock %}

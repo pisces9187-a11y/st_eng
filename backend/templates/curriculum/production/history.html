@@ -1,0 +1,474 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .history-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 32px;
+        color: white;
+        margin-bottom: 32px;
+    }
+    
+    .history-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-box {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .stat-value {
+        font-size: 36px;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #666;
+        margin-top: 8px;
+    }
+    
+    .filter-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 24px;
+    }
+    
+    .recording-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .recording-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    .recording-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .phoneme-badge {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .recording-meta {
+        text-align: right;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .recording-date {
+        font-weight: 600;
+    }
+    
+    .recording-body {
+        margin-bottom: 16px;
+    }
+    
+    .waveform-mini {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .recording-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .star-display {
+        color: #ffc107;
+        font-size: 20px;
+    }
+    
+    .best-badge {
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        color: #000;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .recording-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-sm-action {
+        padding: 6px 16px;
+        font-size: 14px;
+        border-radius: 6px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 64px 20px;
+        color: #999;
+    }
+    
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" id="productionHistoryApp">
+    <!-- Header -->
+    <div class="history-header">
+        <h1 class="history-title">
+            <i class="bi bi-mic-fill"></i>
+            Lịch sử ghi âm
+        </h1>
+        <p class="mb-0">Xem lại và quản lý các bản ghi luyện phát âm của bạn</p>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-value">{{ stats.total_recordings }}</div>
+            <div class="stat-label">Tổng số bản ghi</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ stats.unique_phonemes }}</div>
+            <div class="stat-label">Âm đã luyện</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ stats.avg_score|floatformat:1 }}</div>
+            <div class="stat-label">Điểm TB tự đánh giá</div>
+        </div>
+    </div>
+    
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <label class="form-label mb-2">
+                    <i class="bi bi-filter"></i>
+                    Lọc theo âm:
+                </label>
+                <select class="form-select" v-model="selectedPhonemeId" @change="applyFilter">
+                    <option :value="null">Tất cả các âm</option>
+                    {% for phoneme in phonemes %}
+                    <option value="{{ phoneme.id }}">
+                        /{{ phoneme.ipa_symbol }}/ - {{ phoneme.name_vi }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'curriculum:pronunciation-dashboard' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-bar-chart"></i>
+                    Xem dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recordings List -->
+    <div v-if="recordings.length > 0">
+        <div v-for="recording in recordings" :key="recording.id" class="recording-card">
+            <div class="recording-header">
+                <div class="phoneme-badge">/[[ recording.phoneme.ipa_symbol ]]/</div>
+                <div class="recording-meta">
+                    <div class="recording-date">[[ formatDate(recording.created_at) ]]</div>
+                    <div>[[ formatDuration(recording.duration_seconds) ]]</div>
+                </div>
+            </div>
+            
+            <div class="recording-body">
+                <div class="phoneme-name mb-2">
+                    <strong>[[ recording.phoneme.name_vi ]]</strong>
+                </div>
+                
+                <!-- Audio Player -->
+                <div class="waveform-mini">
+                    <audio :src="recording.recording_url" controls style="width: 100%;"></audio>
+                </div>
+                
+                <!-- Info & Actions -->
+                <div class="recording-info">
+                    <div>
+                        <span v-if="recording.self_assessment_score" class="star-display">
+                            [[ '★'.repeat(recording.self_assessment_score) ]]
+                        </span>
+                        <span v-if="recording.is_best" class="best-badge ms-2">🏆 Tốt nhất</span>
+                    </div>
+                    
+                    <div class="recording-actions">
+                        <button 
+                            v-if="!recording.is_best"
+                            class="btn btn-sm btn-outline-warning btn-sm-action"
+                            @click="markAsBest(recording.id)"
+                            :disabled="processing === recording.id"
+                        >
+                            <i class="bi bi-star"></i>
+                            Đánh dấu tốt nhất
+                        </button>
+                        
+                        <button 
+                            class="btn btn-sm btn-outline-primary btn-sm-action"
+                            @click="showRatingModal(recording)"
+                        >
+                            <i class="bi bi-pencil"></i>
+                            Đổi đánh giá
+                        </button>
+                        
+                        <button 
+                            class="btn btn-sm btn-outline-danger btn-sm-action"
+                            @click="deleteRecording(recording.id)"
+                            :disabled="processing === recording.id"
+                        >
+                            <i class="bi bi-trash"></i>
+                            Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div v-else class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-mic-mute"></i>
+        </div>
+        <h3>Chưa có bản ghi nào</h3>
+        <p class="text-muted">Hãy bắt đầu luyện phát âm để tạo bản ghi đầu tiên!</p>
+        <a href="{% url 'curriculum:pronunciation-discovery' %}" class="btn btn-primary btn-lg mt-3">
+            <i class="bi bi-arrow-right"></i>
+            Bắt đầu luyện tập
+        </a>
+    </div>
+    
+    <!-- Rating Modal -->
+    <div class="modal fade" id="ratingModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Đánh giá lại bản ghi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="mb-4">Chọn số sao mới:</p>
+                    <div class="star-rating" style="font-size: 48px; cursor: pointer;">
+                        <span 
+                            v-for="star in 5" 
+                            :key="star"
+                            :style="{ color: star <= newRating ? '#ffc107' : '#ddd' }"
+                            @click="newRating = star"
+                        >
+                            ★
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        @click="updateRating"
+                        :disabled="newRating === 0 || isUpdating"
+                    >
+                        <span v-if="!isUpdating">Cập nhật</span>
+                        <span v-else>
+                            <span class="spinner-border spinner-border-sm"></span>
+                            Đang lưu...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            recordings: {{ recordings|safe|default:"[]" }},
+            selectedPhonemeId: {{ selected_phoneme_id|default:"null" }},
+            processing: null,
+            
+            // Rating modal
+            currentRecording: null,
+            newRating: 0,
+            isUpdating: false,
+        }
+    },
+    methods: {
+        applyFilter() {
+            const url = new URL(window.location);
+            if (this.selectedPhonemeId) {
+                url.searchParams.set('phoneme_id', this.selectedPhonemeId);
+            } else {
+                url.searchParams.delete('phoneme_id');
+            }
+            window.location.href = url.toString();
+        },
+        
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat('vi-VN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        },
+        
+        formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        },
+        
+        async markAsBest(recordingId) {
+            if (!confirm('Đánh dấu đây là bản ghi tốt nhất cho âm này?')) return;
+            
+            this.processing = recordingId;
+            
+            try {
+                await Auth.waitUntilReady();
+                
+                const response = await ApiClient.patch(
+                    `/api/v1/production/recordings/${recordingId}/update/`,
+                    { is_best: true }
+                );
+                
+                if (response.success) {
+                    // Update UI
+                    const recording = this.recordings.find(r => r.id === recordingId);
+                    if (recording) {
+                        // Unmark other "best" for same phoneme
+                        this.recordings.forEach(r => {
+                            if (r.phoneme.id === recording.phoneme.id) {
+                                r.is_best = (r.id === recordingId);
+                            }
+                        });
+                    }
+                    
+                    alert('✅ Đã đánh dấu là bản ghi tốt nhất!');
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error('Error marking as best:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            } finally {
+                this.processing = null;
+            }
+        },
+        
+        showRatingModal(recording) {
+            this.currentRecording = recording;
+            this.newRating = recording.self_assessment_score || 0;
+            const modal = new bootstrap.Modal(document.getElementById('ratingModal'));
+            modal.show();
+        },
+        
+        async updateRating() {
+            if (!this.currentRecording || this.newRating === 0) return;
+            
+            this.isUpdating = true;
+            
+            try {
+                await Auth.waitUntilReady();
+                
+                const response = await ApiClient.patch(
+                    `/api/v1/production/recordings/${this.currentRecording.id}/update/`,
+                    { self_assessment_score: this.newRating }
+                );
+                
+                if (response.success) {
+                    // Update UI
+                    this.currentRecording.self_assessment_score = this.newRating;
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('ratingModal'));
+                    modal.hide();
+                    
+                    alert('✅ Đã cập nhật đánh giá!');
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error('Error updating rating:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            } finally {
+                this.isUpdating = false;
+            }
+        },
+        
+        async deleteRecording(recordingId) {
+            if (!confirm('Bạn có chắc muốn xóa bản ghi này?')) return;
+            
+            this.processing = recordingId;
+            
+            try {
+                await Auth.waitUntilReady();
+                
+                const response = await ApiClient.delete(
+                    `/api/v1/production/recordings/${recordingId}/delete/`
+                );
+                
+                if (response.success) {
+                    // Remove from UI
+                    this.recordings = this.recordings.filter(r => r.id !== recordingId);
+                    alert('✅ Đã xóa bản ghi!');
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error('Error deleting recording:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            } finally {
+                this.processing = null;
+            }
+        }
+    }
+}).mount('#productionHistoryApp');
+</script>
+{% endblock %}

@@ -1,0 +1,808 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Khám phá âm IPA - EnglishMaster{% endblock %}
+{% block meta_description %}Khám phá và học 44 âm IPA tiếng Anh qua hệ thống 4 giai đoạn SMART{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --discovery-primary: #F47C26;
+        --discovery-secondary: #183B56;
+        --discovery-success: #28A745;
+        --discovery-light: #F9FAFC;
+    }
+    
+    /* Breadcrumb Styles */
+    .custom-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        font-size: 18px;
+        color: #6c757d;
+        padding: 0 0.5rem;
+    }
+    .custom-breadcrumb .breadcrumb-item a:hover {
+        color: #183B56;
+        text-decoration: underline;
+    }
+    
+    /* Hero Section */
+    .discovery-hero {
+        background: linear-gradient(135deg, var(--discovery-secondary) 0%, #2E5F7F 100%);
+        padding: 3rem 0;
+        color: white;
+    }
+    
+    .hero-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    /* Progress Overview */
+    .progress-overview {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--discovery-primary);
+        font-family: 'Montserrat', sans-serif;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Phoneme Grid */
+    .phoneme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .phoneme-card {
+        aspect-ratio: 1;
+        border-radius: 16px;
+        background: white;
+        border: 2px solid #E8ECF0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .phoneme-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        border-color: var(--discovery-primary);
+    }
+    
+    .phoneme-card.discovered {
+        background: linear-gradient(135deg, rgba(244,124,38,0.1), rgba(244,124,38,0.05));
+        border-color: var(--discovery-primary);
+    }
+    
+    .phoneme-card.learning {
+        background: linear-gradient(135deg, rgba(23,162,184,0.1), rgba(23,162,184,0.05));
+        border-color: #17A2B8;
+    }
+    
+    .phoneme-card.discriminating {
+        background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(255,193,7,0.05));
+        border-color: #FFC107;
+    }
+    
+    .phoneme-card.producing {
+        background: linear-gradient(135deg, rgba(111,66,193,0.1), rgba(111,66,193,0.05));
+        border-color: #6F42C1;
+    }
+    
+    .phoneme-card.mastered {
+        background: linear-gradient(135deg, rgba(40,167,69,0.1), rgba(40,167,69,0.05));
+        border-color: var(--discovery-success);
+    }
+    
+    .phoneme-symbol {
+        font-size: 2.5rem;
+        font-family: 'Lucida Sans Unicode', 'Arial Unicode MS', sans-serif;
+        color: var(--discovery-secondary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .phoneme-card.discovered .phoneme-symbol,
+    .phoneme-card.learning .phoneme-symbol,
+    .phoneme-card.discriminating .phoneme-symbol,
+    .phoneme-card.producing .phoneme-symbol,
+    .phoneme-card.mastered .phoneme-symbol {
+        color: var(--discovery-primary);
+    }
+    
+    .phoneme-approx {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-align: center;
+    }
+    
+    .stage-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stage-badge.discovered { color: var(--discovery-primary); }
+    .stage-badge.learning { color: #17A2B8; }
+    .stage-badge.discriminating { color: #FFC107; }
+    .stage-badge.producing { color: #6F42C1; }
+    .stage-badge.mastered { color: var(--discovery-success); }
+    
+    /* Discovery Modal */
+    .discovery-modal .modal-content {
+        border-radius: 24px;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .discovery-modal .modal-header {
+        background: linear-gradient(135deg, var(--discovery-secondary), #2E5F7F);
+        color: white;
+        border: none;
+        padding: 2rem;
+    }
+    
+    .discovery-modal .modal-body {
+        padding: 2rem;
+    }
+    
+    .modal-phoneme-display {
+        text-align: center;
+        padding: 3rem;
+        background: var(--discovery-light);
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .modal-phoneme-symbol {
+        font-size: 5rem;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        color: var(--discovery-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-phoneme-approx {
+        font-size: 1.25rem;
+        color: #6c757d;
+    }
+    
+    .discovery-cta {
+        background: linear-gradient(135deg, var(--discovery-primary), #FF9A56);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .discovery-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(244,124,38,0.3);
+    }
+    
+    /* Category Tabs */
+    .category-tabs {
+        background: white;
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .category-tab {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        color: #6c757d;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .category-tab:hover {
+        background: rgba(244, 124, 38, 0.1);
+        color: var(--discovery-primary);
+    }
+    
+    .category-tab.active {
+        background: var(--discovery-primary);
+        color: white;
+    }
+    
+    /* Loading State */
+    .loading-spinner {
+        text-align: center;
+        padding: 4rem;
+    }
+    
+    .spinner-border {
+        color: var(--discovery-primary);
+    }
+    
+    /* Stage Legend */
+    .stage-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .legend-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        border: 2px solid;
+    }
+    
+    .legend-icon.not-started { border-color: #E8ECF0; background: white; }
+    .legend-icon.discovered { border-color: var(--discovery-primary); background: rgba(244,124,38,0.1); }
+    .legend-icon.learning { border-color: #17A2B8; background: rgba(23,162,184,0.1); }
+    .legend-icon.discriminating { border-color: #FFC107; background: rgba(255,193,7,0.1); }
+    .legend-icon.producing { border-color: #6F42C1; background: rgba(111,66,193,0.1); }
+    .legend-icon.mastered { border-color: var(--discovery-success); background: rgba(40,167,69,0.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<div class="custom-breadcrumb" style="background: #f8f9fa; padding: 1rem 0; border-bottom: 1px solid #e9ecef;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb" style="margin-bottom: 0; background: transparent; padding: 0;">
+                <li class="breadcrumb-item">
+                    <a href="/dashboard/" style="color: #F47C26; text-decoration: none;">
+                        <i class="bi bi-house-door"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" style="color: #495057; font-weight: 500;">
+                    <i class="bi bi-mic"></i> Phát âm - Khám phá
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div id="discoveryApp">
+    <!-- Hero Section -->
+    <section class="discovery-hero">
+        <div class="container">
+            <div class="text-center">
+                <div class="hero-icon">
+                    <i class="fas fa-compass"></i>
+                </div>
+                <h1 class="mb-3">Khám Phá 44 Âm IPA</h1>
+                <p class="lead">
+                    Bắt đầu hành trình làm chủ phát âm tiếng Anh chuẩn quốc tế<br>
+                    Hệ thống 4 giai đoạn: Khám phá → Học → Phân biệt → Thực hành
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Overview -->
+    <section class="container mt-4">
+        <div class="progress-overview">
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-number">[[ overallProgress.discovered_count ]]</div>
+                        <div class="stat-label">Đã khám phá</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-number">[[ overallProgress.learning_count ]]</div>
+                        <div class="stat-label">Đang học</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-number">[[ overallProgress.producing_count ]]</div>
+                        <div class="stat-label">Luyện phát âm</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-number">[[ overallProgress.mastered_count ]]</div>
+                        <div class="stat-label">Thành thạo</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">Tiến độ tổng thể</small>
+                    <small class="fw-bold text-primary">[[ overallProgress.mastery_percentage ]]%</small>
+                </div>
+                <div class="progress" style="height: 8px; border-radius: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         :style="{ width: overallProgress.mastery_percentage + '%' }">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stage Legend -->
+    <section class="container">
+        <div class="stage-legend">
+            <div class="legend-item">
+                <div class="legend-icon not-started"></div>
+                <span>Chưa bắt đầu</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon discovered"></div>
+                <span>Đã khám phá</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon learning"></div>
+                <span>Đang học lý thuyết</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon discriminating"></div>
+                <span>Luyện phân biệt</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon producing"></div>
+                <span>Luyện phát âm</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon mastered"></div>
+                <span>Thành thạo</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Tabs -->
+    <section class="container">
+        <div class="category-tabs">
+            <div class="btn-group d-flex" role="group">
+                <button type="button" class="category-tab" 
+                        :class="{ active: currentCategory === 'all' }"
+                        @click="filterByCategory('all')">
+                    <i class="fas fa-th me-2"></i>Tất cả ([[ phonemes.length ]])
+                </button>
+                <button type="button" class="category-tab"
+                        :class="{ active: currentCategory === 'vowels' }"
+                        @click="filterByCategory('vowels')">
+                    <i class="fas fa-circle me-2"></i>Nguyên âm
+                </button>
+                <button type="button" class="category-tab"
+                        :class="{ active: currentCategory === 'consonants' }"
+                        @click="filterByCategory('consonants')">
+                    <i class="fas fa-square me-2"></i>Phụ âm
+                </button>
+                <button type="button" class="category-tab"
+                        :class="{ active: currentCategory === 'diphthongs' }"
+                        @click="filterByCategory('diphthongs')">
+                    <i class="fas fa-wave-square me-2"></i>Nguyên âm đôi
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phoneme Grid -->
+    <section class="container mb-5">
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3 text-muted">Đang tải danh sách âm...</p>
+        </div>
+
+        <!-- Phoneme Cards -->
+        <div v-else class="phoneme-grid">
+            <div v-for="phoneme in filteredPhonemes" :key="phoneme.id"
+                 class="phoneme-card"
+                 :class="phoneme.progress ? phoneme.progress.current_stage : 'not-started'"
+                 @click="selectPhoneme(phoneme)">
+                
+                <!-- Stage Badge -->
+                <div v-if="phoneme.progress" class="stage-badge" :class="phoneme.progress.current_stage">
+                    <i class="fas fa-check" v-if="phoneme.progress.current_stage === 'mastered'"></i>
+                    <i class="fas fa-star" v-else-if="phoneme.progress.current_stage === 'producing'"></i>
+                    <i class="fas fa-headphones" v-else-if="phoneme.progress.current_stage === 'discriminating'"></i>
+                    <i class="fas fa-book-open" v-else-if="phoneme.progress.current_stage === 'learning'"></i>
+                    <i class="fas fa-eye" v-else></i>
+                </div>
+                
+                <!-- Phoneme Symbol -->
+                <div class="phoneme-symbol">[[ phoneme.ipa_symbol ]]</div>
+                
+                <!-- Vietnamese Approximation -->
+                <div class="phoneme-approx">[[ phoneme.vietnamese_approx ]]</div>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div v-if="!loading && filteredPhonemes.length === 0" class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Không tìm thấy âm nào trong danh mục này</p>
+        </div>
+    </section>
+
+    <!-- Discovery Modal -->
+    <div class="modal fade discovery-modal" id="discoveryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Khám phá âm mới
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="selectedPhoneme">
+                        <!-- Phoneme Display -->
+                        <div class="modal-phoneme-display">
+                            <div class="modal-phoneme-symbol">[[ selectedPhoneme.ipa_symbol ]]</div>
+                            <div class="modal-phoneme-approx">[[ selectedPhoneme.vietnamese_approx ]]</div>
+                        </div>
+                        
+                        <!-- Current Status -->
+                        <div v-if="selectedPhoneme.progress" class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Trạng thái: <strong>[[ getStageDisplayName(selectedPhoneme.progress.current_stage) ]]</strong>
+                        </div>
+                        
+                        <!-- Discovery Text -->
+                        <div class="mb-4" v-if="!selectedPhoneme.progress || selectedPhoneme.progress.current_stage === 'not_started'">
+                            <h6 class="fw-bold mb-2">Bắt đầu hành trình với âm này!</h6>
+                            <p class="text-muted">
+                                Đánh dấu "Đã khám phá" để bắt đầu học cách phát âm chuẩn <strong>[[ selectedPhoneme.ipa_symbol ]]</strong>.
+                                Sau đó bạn sẽ học lý thuyết, luyện phân biệt và thực hành phát âm.
+                            </p>
+                        </div>
+                        
+                        <!-- Already Discovered -->
+                        <div class="mb-4" v-else>
+                            <h6 class="fw-bold mb-2">Tiếp tục học với âm này</h6>
+                            <p class="text-muted">
+                                [[ getNextActionText(selectedPhoneme.progress) ]]
+                            </p>
+                        </div>
+                        
+                        <!-- Action Button -->
+                        <button class="discovery-cta" @click="handleDiscoverClick" :disabled="discovering">
+                            <span v-if="discovering">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Đang xử lý...
+                            </span>
+                            <span v-else>
+                                <i class="fas" 
+                                   :class="getActionIcon(selectedPhoneme.progress)"></i>
+                                [[ getActionButtonText(selectedPhoneme.progress) ]]
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Wait for Auth to be loaded before running Vue app
+function initializeDiscoveryApp() {
+    if (typeof Auth === 'undefined') {
+        // Auth not loaded yet, retry
+        setTimeout(initializeDiscoveryApp, 100);
+        return;
+    }
+
+    const { createApp } = Vue;
+
+    createApp({
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                phonemes: [],
+                overallProgress: {
+                total_phonemes: 0,
+                discovered_count: 0,
+                learning_count: 0,
+                discriminating_count: 0,
+                producing_count: 0,
+                mastered_count: 0,
+                mastery_percentage: 0,
+            },
+            currentCategory: 'all',
+            selectedPhoneme: null,
+            loading: true,
+            discovering: false,
+        };
+    },
+    computed: {
+        filteredPhonemes() {
+            if (this.currentCategory === 'all') {
+                return this.phonemes;
+            }
+            
+            const categoryMap = {
+                'vowels': ['long_vowel', 'short_vowel'],
+                'consonants': ['voiced_consonant', 'unvoiced_consonant'],
+                'diphthongs': ['diphthong']
+            };
+            
+            return this.phonemes.filter(p => {
+                return categoryMap[this.currentCategory]?.includes(p.phoneme_type);
+            });
+        }
+    },
+    methods: {
+        async loadPhonemes() {
+            try {
+                this.loading = true;
+                
+                // Load all phonemes with their progress
+                const response = await ApiClient.get('/pronunciation/phonemes/');
+                
+                // API returns categories, we need to flatten into phonemes array
+                let allPhonemes = [];
+                if (response.data && response.data.categories) {
+                    // Response wrapped in success envelope
+                    response.data.categories.forEach(category => {
+                        allPhonemes = allPhonemes.concat(category.phonemes || []);
+                    });
+                } else if (response.categories) {
+                    // Direct categories array
+                    response.categories.forEach(category => {
+                        allPhonemes = allPhonemes.concat(category.phonemes || []);
+                    });
+                } else if (Array.isArray(response)) {
+                    // Already a flat array
+                    allPhonemes = response;
+                }
+                
+                this.phonemes = allPhonemes;
+                
+                // Load overall progress
+                await this.loadOverallProgress();
+                
+            } catch (error) {
+                console.error('Error loading phonemes:', error);
+                this.showError('Không thể tải danh sách âm. Vui lòng thử lại.');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async loadOverallProgress() {
+            try {
+                const response = await ApiClient.get('/pronunciation/progress/overall/');
+                if (response.success) {
+                    this.overallProgress = response.data;
+                }
+            } catch (error) {
+                console.error('Error loading overall progress:', error);
+            }
+        },
+        
+        filterByCategory(category) {
+            this.currentCategory = category;
+        },
+        
+        selectPhoneme(phoneme) {
+            this.selectedPhoneme = phoneme;
+            const modal = new bootstrap.Modal(document.getElementById('discoveryModal'));
+            modal.show();
+        },
+        
+        async handleDiscoverClick() {
+            if (!this.selectedPhoneme) return;
+            
+            const progress = this.selectedPhoneme.progress;
+            
+            // Route to different actions based on current stage
+            if (!progress || progress.current_stage === 'not_started') {
+                await this.discoverPhoneme();
+            } else if (progress.current_stage === 'discovered') {
+                // Go to learning page
+                window.location.href = `/pronunciation/learning/${this.selectedPhoneme.id}/`;
+            } else {
+                // Go to practice page based on stage
+                this.goToPracticePage(progress.current_stage);
+            }
+        },
+        
+        async discoverPhoneme() {
+            try {
+                this.discovering = true;
+                
+                const response = await ApiClient.post(
+                    `/pronunciation/phoneme/${this.selectedPhoneme.id}/discover/`
+                );
+                
+                if (response.success) {
+                    // Update phoneme progress
+                    this.selectedPhoneme.progress = response.data;
+                    
+                    // Refresh overall progress
+                    await this.loadOverallProgress();
+                    
+                    // Show success message
+                    this.showSuccess(response.message || 'Đã khám phá âm thành công!');
+                    
+                    // Close modal and redirect to learning page
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('discoveryModal')).hide();
+                        window.location.href = `/pronunciation/learning/${this.selectedPhoneme.id}/`;
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Error discovering phoneme:', error);
+                this.showError('Không thể đánh dấu khám phá. Vui lòng thử lại.');
+            } finally {
+                this.discovering = false;
+            }
+        },
+        
+        goToPracticePage(stage) {
+            const routes = {
+                'learning': `/pronunciation/learning/${this.selectedPhoneme.id}/`,
+                'discriminating': `/pronunciation/discrimination/${this.selectedPhoneme.id}/`,
+                'producing': `/pronunciation/production/${this.selectedPhoneme.id}/`,
+                'mastered': `/pronunciation/learning/${this.selectedPhoneme.id}/`
+            };
+            
+            window.location.href = routes[stage] || routes.learning;
+        },
+        
+        getStageDisplayName(stage) {
+            const names = {
+                'not_started': 'Chưa bắt đầu',
+                'discovered': 'Đã khám phá',
+                'learning': 'Đang học lý thuyết',
+                'discriminating': 'Đang luyện phân biệt',
+                'producing': 'Đang luyện phát âm',
+                'mastered': 'Đã thành thạo'
+            };
+            return names[stage] || stage;
+        },
+        
+        getNextActionText(progress) {
+            const actions = {
+                'discovered': 'Bắt đầu học lý thuyết về cách phát âm này.',
+                'learning': 'Tiếp tục học lý thuyết, sau đó luyện phân biệt âm.',
+                'discriminating': 'Luyện phân biệt âm này với các âm tương tự.',
+                'producing': 'Luyện phát âm bằng cách ghi âm và so sánh.',
+                'mastered': 'Bạn đã thành thạo âm này! Có thể ôn tập lại.'
+            };
+            if (!progress || !progress.current_stage) {
+                return 'Nhấp vào âm để bắt đầu khám phá.';
+            }
+            return actions[progress.current_stage] || 'Tiếp tục học.';
+        },
+        
+        getActionIcon(progress) {
+            if (!progress || progress.current_stage === 'not_started') {
+                return 'fa-compass me-2';
+            }
+            const icons = {
+                'discovered': 'fa-book-open me-2',
+                'learning': 'fa-play me-2',
+                'discriminating': 'fa-headphones me-2',
+                'producing': 'fa-microphone me-2',
+                'mastered': 'fa-redo me-2'
+            };
+            return icons[progress.current_stage] || 'fa-arrow-right me-2';
+        },
+        
+        getActionButtonText(progress) {
+            if (!progress || progress.current_stage === 'not_started') {
+                return 'Khám phá ngay';
+            }
+            const texts = {
+                'discovered': 'Bắt đầu học',
+                'learning': 'Tiếp tục học',
+                'discriminating': 'Luyện phân biệt',
+                'producing': 'Luyện phát âm',
+                'mastered': 'Ôn tập lại'
+            };
+            return texts[progress.current_stage] || 'Tiếp tục';
+        },
+        
+        // Helper methods for alerts
+        showSuccess(message) {
+            this.showAlert('success', message);
+        },
+        
+        showError(message) {
+            this.showAlert('error', message);
+        },
+        
+        showAlert(type, message) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    },
+    mounted() {
+        // Check authentication
+        if (!Auth.isAuthenticated()) {
+            window.location.href = '/login/?next=' + window.location.pathname;
+            return;
+        }
+        
+            // Load data
+            this.loadPhonemes();
+        }
+    }).mount('#discoveryApp');
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeDiscoveryApp);
+} else {
+    initializeDiscoveryApp();
+}
+</script>
+{% endblock %}

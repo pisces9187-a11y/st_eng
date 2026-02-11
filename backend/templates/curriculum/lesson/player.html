@@ -1,0 +1,82 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}{% if lesson %}{{ lesson.title }}{% else %}Bài học{% endif %} - English Learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    {% if lesson %}
+    <div class="row">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'curriculum:lesson-library' %}">Thư viện</a></li>
+                    {% if lesson.unit %}
+                    <li class="breadcrumb-item"><a href="#">{{ lesson.unit.course.title }}</a></li>
+                    <li class="breadcrumb-item"><a href="#">{{ lesson.unit.title }}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active">{{ lesson.title }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="h2 fw-bold text-secondary mb-3">{{ lesson.title }}</h1>
+            
+            {% if lesson.description %}
+            <p class="lead text-muted mb-4">{{ lesson.description }}</p>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-body">
+                    {% if lesson.content %}
+                    <div class="lesson-content">
+                        {{ lesson.content|safe }}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Nội dung bài học đang được cập nhật.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 100px;">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-info-circle me-2"></i> Thông tin bài học
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        {% if lesson.unit %}
+                        <li class="mb-2">
+                            <strong>Khóa học:</strong> {{ lesson.unit.course.title }}
+                        </li>
+                        <li class="mb-2">
+                            <strong>Chương:</strong> {{ lesson.unit.title }}
+                        </li>
+                        {% endif %}
+                        <li class="mb-2">
+                            <strong>Thời lượng:</strong> {{ lesson.estimated_minutes|default:"15" }} phút
+                        </li>
+                        <li>
+                            <strong>Độ khó:</strong> 
+                            <span class="badge bg-primary">{{ lesson.get_difficulty_display|default:"Dễ" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+        <h3>Không tìm thấy bài học</h3>
+        <p class="text-muted">Bài học bạn yêu cầu không tồn tại hoặc chưa được xuất bản.</p>
+        <a href="{% url 'curriculum:lesson-library' %}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-2"></i> Quay lại thư viện
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

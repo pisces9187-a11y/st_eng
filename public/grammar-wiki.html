@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Wiki - Thư viện ngữ pháp</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        .grammar-sidebar .list-group-item {
+            transition: all 0.2s ease;
+        }
+        
+        .grammar-sidebar .list-group-item:hover {
+            background-color: #F9FAFC;
+            transform: translateX(5px);
+        }
+        
+        .grammar-content {
+            min-height: 500px;
+        }
+        
+        .code-block {
+            background: #F2F4F8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--bs-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #2C3E50;
+        }
+        
+        .example-item {
+            padding: 12px;
+            border-left: 3px solid #27AE60;
+            background: rgba(39, 174, 96, 0.05);
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar (Same as other pages) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/images/logo-white.svg" alt="Logo" class="sidebar-logo">
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Tổng quan</span>
+                </a>
+                
+                <a href="courses.html" class="nav-item">
+                    <span class="nav-icon">📚</span>
+                    <span>Khóa học của tôi</span>
+                </a>
+                
+                <a href="flashcard.html" class="nav-item">
+                    <span class="nav-icon">⚡</span>
+                    <span>Ôn tập Flashcard</span>
+                </a>
+                
+                <a href="grammar-wiki.html" class="nav-item active">
+                    <span class="nav-icon">📖</span>
+                    <span>Thư viện Ngữ pháp</span>
+                </a>
+                
+                <a href="profile.html" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container py-5">
+                <!-- Header with Search -->
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold text-secondary mb-3">
+                        <i class="fas fa-book-open me-2"></i>Tra cứu ngữ pháp thần tốc
+                    </h2>
+                    <div class="input-group input-group-lg shadow-sm mx-auto" style="max-width: 700px;">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input 
+                            type="text" 
+                            class="form-control border-start-0" 
+                            placeholder="VD: Hiện tại hoàn thành, Mệnh đề quan hệ..."
+                            v-model="searchQuery"
+                            @input="filterTopics"
+                        >
+                        <button class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Left Sidebar - Categories -->
+                    <div class="col-lg-3 col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm grammar-sidebar">
+                            <div class="card-header bg-secondary text-white">
+                                <i class="fas fa-folder-open me-2"></i>Danh mục
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <a 
+                                    v-for="(category, index) in categories" 
+                                    :key="index"
+                                    href="#" 
+                                    class="list-group-item list-group-item-action"
+                                    :class="{'active bg-secondary border-secondary': activeCategory === category.id}"
+                                    @click.prevent="selectCategory(category.id)"
+                                >
+                                    <i :class="category.icon + ' me-2'"></i>{{ category.name }}
+                                    <span class="badge bg-light text-secondary float-end">{{ category.count }}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content - Grammar Details -->
+                    <div class="col-lg-9 col-md-8">
+                        <div class="card border-0 shadow-sm p-4 mb-4 grammar-content">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="text-primary fw-bold mb-0">
+                                    <i class="fas fa-bookmark me-2"></i>{{ currentTopic.title }}
+                                </h3>
+                                <span class="badge bg-warning text-dark px-3 py-2">
+                                    <i class="fas fa-layer-group me-1"></i>{{ currentTopic.level }}
+                                </span>
+                            </div>
+
+                            <p class="text-muted fs-6 lh-lg">{{ currentTopic.description }}</p>
+
+                            <!-- Formula -->
+                            <div class="alert alert-light border-start border-4 border-primary mb-4">
+                                <h5 class="fw-bold mb-3">
+                                    <i class="fas fa-code me-2"></i>Công thức:
+                                </h5>
+                                <div class="code-block">
+                                    {{ currentTopic.formula }}
+                                </div>
+                            </div>
+                            
+                            <!-- Examples -->
+                            <h5 class="fw-bold mt-4 mb-3">
+                                <i class="fas fa-lightbulb me-2"></i>Ví dụ minh họa:
+                            </h5>
+                            <div class="example-item" v-for="(example, index) in currentTopic.examples" :key="index">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <span v-html="example"></span>
+                            </div>
+
+                            <!-- Tips -->
+                            <div class="alert alert-info mt-4 d-flex">
+                                <i class="fas fa-star fs-4 me-3"></i>
+                                <div>
+                                    <strong>Mẹo nhớ lâu:</strong> {{ currentTopic.tip }}
+                                </div>
+                            </div>
+
+                            <!-- Related Topics -->
+                            <div class="mt-4">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-link me-2"></i>Chủ đề liên quan:
+                                </h6>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="#" class="badge bg-light text-primary text-decoration-none p-2" v-for="related in currentTopic.related" :key="related">
+                                        {{ related }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Practice Section -->
+                        <div class="card border-0 shadow-sm bg-primary bg-opacity-10 p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold text-primary mb-2">
+                                        <i class="fas fa-dumbbell me-2"></i>Thực hành ngay
+                                    </h5>
+                                    <p class="text-muted mb-0">Làm bài tập về {{ currentTopic.title }} để hiểu sâu hơn</p>
+                                </div>
+                                <button class="btn btn-primary shadow">
+                                    <i class="fas fa-play me-2"></i>Bắt đầu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    activeCategory: 'sentence-structure',
+                    categories: [
+                        { id: 'sentence-structure', name: 'Cấu trúc câu (A1-C1)', icon: 'fas fa-layer-group', count: 15 },
+                        { id: 'tenses', name: '12 Thì trong tiếng Anh', icon: 'fas fa-clock', count: 12 },
+                        { id: 'conditionals', name: 'Câu điều kiện & Giả định', icon: 'fas fa-random', count: 8 },
+                        { id: 'clauses', name: 'Mệnh đề quan hệ', icon: 'fas fa-link', count: 6 },
+                        { id: 'passive', name: 'Câu bị động', icon: 'fas fa-exchange-alt', count: 5 },
+                        { id: 'reported', name: 'Câu tường thuật', icon: 'fas fa-quote-left', count: 4 }
+                    ],
+                    topics: {
+                        'sentence-structure': {
+                            title: 'Câu Ghép (Compound Sentence)',
+                            level: 'Level A2',
+                            description: 'Là câu được tạo thành bởi ít nhất 2 mệnh đề độc lập (IC), nối với nhau bằng liên từ đẳng lập (FANBOYS). Hai mệnh đề này có thể tách ra thành 2 câu riêng mà vẫn có nghĩa hoàn chỉnh.',
+                            formula: '[IC], FANBOYS [IC].',
+                            examples: [
+                                'I like coffee, <strong class="text-danger">but</strong> my brother prefers tea.',
+                                'You can study hard, <strong class="text-danger">or</strong> you will fail the exam.',
+                                'She wanted to go shopping, <strong class="text-danger">so</strong> she saved money.'
+                            ],
+                            tip: 'Hãy nhớ từ khóa FANBOYS (For, And, Nor, But, Or, Yet, So). Luôn có dấu phẩy (,) trước FANBOYS.',
+                            related: ['Câu đơn (Simple)', 'Câu phức (Complex)', 'Mệnh đề độc lập IC']
+                        },
+                        'tenses': {
+                            title: 'Thì Quá khứ đơn (Past Simple)',
+                            level: 'Level A2',
+                            description: 'Dùng để diễn tả hành động đã xảy ra và kết thúc hoàn toàn trong quá khứ, thường có dấu hiệu thời gian cụ thể.',
+                            formula: 'S + V2/V-ed + O',
+                            examples: [
+                                'I <strong>decided</strong> to learn English last year.',
+                                'She <strong>went</strong> to Paris in 2019.',
+                                'They <strong>didn\'t study</strong> yesterday.'
+                            ],
+                            tip: 'Động từ bất quy tắc (go-went, make-made) cần học thuộc lòng. Động từ có quy tắc thêm -ed.',
+                            related: ['Hiện tại đơn', 'Quá khứ tiếp diễn', 'Hiện tại hoàn thành']
+                        }
+                    }
+                }
+            },
+            computed: {
+                currentTopic() {
+                    return this.topics[this.activeCategory] || this.topics['sentence-structure'];
+                }
+            },
+            methods: {
+                selectCategory(categoryId) {
+                    this.activeCategory = categoryId;
+                },
+                filterTopics() {
+                    // Search functionality placeholder
+                    console.log('Searching for:', this.searchQuery);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

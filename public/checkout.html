@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán - English Study A1-C1</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Checkout Styles */
+        .checkout-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #F9FAFC 0%, #E8EEF2 100%);
+        }
+        
+        .order-summary {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .qr-code-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .qr-code-placeholder {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #183B56 0%, #2C5F8D 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+        
+        .payment-method-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .payment-method-card:hover {
+            border-color: var(--bs-primary);
+            transform: translateY(-2px);
+        }
+        
+        .payment-method-card.active {
+            border-color: var(--bs-primary);
+            background-color: rgba(244, 124, 38, 0.05);
+        }
+        
+        .countdown-timer {
+            font-size: 1.5rem;
+            color: var(--bs-danger);
+            font-weight: bold;
+        }
+        
+        /* Security badges */
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: var(--bs-success);
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="checkout-container">
+        <!-- Header -->
+        <nav class="navbar navbar-light bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-primary" href="index.html">
+                    <i class="fas fa-graduation-cap me-2"></i>English Study
+                </a>
+                <div class="security-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Thanh toán bảo mật</span>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container py-5">
+            <div class="row g-4">
+                <!-- Left Column: Payment Methods -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h4 class="fw-bold text-secondary mb-4">
+                                <i class="fas fa-credit-card me-2"></i>Chọn phương thức thanh toán
+                            </h4>
+                            
+                            <!-- Payment Method Tabs -->
+                            <ul class="nav nav-pills mb-4" role="tablist">
+                                <li class="nav-item me-2" role="presentation">
+                                    <button class="nav-link active" id="qr-tab" data-bs-toggle="pill" data-bs-target="#qr" type="button">
+                                        <i class="fas fa-qrcode me-2"></i>QR Code
+                                    </button>
+                                </li>
+                                <li class="nav-item me-2" role="presentation">
+                                    <button class="nav-link" id="momo-tab" data-bs-toggle="pill" data-bs-target="#momo" type="button">
+                                        <i class="fas fa-wallet me-2"></i>Ví Momo
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="card-tab" data-bs-toggle="pill" data-bs-target="#card" type="button">
+                                        <i class="fas fa-credit-card me-2"></i>Thẻ quốc tế
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Tab Content -->
+                            <div class="tab-content">
+                                <!-- QR Code Tab -->
+                                <div class="tab-pane fade show active" id="qr" role="tabpanel">
+                                    <div class="qr-code-container">
+                                        <div class="alert alert-info mb-4">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Quét mã QR bằng app ngân hàng để thanh toán
+                                        </div>
+                                        
+                                        <div class="qr-code-placeholder mb-3">
+                                            <i class="fas fa-qrcode"></i>
+                                        </div>
+                                        
+                                        <h5 class="fw-bold mb-2">{{ orderAmount.toLocaleString('vi-VN') }}đ</h5>
+                                        <p class="text-muted small mb-3">Nội dung: <strong>{{ transferContent }}</strong></p>
+                                        
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-clock me-2"></i>
+                                            Mã QR hết hạn sau: <span class="countdown-timer">{{ formatTime(countdown) }}</span>
+                                        </div>
+                                        
+                                        <div class="mt-4">
+                                            <p class="fw-bold mb-2">Thông tin chuyển khoản thủ công:</p>
+                                            <div class="text-start bg-light p-3 rounded">
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Ngân hàng:</small>
+                                                    <strong class="d-block">Vietcombank</strong>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Số tài khoản:</small>
+                                                    <strong class="d-block">1234567890</strong>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <small class="text-muted">Chủ tài khoản:</small>
+                                                    <strong class="d-block">CONG TY ENGLISH STUDY</strong>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted">Nội dung:</small>
+                                                    <strong class="d-block text-primary">{{ transferContent }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Momo Tab -->
+                                <div class="tab-pane fade" id="momo" role="tabpanel">
+                                    <div class="text-center py-4">
+                                        <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="Momo" style="width: 120px;" class="mb-3">
+                                        <h5 class="fw-bold mb-3">Thanh toán qua Ví Momo</h5>
+                                        
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-mobile-alt me-2"></i>
+                                            Bạn sẽ được chuyển đến ứng dụng Momo để hoàn tất thanh toán
+                                        </div>
+                                        
+                                        <button class="btn btn-primary btn-lg rounded-pill px-5" @click="payWithMomo">
+                                            <i class="fas fa-wallet me-2"></i>Thanh toán {{ orderAmount.toLocaleString('vi-VN') }}đ
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Credit Card Tab -->
+                                <div class="tab-pane fade" id="card" role="tabpanel">
+                                    <form @submit.prevent="payWithCard">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Số thẻ</label>
+                                            <input type="text" class="form-control" placeholder="1234 5678 9012 3456" v-model="cardNumber" maxlength="19">
+                                        </div>
+                                        
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Ngày hết hạn</label>
+                                                <input type="text" class="form-control" placeholder="MM/YY" v-model="cardExpiry" maxlength="5">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">CVV</label>
+                                                <input type="text" class="form-control" placeholder="123" v-model="cardCVV" maxlength="3">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold">Tên trên thẻ</label>
+                                            <input type="text" class="form-control" placeholder="NGUYEN VAN A" v-model="cardName">
+                                        </div>
+                                        
+                                        <div class="d-flex gap-3 mb-3">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style="height: 30px;">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height: 30px;">
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary btn-lg rounded-pill w-100">
+                                            <i class="fas fa-lock me-2"></i>Thanh toán {{ orderAmount.toLocaleString('vi-VN') }}đ
+                                        </button>
+                                        
+                                        <p class="text-center text-muted small mt-3">
+                                            <i class="fas fa-shield-alt me-1"></i>Thanh toán được mã hóa bởi Stripe
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Security Info -->
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <div class="security-badge">
+                            <i class="fas fa-lock"></i>
+                            <span>SSL Encryption</span>
+                        </div>
+                        <div class="security-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>PCI DSS Compliant</span>
+                        </div>
+                        <div class="security-badge">
+                            <i class="fas fa-undo"></i>
+                            <span>Hoàn tiền 100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm order-summary">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-secondary mb-4">
+                                <i class="fas fa-shopping-cart me-2"></i>Đơn hàng của bạn
+                            </h5>
+                            
+                            <!-- Selected Plan -->
+                            <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white rounded p-3">
+                                        <i class="fas fa-graduation-cap fa-2x"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="fw-bold mb-1">{{ planDetails.name }}</h6>
+                                    <p class="text-muted small mb-0">{{ planDetails.duration }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Breakdown -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Giá gốc:</span>
+                                    <span class="text-muted text-decoration-line-through">{{ planDetails.originalPrice.toLocaleString('vi-VN') }}đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-success">Giảm giá (50%):</span>
+                                    <span class="text-success">-{{ planDetails.discount.toLocaleString('vi-VN') }}đ</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold fs-5">Tổng cộng:</span>
+                                    <span class="fw-bold fs-4 text-primary">{{ orderAmount.toLocaleString('vi-VN') }}đ</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Promo Code -->
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">Mã giảm giá</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Nhập mã..." v-model="promoCode">
+                                    <button class="btn btn-outline-secondary" type="button" @click="applyPromo">
+                                        Áp dụng
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Benefits List -->
+                            <div class="alert alert-success">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-gift me-2"></i>Ưu đãi đặc biệt
+                                </h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><i class="fas fa-check me-2"></i>Hoàn tiền 100% trong 7 ngày</li>
+                                    <li><i class="fas fa-check me-2"></i>Truy cập trọn đời vào khóa học</li>
+                                    <li><i class="fas fa-check me-2"></i>Cập nhật nội dung miễn phí</li>
+                                    <li><i class="fas fa-check me-2"></i>Chứng chỉ hoàn thành</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Contact Support -->
+                            <div class="text-center">
+                                <p class="text-muted small mb-2">Cần hỗ trợ?</p>
+                                <a href="mailto:support@englishstudy.com" class="text-primary">
+                                    <i class="fas fa-envelope me-1"></i>support@englishstudy.com
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    selectedPlan: 'pro',
+                    countdown: 600, // 10 minutes in seconds
+                    orderAmount: 1200000,
+                    transferContent: 'ENGLISH2024',
+                    promoCode: '',
+                    cardNumber: '',
+                    cardExpiry: '',
+                    cardCVV: '',
+                    cardName: '',
+                    planDetails: {
+                        name: 'Pro Mastery',
+                        duration: 'Trọn gói 1 năm',
+                        originalPrice: 2400000,
+                        discount: 1200000
+                    }
+                };
+            },
+            methods: {
+                formatTime(seconds) {
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return `${mins}:${secs.toString().padStart(2, '0')}`;
+                },
+                startCountdown() {
+                    setInterval(() => {
+                        if (this.countdown > 0) {
+                            this.countdown--;
+                        } else {
+                            // Refresh QR code
+                            this.countdown = 600;
+                        }
+                    }, 1000);
+                },
+                applyPromo() {
+                    if (this.promoCode === 'SAVE10') {
+                        alert('Mã giảm giá đã được áp dụng! Bạn được giảm thêm 10%');
+                        this.orderAmount = Math.floor(this.orderAmount * 0.9);
+                    } else {
+                        alert('Mã giảm giá không hợp lệ');
+                    }
+                },
+                payWithMomo() {
+                    alert('Đang chuyển hướng đến Momo...');
+                    // Integrate Momo payment gateway here
+                },
+                payWithCard() {
+                    if (!this.cardNumber || !this.cardExpiry || !this.cardCVV || !this.cardName) {
+                        alert('Vui lòng điền đầy đủ thông tin thẻ');
+                        return;
+                    }
+                    alert('Đang xử lý thanh toán...');
+                    // Integrate Stripe payment here
+                }
+            },
+            mounted() {
+                // Get plan from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const plan = urlParams.get('plan') || localStorage.getItem('selectedPlan') || 'pro';
+                this.selectedPlan = plan;
+                
+                // Update plan details
+                if (plan === 'lifetime') {
+                    this.planDetails = {
+                        name: 'Lifetime VIP',
+                        duration: 'Trọn đời',
+                        originalPrice: 2900000,
+                        discount: 0
+                    };
+                    this.orderAmount = 2900000;
+                }
+                
+                // Generate transfer content
+                this.transferContent = `ENGLISH${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+                
+                // Start countdown timer
+                this.startCountdown();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

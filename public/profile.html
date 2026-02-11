@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân - Hệ thống học Tiếng Anh</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/profile.css">
+    <link rel="stylesheet" href="../assets/css/theme.css">
+</head>
+<body>
+    <div id="app">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/logo-white.svg" alt="Logo" class="sidebar-logo">
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-icon">🏠</span>
+                <span>Tổng quan</span>
+            </a>
+            
+            <a href="lesson-library.html" class="nav-item">
+                <span class="nav-icon">📚</span>
+                <span>Khóa học của tôi</span>
+            </a>
+            
+            <a href="flashcard.html" class="nav-item">
+                <span class="nav-icon">⚡</span>
+                <span>Ôn tập Flashcard</span>
+            </a>
+            
+            <a href="profile.html" class="nav-item active">
+                <span class="nav-icon">👤</span>
+                <span>Hồ sơ cá nhân</span>
+            </a>
+            
+            <a href="notifications.html" class="nav-item">
+                <span class="nav-icon">🔔</span>
+                <span>Thông báo</span>
+            </a>
+        </nav>
+        
+        <!-- User Info & Logout at bottom -->
+        <div class="sidebar-footer" style="margin-top: auto; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="user-info" style="display: flex; align-items: center; margin-bottom: 1rem; color: white;">
+                <img :src="userAvatar" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; object-fit: cover;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">{{ userName }}</div>
+                    <div style="font-size: 12px; opacity: 0.7;">{{ userEmail }}</div>
+                </div>
+            </div>
+            <button @click="logout" class="btn btn-outline-light btn-sm w-100">
+                <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+            </button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Hồ sơ cá nhân</h1>
+        
+        <!-- Loading indicator -->
+        <div v-if="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+        </div>
+        
+        <div v-else>
+        <!-- Profile Header Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <!-- Avatar Section -->
+                <div class="avatar-container">
+                    <img :src="userAvatar" alt="Avatar" class="avatar" id="avatarImage">
+                    <button class="avatar-edit-btn" type="button" @click="$refs.avatarInput.click()">
+                        <span>📷</span>
+                    </button>
+                    <input type="file" ref="avatarInput" accept="image/*" style="display: none;" @change="handleAvatarChange">
+                </div>
+                
+                <!-- Info Section -->
+                <div class="profile-info">
+                    <h2 class="profile-name">{{ fullName }}</h2>
+                    
+                    <form class="profile-form" @submit.prevent="saveProfile">
+                        <div class="form-group">
+                            <label for="firstName">Họ</label>
+                            <input 
+                                type="text" 
+                                id="firstName"
+                                v-model="profile.first_name"
+                                class="form-input" 
+                                placeholder="Nhập họ của bạn"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastName">Tên</label>
+                            <input 
+                                type="text" 
+                                id="lastName"
+                                v-model="profile.last_name"
+                                class="form-input" 
+                                placeholder="Nhập tên của bạn"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bio">Giới thiệu</label>
+                            <textarea 
+                                id="bio" 
+                                v-model="profileDetail.bio"
+                                class="form-textarea" 
+                                rows="3"
+                                placeholder="Ví dụ: Mục tiêu IELTS 7.0 trong năm nay"
+                            ></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-save" :disabled="isSaving">
+                            <span v-if="isSaving">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...
+                            </span>
+                            <span v-else>Lưu thay đổi</span>
+                        </button>
+                        
+                        <div v-if="saveMessage" :class="['alert', saveSuccess ? 'alert-success' : 'alert-danger', 'mt-3']">
+                            {{ saveMessage }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gamification Stats -->
+        <div class="stats-container">
+            <h3 class="section-title">Thống kê học tập</h3>
+            
+            <div class="stats-grid">
+                <!-- Level Card -->
+                <div class="stat-card stat-level">
+                    <div class="stat-icon">🎓</div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ currentLevel }}</div>
+                        <div class="stat-label">Trình độ hiện tại</div>
+                    </div>
+                </div>
+                
+                <!-- Streak Card -->
+                <div class="stat-card stat-streak">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ streakDays }} Ngày</div>
+                        <div class="stat-label">Học liên tiếp</div>
+                    </div>
+                </div>
+                
+                <!-- XP Card -->
+                <div class="stat-card stat-xp">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ xpPoints.toLocaleString() }} XP</div>
+                        <div class="stat-label">Tổng điểm</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Settings -->
+        <div class="settings-card">
+            <h3 class="section-title">Thông tin tài khoản</h3>
+            
+            <!-- Email (Read-only) -->
+            <div class="form-group">
+                <label>Email</label>
+                <input 
+                    type="email" 
+                    class="form-input" 
+                    :value="userEmail" 
+                    disabled
+                >
+                <small class="form-hint">Email không thể thay đổi</small>
+            </div>
+            
+            <!-- Password Reset -->
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <button class="btn-secondary" type="button" @click="requestPasswordReset">
+                    Gửi email đặt lại mật khẩu
+                </button>
+            </div>
+            
+            <!-- Danger Zone -->
+            <div class="form-group mt-4">
+                <label class="text-danger">Vùng nguy hiểm</label>
+                <button class="btn btn-outline-danger" type="button" @click="logout">
+                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                </button>
+            </div>
+        </div>
+        </div>
+    </main>
+    </div>
+                    <!-- Google -->
+                    <div class="social-link-item">
+                        <div class="social-link-info">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19.8 10.2273C19.8 9.52045 19.7364 8.83636 19.6182 8.18182H10.2V12.05H15.6382C15.4 13.3 14.6727 14.3591 13.5864 15.0682V17.5773H16.8182C18.7091 15.8364 19.8 13.2727 19.8 10.2273Z" fill="#4285F4"/>
+                                <path d="M10.2 20C12.9 20 15.1727 19.1045 16.8182 17.5773L13.5864 15.0682C12.6864 15.6682 11.5455 16.0227 10.2 16.0227C7.59545 16.0227 5.38182 14.2636 4.58636 11.9H1.24545V14.4909C2.88182 17.7591 6.25455 20 10.2 20Z" fill="#34A853"/>
+                                <path d="M4.58636 11.9C4.38636 11.3 4.27273 10.6591 4.27273 10C4.27273 9.34091 4.38636 8.7 4.58636 8.1V5.50909H1.24545C0.554545 6.88636 0.159091 8.4 0.159091 10C0.159091 11.6 0.554545 13.1136 1.24545 14.4909L4.58636 11.9Z" fill="#FBBC05"/>
+                                <path d="M10.2 3.97727C11.6727 3.97727 13.0045 4.48182 14.0364 5.47273L16.9091 2.6C15.1682 0.954545 12.8955 0 10.2 0C6.25455 0 2.88182 2.24091 1.24545 5.50909L4.58636 8.1C5.38182 5.73636 7.59545 3.97727 10.2 3.97727Z" fill="#EA4335"/>
+                            </svg>
+                            <span>Google</span>
+                        </div>
+                        <span class="badge badge-success">Đã liên kết</span>
+                    </div>
+                    
+                    <!-- Facebook -->
+                    <div class="social-link-item">
+                        <div class="social-link-info">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 10C20 4.477 15.523 0 10 0S0 4.477 0 10c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V10h2.54V7.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V10h2.773l-.443 2.89h-2.33v6.988C16.343 19.128 20 14.991 20 10z" fill="#1877F2"/>
+                            </svg>
+                            <span>Facebook</span>
+                        </div>
+                        <span class="badge badge-muted">Chưa liên kết</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Backend Integration -->
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/django-api.js"></script>
+    <script src="../assets/js/auth-guard.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    isLoading: true,
+                    isSaving: false,
+                    saveMessage: '',
+                    saveSuccess: false,
+                    userName: 'User',
+                    userEmail: '',
+                    userAvatar: '../assets/images/avatar-default.jpg',
+                    currentLevel: 'A1',
+                    xpPoints: 0,
+                    streakDays: 0,
+                    profile: {
+                        first_name: '',
+                        last_name: '',
+                        username: ''
+                    },
+                    profileDetail: {
+                        bio: '',
+                        learning_goals: [],
+                        country: 'Vietnam',
+                        city: ''
+                    }
+                }
+            },
+            computed: {
+                fullName() {
+                    if (this.profile.first_name && this.profile.last_name) {
+                        return `${this.profile.first_name} ${this.profile.last_name}`;
+                    }
+                    if (this.profile.first_name) return this.profile.first_name;
+                    if (this.profile.username) return this.profile.username;
+                    return this.userEmail.split('@')[0];
+                }
+            },
+            async mounted() {
+                await this.initializeProfile();
+            },
+            methods: {
+                async initializeProfile() {
+                    try {
+                        // Check authentication
+                        if (!window.AuthGuard.requireAuth()) {
+                            return;
+                        }
+                        
+                        // Load user from storage first
+                        this.loadUserFromStorage();
+                        
+                        // Then fetch fresh data from API
+                        await this.loadUserProfile();
+                        
+                    } catch (error) {
+                        console.error('Profile init error:', error);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                loadUserFromStorage() {
+                    const user = window.AuthGuard.getUser();
+                    if (user) {
+                        this.updateUserDisplay(user);
+                    }
+                },
+                
+                async loadUserProfile() {
+                    try {
+                        if (window.djangoApi) {
+                            const response = await window.djangoApi.getProfile();
+                            if (response.success) {
+                                this.updateUserDisplay(response.data);
+                                // Update stored user data
+                                window.AuthGuard.updateUser(response.data);
+                            }
+                        }
+                    } catch (error) {
+                        console.log('Using cached user data');
+                    }
+                },
+                
+                updateUserDisplay(user) {
+                    // Basic info
+                    this.profile.first_name = user.first_name || '';
+                    this.profile.last_name = user.last_name || '';
+                    this.profile.username = user.username || '';
+                    this.userEmail = user.email || '';
+                    
+                    // Avatar
+                    if (user.avatar) {
+                        this.userAvatar = user.avatar;
+                    }
+                    
+                    // Stats
+                    this.currentLevel = user.current_level || 'A1';
+                    this.xpPoints = user.xp_points || 0;
+                    this.streakDays = user.streak_days || 0;
+                    
+                    // Profile details
+                    if (user.profile) {
+                        this.profileDetail.bio = user.profile.bio || '';
+                        this.profileDetail.learning_goals = user.profile.learning_goals || [];
+                        this.profileDetail.country = user.profile.country || 'Vietnam';
+                        this.profileDetail.city = user.profile.city || '';
+                    }
+                    
+                    // Update name display
+                    if (this.profile.first_name && this.profile.last_name) {
+                        this.userName = `${this.profile.first_name} ${this.profile.last_name}`;
+                    } else if (this.profile.first_name) {
+                        this.userName = this.profile.first_name;
+                    } else if (this.profile.username) {
+                        this.userName = this.profile.username;
+                    } else {
+                        this.userName = this.userEmail.split('@')[0];
+                    }
+                },
+                
+                async saveProfile() {
+                    this.isSaving = true;
+                    this.saveMessage = '';
+                    
+                    try {
+                        if (window.djangoApi) {
+                            // Update basic user info
+                            const userResponse = await window.djangoApi.updateProfile({
+                                first_name: this.profile.first_name,
+                                last_name: this.profile.last_name
+                            });
+                            
+                            if (userResponse.success) {
+                                // Update profile details
+                                const profileResponse = await window.djangoApi.patch('/users/me/profile/', {
+                                    bio: this.profileDetail.bio
+                                });
+                                
+                                this.saveSuccess = true;
+                                this.saveMessage = 'Lưu thành công!';
+                                
+                                // Update stored user data
+                                await this.loadUserProfile();
+                            } else {
+                                this.saveSuccess = false;
+                                this.saveMessage = userResponse.error || 'Có lỗi xảy ra';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Save profile error:', error);
+                        this.saveSuccess = false;
+                        this.saveMessage = 'Có lỗi xảy ra khi lưu';
+                    } finally {
+                        this.isSaving = false;
+                        // Clear message after 3 seconds
+                        setTimeout(() => {
+                            this.saveMessage = '';
+                        }, 3000);
+                    }
+                },
+                
+                handleAvatarChange(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.userAvatar = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                        // TODO: Upload to server
+                    }
+                },
+                
+                async requestPasswordReset() {
+                    try {
+                        if (window.djangoApi) {
+                            const response = await window.djangoApi.requestPasswordReset(this.userEmail);
+                            if (response.success) {
+                                alert('Email đặt lại mật khẩu đã được gửi!');
+                            } else {
+                                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                            }
+                        }
+                    } catch (error) {
+                        alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                    }
+                },
+                
+                logout() {
+                    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                        window.AuthGuard.logout();
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

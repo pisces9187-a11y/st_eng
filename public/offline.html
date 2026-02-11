@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đang offline - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --energetic-orange: #F47C26;
+            --navy-blue: #183B56;
+            --light-gray: #F9FAFC;
+        }
+        
+        body {
+            background: var(--light-gray);
+            font-family: 'Open Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .offline-container {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 500px;
+        }
+        
+        .offline-icon {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--navy-blue) 0%, #2C5F8D 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .offline-icon i {
+            font-size: 4rem;
+            color: white;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: var(--navy-blue);
+            margin-bottom: 16px;
+        }
+        
+        p {
+            color: #57606F;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        
+        .btn-retry {
+            background: var(--energetic-orange);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .btn-retry:hover {
+            background: #D35400;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 124, 38, 0.3);
+        }
+        
+        .offline-features {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid #E0E6ED;
+        }
+        
+        .offline-features h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--navy-blue);
+            margin-bottom: 24px;
+            font-size: 1.25rem;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            text-align: left;
+        }
+        
+        .feature-item {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .feature-item i {
+            color: var(--energetic-orange);
+            font-size: 1.25rem;
+            width: 24px;
+        }
+        
+        .feature-item span {
+            font-size: 0.9rem;
+            color: #2C3E50;
+        }
+        
+        .connection-status {
+            margin-top: 32px;
+            padding: 12px 24px;
+            background: #FFF4E5;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #D35400;
+            font-size: 0.9rem;
+        }
+        
+        .connection-status i {
+            animation: blink 1s ease-in-out infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .online-redirect {
+            display: none;
+            margin-top: 24px;
+            padding: 16px 24px;
+            background: #D4EDDA;
+            border-radius: 8px;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            <i class="fas fa-wifi-slash"></i>
+        </div>
+        
+        <h1>Bạn đang offline</h1>
+        <p>Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.</p>
+        
+        <button class="btn-retry" onclick="retryConnection()">
+            <i class="fas fa-redo me-2"></i>Thử lại
+        </button>
+        
+        <div class="connection-status">
+            <i class="fas fa-circle"></i>
+            <span>Đang chờ kết nối...</span>
+        </div>
+        
+        <div class="online-redirect" id="onlineMessage">
+            <i class="fas fa-check-circle me-2"></i>
+            Đã kết nối! Đang chuyển hướng...
+        </div>
+        
+        <div class="offline-features">
+            <h3><i class="fas fa-bookmark me-2"></i>Bạn vẫn có thể:</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Ôn tập Flashcard đã tải</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-book-reader"></i>
+                    <span>Xem bài học đã lưu</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-list"></i>
+                    <span>Tra cứu từ vựng offline</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Xem tiến độ học tập</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check online status
+        function checkOnlineStatus() {
+            if (navigator.onLine) {
+                document.getElementById('onlineMessage').style.display = 'block';
+                document.querySelector('.connection-status').style.display = 'none';
+                
+                // Redirect after showing message
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            }
+        }
+        
+        // Retry connection
+        function retryConnection() {
+            const btn = document.querySelector('.btn-retry');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang thử...';
+            btn.disabled = true;
+            
+            // Attempt to fetch a small resource
+            fetch('/manifest.json', { cache: 'no-store' })
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('onlineMessage').style.display = 'block';
+                        document.querySelector('.connection-status').style.display = 'none';
+                        setTimeout(() => {
+                            window.location.href = '/public/dashboard.html';
+                        }, 1500);
+                    } else {
+                        throw new Error('Not connected');
+                    }
+                })
+                .catch(() => {
+                    btn.innerHTML = '<i class="fas fa-redo me-2"></i>Thử lại';
+                    btn.disabled = false;
+                });
+        }
+        
+        // Listen for online event
+        window.addEventListener('online', checkOnlineStatus);
+        
+        // Initial check
+        checkOnlineStatus();
+        
+        // Periodic check every 5 seconds
+        setInterval(checkOnlineStatus, 5000);
+    </script>
+</body>
+</html>

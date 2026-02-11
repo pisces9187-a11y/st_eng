@@ -1,0 +1,1138 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Flashcard - {{ deck.name|default:"Study" }} - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Flashcard 3D Flip Animation */
+    .flashcard-container {
+        width: 100%;
+        max-width: 500px;
+        height: 350px;
+        perspective: 1000px;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .flashcard-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+    }
+    
+    .flashcard-inner.is-flipped {
+        transform: rotateY(180deg);
+    }
+    
+    .flashcard-front, .flashcard-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-bottom: 6px solid rgba(0,0,0,0.1) !important; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+    }
+    
+    .flashcard-back {
+        transform: rotateY(180deg);
+    }
+    
+    /* Bookmark button on card */
+    .bookmark-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .bookmark-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .bookmark-btn.bookmarked {
+        background: #F47C26;
+        color: white;
+    }
+    
+    /* Countdown circle */
+    .countdown-circle {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        z-index: 10;
+    }
+    
+    .countdown-circle svg {
+        transform: rotate(-90deg);
+    }
+    
+    .countdown-circle-bg {
+        fill: none;
+        stroke: #E0E6ED;
+        stroke-width: 4;
+    }
+    
+    .countdown-circle-progress {
+        fill: none;
+        stroke: #F47C26;
+        stroke-width: 4;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.1s linear;
+    }
+    
+    .countdown-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        font-weight: bold;
+        color: #F47C26;
+    }
+    
+    .timer-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F47C26 0%, #D35400 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+    }
+    
+    .progress-indicator {
+        height: 4px;
+        background: #E0E6ED;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-indicator-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #F47C26 0%, #D35400 100%);
+        transition: width 0.3s ease;
+    }
+    
+    /* Pulse animation for audio button */
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s infinite ease-in-out;
+    }
+    
+    /* Button hover effects */
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn:active {
+        transform: translateY(0);
+    }
+    
+    /* Keyboard shortcut hint */
+    .keyboard-hint {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: bold;
+    }
+    
+    .stat-badge-enhanced {
+        padding: 16px 20px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 140px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .bg-success-subtle { background-color: rgba(25, 135, 84, 0.15) !important; }
+    .bg-warning-subtle { background-color: rgba(255, 193, 7, 0.15) !important; }
+    .bg-danger-subtle { background-color: rgba(220, 53, 69, 0.15) !important; }
+    
+    .bg-orange { background-color: #F47C26 !important; }
+    
+    /* Control panel */
+    .control-panel {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .control-select {
+        border: 2px solid #E0E6ED;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    .control-select:focus {
+        border-color: #F47C26;
+        box-shadow: 0 0 0 0.2rem rgba(244, 124, 38, 0.25);
+    }
+    
+    .control-btn {
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: 2px solid #E0E6ED;
+        background: white;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .control-btn:hover {
+        border-color: #F47C26;
+        color: #F47C26;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(244, 124, 38, 0.15);
+    }
+    
+    .control-btn.active {
+        background: linear-gradient(135deg, #F47C26 0%, #D35400 100%);
+        border-color: #F47C26;
+        color: white;
+        box-shadow: 0 4px 12px rgba(244, 124, 38, 0.3);
+    }
+    
+    .control-btn.active:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(244, 124, 38, 0.4);
+    }
+    
+    /* Navigation buttons */
+    .nav-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid #E0E6ED;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .nav-btn:hover {
+        background: #F47C26;
+        border-color: #F47C26;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .nav-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    .nav-btn:disabled:hover {
+        background: white;
+        color: #6c757d;
+        transform: none;
+    }
+    
+
+    
+    /* Success/Error flash animation */
+    @keyframes flash-success {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: rgba(39, 174, 96, 0.2); }
+    }
+    
+    @keyframes flash-error {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: rgba(231, 76, 60, 0.2); }
+    }
+    
+    .flash-success {
+        animation: flash-success 0.5s;
+    }
+    
+    .flash-error {
+        animation: flash-error 0.5s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="app" class="min-vh-100 bg-light py-5">
+<div class="container">
+    <!-- Header with Timer & Progress -->
+    <div class="row align-items-center mb-3">
+        <div class="col-auto">
+            <div class="timer-circle">[[ timer ]]</div>
+        </div>
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">{{ deck.name|default:"Flashcard Study" }}</h5>
+                <span class="text-muted">Thẻ [[ currentCard + 1 ]] / [[ totalCards ]]</span>
+            </div>
+            <div class="progress-indicator">
+                <div class="progress-indicator-fill" :style="{ width: progress + '%' }"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="control-panel">
+                <div class="d-flex flex-wrap align-items-center justify-content-center gap-2">
+                    <!-- Study Mode -->
+                    <button 
+                        @click="toggleAutoPlay" 
+                        :class="['control-btn', { active: autoPlayEnabled }]"
+                        :title="autoPlayEnabled ? 'Tắt tự động' : 'Bật tự động'">
+                        <i :class="autoPlayEnabled ? 'fas fa-pause' : 'fas fa-play'"></i>
+                        <span class="d-none d-md-inline ms-2">[[ autoPlayEnabled ? 'Tự động' : 'Thủ công' ]]</span>
+                    </button>
+                    
+                    <!-- Speed Control -->
+                    <select v-model="autoPlaySpeed" class="form-select form-select-sm control-select" style="width: 110px;">
+                        <option value="2000">⚡ 2s</option>
+                        <option value="3000">🏃 3s</option>
+                        <option value="5000">🚶 5s</option>
+                        <option value="10000">🐢 10s</option>
+                    </select>
+                    
+                    <!-- Divider -->
+                    <div class="vr d-none d-md-block" style="height: 30px; opacity: 0.2;"></div>
+                    
+                    <!-- Shuffle -->
+                    <button 
+                        @click="shuffleCards" 
+                        class="control-btn"
+                        title="Xáo trộn thẻ">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    
+                    <!-- Bookmarked Only -->
+                    <button 
+                        @click="toggleBookmarkFilter"
+                        :class="['control-btn', { active: showBookmarkedOnly }]"
+                        title="Chỉ xem thẻ đã đánh dấu">
+                        <i class="fas fa-bookmark"></i>
+                        <span class="badge bg-orange rounded-pill ms-1" v-if="bookmarkedCards.length > 0">[[ bookmarkedCards.length ]]</span>
+                    </button>
+                    
+                    <!-- Divider -->
+                    <div class="vr d-none d-md-block" style="height: 30px; opacity: 0.2;"></div>
+                    
+                    <!-- Keyboard Shortcuts Info -->
+                    <button 
+                        @click="showShortcuts = !showShortcuts" 
+                        :class="['control-btn', { active: showShortcuts }]"
+                        title="Phím tắt">
+                        <i class="fas fa-keyboard"></i>
+                    </button>
+                </div>
+                
+                <!-- Keyboard Shortcuts Hint -->
+                <div v-if="showShortcuts" class="mt-2 p-2 bg-light rounded small">
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3"><kbd>Space</kbd> Lật thẻ</div>
+                        <div class="col-6 col-md-3"><kbd>←</kbd> Thẻ trước</div>
+                        <div class="col-6 col-md-3"><kbd>→</kbd> Thẻ sau</div>
+                        <div class="col-6 col-md-3"><kbd>A</kbd> Phát âm</div>
+                        <div class="col-6 col-md-3"><kbd>1</kbd> Quên rồi</div>
+                        <div class="col-6 col-md-3"><kbd>2</kbd> Hơi khó</div>
+                        <div class="col-6 col-md-3"><kbd>3</kbd> Đã nhớ</div>
+                        <div class="col-6 col-md-3"><kbd>B</kbd> Bookmark</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation & Flashcard -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="d-flex align-items-center gap-3">
+                <!-- Previous Button -->
+                <button 
+                    @click="previousCard" 
+                    :disabled="currentCard === 0"
+                    class="nav-btn"
+                    title="Thẻ trước (←)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                
+                <!-- Flashcard -->
+                <div class="flashcard-container mx-auto" @click="flipCard">
+                    <!-- Bookmark Button -->
+                    <button 
+                        @click.stop="toggleBookmark"
+                        :class="['bookmark-btn', { bookmarked: isCurrentCardBookmarked }]"
+                        title="Đánh dấu thẻ khó (B)">
+                        <i :class="isCurrentCardBookmarked ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+                    </button>
+                    
+                    <!-- Countdown Circle (when auto-play) -->
+                    <div v-if="autoPlayEnabled && countdown > 0" class="countdown-circle">
+                        <svg width="50" height="50">
+                            <circle class="countdown-circle-bg" cx="25" cy="25" r="20"></circle>
+                            <circle 
+                                class="countdown-circle-progress" 
+                                cx="25" 
+                                cy="25" 
+                                r="20"
+                                :stroke-dasharray="circumference"
+                                :stroke-dashoffset="countdownOffset"></circle>
+                        </svg>
+                        <div class="countdown-text">[[ countdown ]]</div>
+                    </div>
+                    
+                    <div class="flashcard-inner" :class="{ 'is-flipped': isFlipped }">
+                        <!-- Front (Question) -->
+                    <div class="flashcard-front card shadow-lg border-0 bg-white text-secondary rounded-4">
+                        <div class="text-center">
+                            <span class="badge bg-primary mb-3 px-3 py-2 text-uppercase" v-if="currentCardData.word_pos">
+                                [[ currentCardData.word_pos ]]
+                            </span>
+                            <h1 class="display-3 fw-bold mb-3">[[ currentCardData.front_text ]]</h1>
+                            <p class="text-muted fs-5 mb-3" v-if="currentCardData.word_ipa">
+                                [[ currentCardData.word_ipa ]]
+                            </p>
+                            <button 
+                                @click.stop="playAudio" 
+                                class="btn btn-link text-primary"
+                                :class="{ 'pulse-animation': !hasPlayedAudio }">
+                                <i class="fas fa-volume-up fs-2"></i>
+                            </button>
+                            <p class="text-muted mt-3 small">
+                                <i class="fas fa-hand-pointer me-2"></i>
+                                [[ autoPlayEnabled ? 'Tự động lật sau ' + (autoPlaySpeed / 1000) + 's' : 'Chạm vào thẻ để lật' ]]
+                            </p>
+                            <div class="keyboard-hint">SPACE</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Back (Answer) -->
+                    <div class="flashcard-back card shadow-lg border-0 bg-secondary text-white rounded-4">
+                            <div class="text-center w-100">
+                                <h3 class="fw-bold text-warning mb-3">[[ currentCardData.back_text ]]</h3>
+                                <p class="fst-italic opacity-75 fs-5" v-if="currentCardData.back_example">
+                                    "[[ currentCardData.back_example ]]"
+                                </p>
+                                <hr class="w-25 border-white opacity-50 my-3 mx-auto" v-if="currentCardData.back_note || currentCardData.word_ipa">
+                                <div v-if="currentCardData.back_note" class="text-start bg-white bg-opacity-10 p-3 rounded">
+                                    <small class="text-warning fw-bold">
+                                        <i class="fas fa-lightbulb me-2"></i>GHI CHÚ:
+                                    </small>
+                                    <p class="small mb-0 mt-2">[[ currentCardData.back_note ]]</p>
+                                </div>
+                                <div class="keyboard-hint">1 / 2 / 3</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Next Button -->
+                <button 
+                    @click="nextCardManual" 
+                    :disabled="currentCard >= totalCards - 1"
+                    class="nav-btn"
+                    title="Thẻ sau (→)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hint when not flipped -->
+    <div v-else class="row justify-content-center mb-4">
+        <div class="col-12 text-center text-muted small">
+            <i class="fas fa-hand-pointer me-2"></i>Chạm vào thẻ để lật và xem nghĩa
+        </div>
+    </div>
+
+    <!-- Rating Buttons -->
+    <div v-if="isFlipped" class="row justify-content-center mb-4">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <button @click="markCard(1)" class="btn btn-outline-danger btn-lg px-4 rounded-pill position-relative">
+                    <i class="fas fa-times me-2"></i>Quên rồi (1p)
+                    <div class="keyboard-hint">1</div>
+                </button>
+                <button @click="markCard(3)" class="btn btn-outline-warning btn-lg px-4 rounded-pill position-relative">
+                    <i class="fas fa-exclamation me-2"></i>Hơi khó (10p)
+                    <div class="keyboard-hint">2</div>
+                </button>
+                <button @click="markCard(5)" class="btn btn-success btn-lg px-5 rounded-pill shadow position-relative">
+                    <i class="fas fa-check me-2"></i>Đã nhớ (1 ngày)
+                    <div class="keyboard-hint">3</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Thống kê phiên học</h6>
+                        <div>
+                            <span class="badge bg-primary">[[ totalReviewed ]] / [[ totalCards ]] thẻ</span>
+                            <span class="badge bg-success ms-2">[[ accuracyPercent ]]% chính xác</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 justify-content-around flex-wrap">
+                        <div class="stat-badge-enhanced bg-success-subtle">
+                            <i class="fas fa-check-circle text-success fs-4"></i>
+                            <div>
+                                <div class="fs-3 fw-bold text-success">[[ stats.easy ]]</div>
+                                <small class="text-success">Đã nhớ</small>
+                            </div>
+                        </div>
+                        <div class="stat-badge-enhanced bg-warning-subtle">
+                            <i class="fas fa-exclamation-circle text-warning fs-4"></i>
+                            <div>
+                                <div class="fs-3 fw-bold text-warning">[[ stats.hard ]]</div>
+                                <small class="text-warning">Hơi khó</small>
+                            </div>
+                        </div>
+                        <div class="stat-badge-enhanced bg-danger-subtle">
+                            <i class="fas fa-times-circle text-danger fs-4"></i>
+                            <div>
+                                <div class="fs-3 fw-bold text-danger">[[ stats.again ]]</div>
+                                <small class="text-danger">Quên rồi</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'vocabulary_pages:deck-list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Đang tải flashcards...</p>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Vue.js 3 -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            loading: true,
+            isFlipped: false,
+            currentCard: 0,
+            totalCards: 0,
+            timer: '15:00',
+            timerSeconds: 900,
+            cards: [],
+            originalCards: [],  // Keep original order for shuffle
+            stats: {
+                easy: 0,
+                hard: 0,
+                again: 0
+            },
+            deckId: {{ deck.id|default:"null" }},
+            sessionId: null,
+            progressMap: {},
+            
+            // Auto-play features
+            autoPlayEnabled: false,
+            autoPlaySpeed: 3000,  // Default 3 seconds
+            autoFlipTimer: null,
+            autoAdvanceTimer: null,
+            countdown: 0,
+            countdownInterval: null,
+            circumference: 2 * Math.PI * 20,  // For countdown circle
+            
+            // Bookmark feature
+            bookmarkedCards: [],
+            showBookmarkedOnly: false,
+            
+            // Keyboard shortcuts info
+            showShortcuts: false,
+            
+            // Audio tracking
+            hasPlayedAudio: false,
+            
+            // Sound effects
+            soundEnabled: true
+        }
+    },
+    computed: {
+        progress() {
+            if (this.totalCards === 0) return 0;
+            return ((this.currentCard + 1) / this.totalCards) * 100;
+        },
+        currentCardData() {
+            return this.cards[this.currentCard] || {};
+        },
+        isCurrentCardBookmarked() {
+            return this.bookmarkedCards.includes(this.currentCardData.id);
+        },
+        countdownOffset() {
+            const progress = (this.countdown / (this.autoPlaySpeed / 1000));
+            return this.circumference * (1 - progress);
+        },
+        totalReviewed() {
+            return this.stats.easy + this.stats.hard + this.stats.again;
+        },
+        accuracyPercent() {
+            if (this.totalReviewed === 0) return 0;
+            return Math.round((this.stats.easy / this.totalReviewed) * 100);
+        }
+    },
+    watch: {
+        // Watch for card changes to trigger auto-play
+        currentCard(newVal, oldVal) {
+            this.hasPlayedAudio = false;
+            this.clearAutoPlayTimers();
+            
+            if (this.autoPlayEnabled && newVal !== oldVal) {
+                this.startAutoFlip();
+            }
+        },
+        
+        // Watch for flip state to trigger auto-advance
+        isFlipped(newVal) {
+            if (newVal && this.autoPlayEnabled) {
+                // Auto-play pronunciation when card flips
+                this.playAudio();
+                this.startAutoAdvance();
+            }
+        },
+        
+        // Update countdown when autoPlayEnabled changes
+        autoPlayEnabled(newVal) {
+            this.clearAutoPlayTimers();
+            if (newVal) {
+                this.startAutoFlip();
+            }
+        }
+    },
+    methods: {
+        async loadCards() {
+            try {
+                this.loading = true;
+                
+                const token = this.getAuthToken();
+                
+                if (!token) {
+                    alert('Vui lòng đăng nhập để tiếp tục');
+                    window.location.href = '{% url "users:login" %}';
+                    return;
+                }
+                
+                const url = this.deckId 
+                    ? `/api/v1/vocabulary/decks/${this.deckId}/study/`
+                    : '/api/v1/vocabulary/decks/1/study/';
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load cards');
+                }
+                
+                const data = await response.json();
+                this.cards = data.cards || [];
+                this.originalCards = [...this.cards];  // Keep copy
+                this.totalCards = this.cards.length;
+                
+                if (this.totalCards === 0) {
+                    alert('Không có thẻ nào cần ôn tập. Vui lòng thử lại sau!');
+                    window.location.href = '{% url "vocabulary_pages:deck-list" %}';
+                    return;
+                }
+                
+                await this.startSession();
+                
+                // Load bookmarks from localStorage
+                this.loadBookmarks();
+                
+            } catch (error) {
+                console.error('Error loading cards:', error);
+                alert('Lỗi khi tải flashcards. Vui lòng thử lại.');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async startSession() {
+            try {
+                const token = this.getAuthToken();
+                const response = await fetch('/api/v1/vocabulary/sessions/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        deck: this.deckId || 1
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.sessionId = data.id;
+                }
+            } catch (error) {
+                console.error('Error starting session:', error);
+            }
+        },
+        
+        flipCard() {
+            if (!this.autoPlayEnabled) {
+                this.isFlipped = !this.isFlipped;
+                if (this.isFlipped) {
+                    this.playAudio();
+                }
+            }
+        },
+        
+        async markCard(quality) {
+            const qualityMap = {
+                1: 1,
+                3: 3,
+                5: 5
+            };
+            
+            const sm2Quality = qualityMap[quality];
+            
+            // Update stats
+            if (quality === 5) {
+                this.stats.easy++;
+                this.playSound('success');
+            } else if (quality === 3) {
+                this.stats.hard++;
+                this.playSound('neutral');
+            } else {
+                this.stats.again++;
+                this.playSound('error');
+            }
+            
+            // Visual feedback
+            this.flashCard(quality === 5 ? 'success' : 'error');
+            
+            // Submit review to API
+            try {
+                const token = this.getAuthToken();
+                const flashcardId = this.currentCardData.id;
+                
+                let progressId = this.progressMap[flashcardId];
+                
+                if (!progressId) {
+                    const createResponse = await fetch('/api/v1/vocabulary/progress/', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            flashcard: flashcardId,
+                            next_review_date: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (createResponse.ok) {
+                        const progressData = await createResponse.json();
+                        progressId = progressData.id;
+                        this.progressMap[flashcardId] = progressId;
+                    }
+                }
+                
+                if (progressId) {
+                    await fetch(`/api/v1/vocabulary/progress/${progressId}/review/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ quality: sm2Quality })
+                    });
+                }
+            } catch (error) {
+                console.error('Error submitting review:', error);
+            }
+            
+            // Move to next card (with delay for visual feedback)
+            setTimeout(() => {
+                this.nextCard();
+            }, 300);
+        },
+        
+        nextCard() {
+            if (this.currentCard < this.totalCards - 1) {
+                this.currentCard++;
+                this.isFlipped = false;
+            } else {
+                this.finishReview();
+            }
+        },
+        
+        nextCardManual() {
+            this.clearAutoPlayTimers();
+            this.nextCard();
+        },
+        
+        previousCard() {
+            if (this.currentCard > 0) {
+                this.clearAutoPlayTimers();
+                this.currentCard--;
+                this.isFlipped = false;
+            }
+        },
+        
+        async finishReview() {
+            this.clearAutoPlayTimers();
+            
+            if (this.sessionId) {
+                try {
+                    const token = this.getAuthToken();
+                    await fetch(`/api/v1/vocabulary/sessions/${this.sessionId}/end/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            cards_studied: this.totalCards,
+                            cards_correct: this.stats.easy,
+                            cards_incorrect: this.stats.again + this.stats.hard
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error ending session:', error);
+                }
+            }
+            
+            const accuracy = Math.round((this.stats.easy / this.totalCards) * 100);
+            const message = `🎉 Hoàn thành!\n\nBạn đã hoàn thành ${this.totalCards} thẻ\nĐộ chính xác: ${accuracy}%\n\n✅ Đã nhớ: ${this.stats.easy}\n⚠️ Hơi khó: ${this.stats.hard}\n❌ Quên rồi: ${this.stats.again}`;
+            
+            if (confirm(message + '\n\nQuay lại danh sách deck?')) {
+                window.location.href = '{% url "vocabulary_pages:deck-list" %}';
+            }
+        },
+        
+        playAudio() {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                speechSynthesis.cancel();
+                
+                const text = this.currentCardData.front_text;
+                if (!text) {
+                    console.warn('No text to play');
+                    return;
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                // Error handling
+                utterance.onerror = (event) => {
+                    console.error('Speech synthesis error:', event);
+                };
+                
+                utterance.onend = () => {
+                    this.hasPlayedAudio = true;
+                };
+                
+                // Small delay to ensure cancel completes
+                setTimeout(() => {
+                    speechSynthesis.speak(utterance);
+                }, 100);
+            } else {
+                alert('Trình duyệt không hỗ trợ phát âm tự động');
+            }
+        },
+        
+        // Auto-play features
+        toggleAutoPlay() {
+            this.autoPlayEnabled = !this.autoPlayEnabled;
+            
+            if (!this.autoPlayEnabled) {
+                this.clearAutoPlayTimers();
+            }
+        },
+        
+        startAutoFlip() {
+            if (!this.isFlipped) {
+                this.startCountdown(this.autoPlaySpeed / 1000);
+                this.autoFlipTimer = setTimeout(() => {
+                    this.isFlipped = true;
+                }, this.autoPlaySpeed);
+            }
+        },
+        
+        startAutoAdvance() {
+            this.startCountdown(this.autoPlaySpeed / 1000);
+            this.autoAdvanceTimer = setTimeout(() => {
+                // Auto-mark as "easy" if in auto mode
+                if (this.autoPlayEnabled) {
+                    this.markCard(5);
+                }
+            }, this.autoPlaySpeed);
+        },
+        
+        clearAutoPlayTimers() {
+            if (this.autoFlipTimer) {
+                clearTimeout(this.autoFlipTimer);
+                this.autoFlipTimer = null;
+            }
+            if (this.autoAdvanceTimer) {
+                clearTimeout(this.autoAdvanceTimer);
+                this.autoAdvanceTimer = null;
+            }
+            this.stopCountdown();
+        },
+        
+        startCountdown(seconds) {
+            this.countdown = seconds;
+            this.countdownInterval = setInterval(() => {
+                this.countdown--;
+                if (this.countdown <= 0) {
+                    this.stopCountdown();
+                }
+            }, 1000);
+        },
+        
+        stopCountdown() {
+            if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+            }
+            this.countdown = 0;
+        },
+        
+        // Shuffle cards
+        shuffleCards() {
+            if (confirm('Xáo trộn tất cả các thẻ?')) {
+                this.cards = [...this.originalCards].sort(() => Math.random() - 0.5);
+                this.currentCard = 0;
+                this.isFlipped = false;
+                this.clearAutoPlayTimers();
+            }
+        },
+        
+        // Bookmark features
+        toggleBookmark() {
+            const cardId = this.currentCardData.id;
+            const index = this.bookmarkedCards.indexOf(cardId);
+            
+            if (index > -1) {
+                this.bookmarkedCards.splice(index, 1);
+            } else {
+                this.bookmarkedCards.push(cardId);
+            }
+            
+            this.saveBookmarks();
+        },
+        
+        toggleBookmarkFilter() {
+            this.showBookmarkedOnly = !this.showBookmarkedOnly;
+            
+            if (this.showBookmarkedOnly) {
+                if (this.bookmarkedCards.length === 0) {
+                    alert('Chưa có thẻ nào được đánh dấu!');
+                    this.showBookmarkedOnly = false;
+                    return;
+                }
+                this.cards = this.originalCards.filter(card => 
+                    this.bookmarkedCards.includes(card.id)
+                );
+            } else {
+                this.cards = [...this.originalCards];
+            }
+            
+            this.totalCards = this.cards.length;
+            this.currentCard = 0;
+            this.isFlipped = false;
+            this.clearAutoPlayTimers();
+        },
+        
+        saveBookmarks() {
+            localStorage.setItem(`bookmarks_deck_${this.deckId}`, JSON.stringify(this.bookmarkedCards));
+        },
+        
+        loadBookmarks() {
+            const saved = localStorage.getItem(`bookmarks_deck_${this.deckId}`);
+            if (saved) {
+                this.bookmarkedCards = JSON.parse(saved);
+            }
+        },
+        
+        // Sound effects
+        playSound(type) {
+            if (!this.soundEnabled) return;
+            
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = context.createOscillator();
+            const gainNode = context.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(context.destination);
+            
+            if (type === 'success') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.value = 0.1;
+            } else if (type === 'error') {
+                oscillator.frequency.value = 200;
+                gainNode.gain.value = 0.1;
+            } else {
+                oscillator.frequency.value = 500;
+                gainNode.gain.value = 0.05;
+            }
+            
+            oscillator.start(context.currentTime);
+            oscillator.stop(context.currentTime + 0.1);
+        },
+        
+        flashCard(type) {
+            const container = document.querySelector('.flashcard-container');
+            if (container) {
+                container.classList.add(`flash-${type}`);
+                setTimeout(() => {
+                    container.classList.remove(`flash-${type}`);
+                }, 500);
+            }
+        },
+        
+        // Keyboard shortcuts
+        handleKeyPress(event) {
+            // Don't trigger if typing in input
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            switch(event.key) {
+                case ' ':  // Space - flip card
+                    event.preventDefault();
+                    this.flipCard();
+                    break;
+                case 'ArrowLeft':  // Previous card
+                    this.previousCard();
+                    break;
+                case 'ArrowRight':  // Next card
+                    this.nextCardManual();
+                    break;
+                case 'a':
+                case 'A':  // Play audio
+                    this.playAudio();
+                    break;
+                case '1':  // Again
+                    if (this.isFlipped) this.markCard(1);
+                    break;
+                case '2':  // Hard
+                    if (this.isFlipped) this.markCard(3);
+                    break;
+                case '3':  // Easy
+                    if (this.isFlipped) this.markCard(5);
+                    break;
+                case 'b':
+                case 'B':  // Bookmark
+                    this.toggleBookmark();
+                    break;
+            }
+        },
+        
+        startTimer() {
+            setInterval(() => {
+                if (this.timerSeconds > 0) {
+                    this.timerSeconds--;
+                    const minutes = Math.floor(this.timerSeconds / 60);
+                    const seconds = this.timerSeconds % 60;
+                    this.timer = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        },
+        
+        getAuthToken() {
+            const token = localStorage.getItem('access_token');
+            if (token) return token;
+            
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'access_token') {
+                    return value;
+                }
+            }
+            
+            return null;
+        }
+    },
+    mounted() {
+        this.loadCards();
+        this.startTimer();
+        
+        // Add keyboard event listener
+        window.addEventListener('keydown', this.handleKeyPress);
+    },
+    beforeUnmount() {
+        // Clean up
+        this.clearAutoPlayTimers();
+        window.removeEventListener('keydown', this.handleKeyPress);
+    }
+}).mount('#app');
+</script>
+{% endblock %}

@@ -1,0 +1,647 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Thành tựu - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    .achievements-header {
+        background: linear-gradient(135deg, #183B56 0%, #2C5282 100%);
+        padding: 2rem 0;
+        color: #fff;
+    }
+    
+    .achievements-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+    
+    .stats-summary {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .stat-item i {
+        font-size: 1.25rem;
+        color: #FFD700;
+    }
+    
+    .stat-item span {
+        font-size: 1rem;
+    }
+    
+    .filter-tabs {
+        background: #fff;
+        border-radius: 12px;
+        padding: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-tab {
+        padding: 0.5rem 1rem;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        color: #6C757D;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .filter-tab:hover {
+        background: rgba(244, 124, 38, 0.1);
+        color: #F47C26;
+    }
+    
+    .filter-tab.active {
+        background: #F47C26;
+        color: #fff;
+    }
+    
+    .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .achievement-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 1rem;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .achievement-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    
+    .achievement-card.locked {
+        opacity: 0.7;
+    }
+    
+    .achievement-card.locked::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.3);
+        pointer-events: none;
+    }
+    
+    .achievement-card.rare {
+        border: 2px solid #9B59B6;
+    }
+    
+    .achievement-card.epic {
+        border: 2px solid #E74C3C;
+    }
+    
+    .achievement-card.legendary {
+        border: 2px solid #F1C40F;
+        background: linear-gradient(135deg, #FFF9E6 0%, #FFFFFF 100%);
+    }
+    
+    .achievement-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        flex-shrink: 0;
+    }
+    
+    .achievement-icon.common {
+        background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+        color: #fff;
+    }
+    
+    .achievement-icon.rare {
+        background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+        color: #fff;
+    }
+    
+    .achievement-icon.epic {
+        background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+        color: #fff;
+    }
+    
+    .achievement-icon.legendary {
+        background: linear-gradient(135deg, #F1C40F 0%, #F39C12 100%);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(241, 196, 15, 0.4);
+    }
+    
+    .achievement-icon.locked {
+        background: #E8ECF0;
+        color: #ADB5BD;
+    }
+    
+    .achievement-content {
+        flex: 1;
+    }
+    
+    .achievement-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #183B56;
+        margin-bottom: 0.25rem;
+    }
+    
+    .achievement-description {
+        font-size: 0.85rem;
+        color: #6C757D;
+        margin-bottom: 0.5rem;
+    }
+    
+    .achievement-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.75rem;
+    }
+    
+    .achievement-xp {
+        color: #F47C26;
+        font-weight: 600;
+    }
+    
+    .achievement-date {
+        color: #ADB5BD;
+    }
+    
+    .achievement-progress {
+        margin-top: 0.5rem;
+    }
+    
+    .progress-bar-container {
+        background: #E8ECF0;
+        border-radius: 4px;
+        height: 6px;
+        overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+        background: linear-gradient(90deg, #F47C26 0%, #FF9F43 100%);
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s;
+    }
+    
+    .progress-text {
+        font-size: 0.7rem;
+        color: #6C757D;
+        margin-top: 0.25rem;
+    }
+    
+    .rarity-badge {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .rarity-badge.common { background: #E8F4FD; color: #3498DB; }
+    .rarity-badge.rare { background: #F3E8F9; color: #9B59B6; }
+    .rarity-badge.epic { background: #FCE8E8; color: #E74C3C; }
+    .rarity-badge.legendary { background: #FEF5E7; color: #F39C12; }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6C757D;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #E8ECF0;
+        margin-bottom: 1rem;
+    }
+    
+    .category-section {
+        margin-bottom: 3rem;
+    }
+    
+    .category-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #183B56;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .category-title i {
+        color: #F47C26;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-summary {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .achievements-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="achievements-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color: rgba(255,255,255,0.5);">
+                <li class="breadcrumb-item"><a href="{% url 'users:dashboard' %}" class="text-white-50">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'users:profile' %}" class="text-white-50">Hồ sơ</a></li>
+                <li class="breadcrumb-item active text-white">Thành tựu</li>
+            </ol>
+        </nav>
+        <h1><i class="fas fa-trophy me-2"></i>Thành tựu của bạn</h1>
+        <div class="stats-summary">
+            <div class="stat-item">
+                <i class="fas fa-medal"></i>
+                <span id="unlockedCount">0/0 đã đạt</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-star"></i>
+                <span id="totalXPEarned">0 XP từ thành tựu</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">Tất cả</button>
+        <button class="filter-tab" data-filter="unlocked">Đã đạt</button>
+        <button class="filter-tab" data-filter="locked">Chưa đạt</button>
+        <button class="filter-tab" data-filter="common">Thường</button>
+        <button class="filter-tab" data-filter="rare">Hiếm</button>
+        <button class="filter-tab" data-filter="epic">Sử thi</button>
+        <button class="filter-tab" data-filter="legendary">Huyền thoại</button>
+    </div>
+    
+    <!-- Achievements Container -->
+    <div id="achievementsContainer">
+        <!-- Loading state -->
+        <div class="text-center py-5">
+            <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+            <p class="mt-2 text-muted">Đang tải thành tựu...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ================================
+// Configuration
+// ================================
+const API_BASE_URL = '/api/v1';
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token'
+};
+
+let allAchievements = [];
+
+// ================================
+// Auth Check & API
+// ================================
+function checkAuth() {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) {
+        window.location.href = '/login/?next=/profile/achievements/';
+        return false;
+    }
+    return true;
+}
+
+async function apiRequest(endpoint) {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (response.status === 401) {
+        window.location.href = '/login/?next=/profile/achievements/';
+        return null;
+    }
+    
+    return response;
+}
+
+// ================================
+// Load Achievements
+// ================================
+async function loadAchievements() {
+    const container = document.getElementById('achievementsContainer');
+    
+    try {
+        const response = await apiRequest('/study/achievements/');
+        
+        if (!response || !response.ok) {
+            showDefaultAchievements();
+            return;
+        }
+        
+        allAchievements = await response.json();
+        
+        if (!allAchievements || allAchievements.length === 0) {
+            showDefaultAchievements();
+            return;
+        }
+        
+        updateStats();
+        renderAchievements(allAchievements);
+        
+    } catch (error) {
+        console.error('Failed to load achievements:', error);
+        showDefaultAchievements();
+    }
+}
+
+function showDefaultAchievements() {
+    // Default achievements for demonstration
+    allAchievements = [
+        {
+            id: 1,
+            name: 'Khởi đầu',
+            description: 'Hoàn thành bài học đầu tiên',
+            icon: 'fa-play-circle',
+            xp_reward: 50,
+            rarity: 'common',
+            category: 'learning',
+            unlocked: true,
+            unlocked_at: new Date().toISOString()
+        },
+        {
+            id: 2,
+            name: 'Siêng năng',
+            description: 'Học 7 ngày liên tiếp',
+            icon: 'fa-fire',
+            xp_reward: 100,
+            rarity: 'common',
+            category: 'streak',
+            unlocked: false,
+            progress: 3,
+            target: 7
+        },
+        {
+            id: 3,
+            name: 'Từ vựng phong phú',
+            description: 'Học được 100 từ vựng mới',
+            icon: 'fa-book',
+            xp_reward: 200,
+            rarity: 'rare',
+            category: 'vocabulary',
+            unlocked: false,
+            progress: 42,
+            target: 100
+        },
+        {
+            id: 4,
+            name: 'Kiên trì',
+            description: 'Học 30 ngày liên tiếp',
+            icon: 'fa-calendar-check',
+            xp_reward: 500,
+            rarity: 'epic',
+            category: 'streak',
+            unlocked: false,
+            progress: 3,
+            target: 30
+        },
+        {
+            id: 5,
+            name: 'Huyền thoại',
+            description: 'Đạt Level 50',
+            icon: 'fa-crown',
+            xp_reward: 1000,
+            rarity: 'legendary',
+            category: 'level',
+            unlocked: false,
+            progress: 1,
+            target: 50
+        },
+        {
+            id: 6,
+            name: 'Chăm chỉ',
+            description: 'Hoàn thành 10 bài học',
+            icon: 'fa-graduation-cap',
+            xp_reward: 100,
+            rarity: 'common',
+            category: 'learning',
+            unlocked: false,
+            progress: 1,
+            target: 10
+        },
+        {
+            id: 7,
+            name: 'Bài test đầu tiên',
+            description: 'Hoàn thành bài test đầu tiên',
+            icon: 'fa-clipboard-check',
+            xp_reward: 75,
+            rarity: 'common',
+            category: 'test',
+            unlocked: false
+        },
+        {
+            id: 8,
+            name: 'Điểm cao',
+            description: 'Đạt 100% trong một bài test',
+            icon: 'fa-star',
+            xp_reward: 300,
+            rarity: 'rare',
+            category: 'test',
+            unlocked: false
+        }
+    ];
+    
+    updateStats();
+    renderAchievements(allAchievements);
+}
+
+// ================================
+// Update Stats
+// ================================
+function updateStats() {
+    const unlocked = allAchievements.filter(a => a.unlocked).length;
+    const total = allAchievements.length;
+    const totalXP = allAchievements.filter(a => a.unlocked).reduce((sum, a) => sum + (a.xp_reward || 0), 0);
+    
+    document.getElementById('unlockedCount').textContent = `${unlocked}/${total} đã đạt`;
+    document.getElementById('totalXPEarned').textContent = `${totalXP} XP từ thành tựu`;
+}
+
+// ================================
+// Render Achievements
+// ================================
+function renderAchievements(achievements) {
+    const container = document.getElementById('achievementsContainer');
+    
+    if (achievements.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-trophy"></i>
+                <h3>Không có thành tựu nào</h3>
+                <p>Bắt đầu học để mở khóa các thành tựu!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Group by category
+    const categories = {
+        learning: { name: 'Học tập', icon: 'fa-book-open', items: [] },
+        streak: { name: 'Chuỗi ngày', icon: 'fa-fire', items: [] },
+        vocabulary: { name: 'Từ vựng', icon: 'fa-language', items: [] },
+        test: { name: 'Bài test', icon: 'fa-clipboard-check', items: [] },
+        level: { name: 'Cấp độ', icon: 'fa-signal', items: [] },
+        other: { name: 'Khác', icon: 'fa-star', items: [] }
+    };
+    
+    achievements.forEach(achievement => {
+        const cat = categories[achievement.category] || categories.other;
+        cat.items.push(achievement);
+    });
+    
+    let html = '';
+    
+    Object.entries(categories).forEach(([key, category]) => {
+        if (category.items.length === 0) return;
+        
+        html += `
+            <div class="category-section">
+                <h2 class="category-title">
+                    <i class="fas ${category.icon}"></i>${category.name}
+                </h2>
+                <div class="achievements-grid">
+                    ${category.items.map(renderAchievementCard).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function renderAchievementCard(achievement) {
+    const isLocked = !achievement.unlocked;
+    const hasProgress = achievement.progress !== undefined && achievement.target;
+    const progressPercent = hasProgress ? Math.min((achievement.progress / achievement.target) * 100, 100) : 0;
+    
+    const rarityLabels = {
+        common: 'Thường',
+        rare: 'Hiếm',
+        epic: 'Sử thi',
+        legendary: 'Huyền thoại'
+    };
+    
+    return `
+        <div class="achievement-card ${isLocked ? 'locked' : ''} ${achievement.rarity || 'common'}" data-rarity="${achievement.rarity || 'common'}" data-unlocked="${achievement.unlocked}">
+            <span class="rarity-badge ${achievement.rarity || 'common'}">${rarityLabels[achievement.rarity] || 'Thường'}</span>
+            <div class="achievement-icon ${isLocked ? 'locked' : achievement.rarity || 'common'}">
+                <i class="fas ${achievement.icon || 'fa-trophy'}"></i>
+            </div>
+            <div class="achievement-content">
+                <h3 class="achievement-title">${achievement.name}</h3>
+                <p class="achievement-description">${achievement.description}</p>
+                ${hasProgress && isLocked ? `
+                    <div class="achievement-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <span class="progress-text">${achievement.progress}/${achievement.target}</span>
+                    </div>
+                ` : ''}
+                <div class="achievement-meta">
+                    <span class="achievement-xp">+${achievement.xp_reward || 0} XP</span>
+                    ${achievement.unlocked && achievement.unlocked_at ? `
+                        <span class="achievement-date">${formatDate(achievement.unlocked_at)}</span>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ================================
+// Filter
+// ================================
+document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        // Update active tab
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.dataset.filter;
+        let filtered = allAchievements;
+        
+        switch (filter) {
+            case 'unlocked':
+                filtered = allAchievements.filter(a => a.unlocked);
+                break;
+            case 'locked':
+                filtered = allAchievements.filter(a => !a.unlocked);
+                break;
+            case 'common':
+            case 'rare':
+            case 'epic':
+            case 'legendary':
+                filtered = allAchievements.filter(a => a.rarity === filter);
+                break;
+        }
+        
+        renderAchievements(filtered);
+    });
+});
+
+// ================================
+// Utility
+// ================================
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// ================================
+// Initialize
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+    if (!checkAuth()) return;
+    loadAchievements();
+});
+</script>
+{% endblock %}

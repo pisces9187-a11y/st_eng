@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Smart Flashcard - Ôn tập từ vựng</title>
+    <meta name="description" content="Học từ vựng tiếng Anh hiệu quả với Flashcard thông minh sử dụng thuật toán SM-2.">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#F47C26">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="EnglishMaster">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#F47C26">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../assets/images/icons/icon-152x152.png">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    
+    <!-- Responsive CSS (Phase 1) -->
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    
+    <style>
+        /* Flashcard 3D Flip Animation */
+        .flashcard-container {
+            width: 100%;
+            max-width: 500px;
+            height: 350px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flashcard-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-bottom: 6px solid rgba(0,0,0,0.1) !important; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+        
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+        
+        /* Timer styles */
+        .timer-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F47C26 0%, #D35400 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        /* Progress indicator */
+        .progress-indicator {
+            height: 4px;
+            background: #E0E6ED;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-indicator-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #F47C26 0%, #D35400 100%);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container d-flex flex-column align-items-center justify-content-center min-vh-100 py-5 bg-light">
+            
+            <!-- Top Bar: Progress & Timer -->
+            <div class="w-100 max-w-600 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">
+                        <i class="fas fa-layer-group me-2"></i>Đang ôn: {{ currentCard + 1 }}/{{ totalCards }}
+                    </span>
+                    <div class="timer-circle">
+                        <i class="fas fa-clock me-1"></i>{{ timer }}
+                    </div>
+                </div>
+                <div class="progress-indicator rounded-pill">
+                    <div class="progress-indicator-fill rounded-pill" :style="{width: progressPercent + '%'}"></div>
+                </div>
+            </div>
+
+            <!-- Flashcard Container -->
+            <div class="flashcard-container" @click="flipCard">
+                <div class="flashcard-inner" :class="{ 'is-flipped': isFlipped }">
+                    
+                    <!-- Front Side -->
+                    <div class="flashcard-front card shadow-lg border-0 bg-white text-secondary rounded-4">
+                        <div class="text-center">
+                            <span class="badge bg-primary mb-3 px-3 py-2">{{ currentCardData.type }}</span>
+                            <h1 class="display-3 fw-bold mb-3">{{ currentCardData.word }}</h1>
+                            <p class="text-muted fs-5 mb-3">{{ currentCardData.pronunciation }}</p>
+                            <button class="btn btn-link text-primary pulse-animation" @click.stop="playAudio">
+                                <i class="fas fa-volume-up fs-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Back Side -->
+                    <div class="flashcard-back card shadow-lg border-0 bg-secondary text-white rounded-4">
+                        <div class="text-center w-100">
+                            <h3 class="fw-bold text-warning mb-3">{{ currentCardData.meaning }}</h3>
+                            <p class="fst-italic opacity-75 fs-5">{{ currentCardData.example }}</p>
+                            <hr class="w-25 border-white opacity-50 my-3 mx-auto">
+                            <div class="text-start bg-white bg-opacity-10 p-3 rounded">
+                                <small class="text-warning fw-bold">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>GHI CHÚ NGỮ PHÁP:
+                                </small>
+                                <p class="small mb-0 mt-2">{{ currentCardData.note }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Action Buttons (Only show when flipped) -->
+            <div v-if="isFlipped" class="d-flex gap-3 mt-5 flex-wrap justify-content-center">
+                <button class="btn btn-outline-danger btn-lg px-4 rounded-pill" @click.stop="markCard('again')">
+                    <i class="fas fa-times me-2"></i>Quên rồi (1p)
+                </button>
+                <button class="btn btn-outline-warning btn-lg px-4 rounded-pill" @click.stop="markCard('hard')">
+                    <i class="fas fa-exclamation me-2"></i>Hơi khó (10p)
+                </button>
+                <button class="btn btn-success btn-lg px-5 rounded-pill shadow" @click.stop="markCard('easy')">
+                    <i class="fas fa-check me-2"></i>Đã nhớ (1 ngày)
+                </button>
+            </div>
+            
+            <!-- Hint when not flipped -->
+            <div v-else class="mt-5 text-muted small">
+                <i class="fas fa-hand-pointer me-2"></i>Chạm vào thẻ để lật
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="mt-5 w-100 max-w-600">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="text-success fw-bold fs-4">{{ stats.easy }}</div>
+                                <div class="small text-muted">Đã nhớ</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-warning fw-bold fs-4">{{ stats.hard }}</div>
+                                <div class="small text-muted">Hơi khó</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-danger fw-bold fs-4">{{ stats.again }}</div>
+                                <div class="small text-muted">Quên rồi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Dashboard Button -->
+            <div class="mt-4">
+                <a href="dashboard.html" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    isFlipped: false,
+                    currentCard: 0,
+                    totalCards: 20,
+                    timer: '10:00',
+                    timerSeconds: 600,
+                    cards: [
+                        {
+                            word: 'Decision',
+                            type: 'NOUN',
+                            pronunciation: '/dɪˈsɪʒ.ən/',
+                            meaning: 'Quyết định',
+                            example: '"Make a decision"',
+                            note: 'Danh từ đếm được. Thường đi với giới từ "on" hoặc "about".'
+                        },
+                        {
+                            word: 'Collaborate',
+                            type: 'VERB',
+                            pronunciation: '/kəˈlæb.ə.reɪt/',
+                            meaning: 'Hợp tác, cộng tác',
+                            example: '"We collaborate on projects"',
+                            note: 'Động từ thường đi với giới từ "with" hoặc "on".'
+                        },
+                        {
+                            word: 'Essential',
+                            type: 'ADJECTIVE',
+                            pronunciation: '/ɪˈsen.ʃəl/',
+                            meaning: 'Thiết yếu, cần thiết',
+                            example: '"Water is essential for life"',
+                            note: 'Tính từ, thường đi với giới từ "for" hoặc "to".'
+                        },
+                        {
+                            word: 'Accomplish',
+                            type: 'VERB',
+                            pronunciation: '/əˈkʌm.plɪʃ/',
+                            meaning: 'Hoàn thành, đạt được',
+                            example: '"Accomplish your goals"',
+                            note: 'Động từ, đồng nghĩa với "achieve", "complete".'
+                        },
+                        {
+                            word: 'Significant',
+                            type: 'ADJECTIVE',
+                            pronunciation: '/sɪɡˈnɪf.ɪ.kənt/',
+                            meaning: 'Quan trọng, đáng kể',
+                            example: '"A significant change"',
+                            note: 'Tính từ, trái nghĩa là "insignificant".'
+                        }
+                    ],
+                    stats: {
+                        easy: 0,
+                        hard: 0,
+                        again: 0
+                    }
+                }
+            },
+            computed: {
+                currentCardData() {
+                    return this.cards[this.currentCard % this.cards.length];
+                },
+                progressPercent() {
+                    return (this.currentCard / this.totalCards) * 100;
+                }
+            },
+            methods: {
+                flipCard() {
+                    this.isFlipped = !this.isFlipped;
+                },
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Phase 1: PWA & Offline Support -->
+    <script src="../assets/js/db.js"></script>
+    <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/app.js"></script>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    isFlipped: false,
+                    currentCard: 0,
+                    totalCards: 5,
+                    timer: '15:00',
+                    timerSeconds: 900,
+                    cards: [
+                        { word: 'Ubiquitous', pronunciation: '/juːˈbɪkwɪtəs/', meaning: 'Có mặt khắp nơi', example: 'Smartphones have become ubiquitous in modern society.' },
+                        { word: 'Serendipity', pronunciation: '/ˌserənˈdɪpəti/', meaning: 'Sự may mắn bất ngờ', example: 'It was pure serendipity that they met at the café.' },
+                        { word: 'Ephemeral', pronunciation: '/ɪˈfemərəl/', meaning: 'Phù du, thoáng qua', example: 'Fame is often ephemeral in the entertainment industry.' },
+                        { word: 'Eloquent', pronunciation: '/ˈeləkwənt/', meaning: 'Hùng biện, lưu loát', example: 'She gave an eloquent speech about climate change.' },
+                        { word: 'Meticulous', pronunciation: '/məˈtɪkjələs/', meaning: 'Tỉ mỉ, cẩn thận', example: 'He is meticulous about his work.' }
+                    ],
+                    stats: { easy: 0, hard: 0, again: 0 }
+                }
+            },
+            computed: {
+                progress() {
+                    return ((this.currentCard + 1) / this.totalCards) * 100;
+                },
+                currentCardData() {
+                    return this.cards[this.currentCard] || this.cards[0];
+                }
+            },
+            methods: {
+                flipCard() {
+                    this.isFlipped = !this.isFlipped;
+                },
+                markCard(difficulty) {
+                    this.stats[difficulty]++;
+                    this.nextCard();
+                },
+                nextCard() {
+                    if (this.currentCard < this.totalCards - 1) {
+                        this.currentCard++;
+                        this.isFlipped = false;
+                    } else {
+                        this.finishReview();
+                    }
+                },
+                finishReview() {
+                    // Use UIComponents if available, else fallback to alert
+                    if (typeof UIComponents !== 'undefined') {
+                        UIComponents.modal.alert({
+                            title: 'Hoàn thành!',
+                            message: `Bạn đã hoàn thành ${this.totalCards} thẻ.\n\nĐã nhớ: ${this.stats.easy}\nHơi khó: ${this.stats.hard}\nQuên rồi: ${this.stats.again}`,
+                            icon: 'fas fa-trophy'
+                        }).then(() => {
+                            window.location.href = 'dashboard.html';
+                        });
+                    } else {
+                        alert(`Chúc mừng! Bạn đã hoàn thành ${this.totalCards} thẻ.\n\nĐã nhớ: ${this.stats.easy}\nHơi khó: ${this.stats.hard}\nQuên rồi: ${this.stats.again}`);
+                        window.location.href = 'dashboard.html';
+                    }
+                },
+                playAudio() {
+                    // Use Web Speech API for pronunciation
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(this.currentCardData.word);
+                        utterance.lang = 'en-US';
+                        utterance.rate = 0.9;
+                        speechSynthesis.speak(utterance);
+                    } else {
+                        alert(`Phát âm: ${this.currentCardData.word}`);
+                    }
+                },
+                startTimer() {
+                    setInterval(() => {
+                        if (this.timerSeconds > 0) {
+                            this.timerSeconds--;
+                            const minutes = Math.floor(this.timerSeconds / 60);
+                            const seconds = this.timerSeconds % 60;
+                            this.timer = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        }
+                    }, 1000);
+                }
+            },
+            mounted() {
+                this.startTimer();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

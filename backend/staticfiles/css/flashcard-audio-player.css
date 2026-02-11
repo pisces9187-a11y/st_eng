@@ -1,0 +1,280 @@
+/* ====================================
+   FLASHCARD AUDIO PLAYER STYLES
+   Version: 2.0.0 - Phase 2
+   ==================================== */
+
+.flashcard-audio-player {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin: 1rem 0;
+}
+
+/* Audio Controls */
+.audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+/* Play Button */
+.btn-audio-play {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #fff;
+    color: #667eea;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-audio-play:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-audio-play:active {
+    transform: translateY(0);
+}
+
+.btn-audio-play.playing {
+    background: #F47C26;
+    color: #fff;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(244, 124, 38, 0.3);
+    }
+    50% {
+        box-shadow: 0 2px 20px rgba(244, 124, 38, 0.6);
+    }
+}
+
+.btn-audio-play i {
+    font-size: 1.2rem;
+}
+
+.btn-audio-play:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Audio Options */
+.audio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #667eea;
+    margin: 0;
+}
+
+.option-label i {
+    font-size: 1rem;
+}
+
+.voice-selector,
+.speed-selector {
+    border: none;
+    background: transparent;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.voice-selector:focus,
+.speed-selector:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Waveform Visualization */
+.audio-waveform {
+    padding: 1rem 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.waveform-bars {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 60px;
+}
+
+.waveform-bars .bar {
+    width: 4px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    transform-origin: center;
+    transition: all 0.1s ease;
+}
+
+.waveform-bars .bar.animating {
+    animation: waveAnimation 0.8s ease-in-out infinite;
+}
+
+@keyframes waveAnimation {
+    0%, 100% {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+    }
+}
+
+/* Different delays for bars */
+.waveform-bars .bar-0 { animation-delay: 0s; }
+.waveform-bars .bar-1 { animation-delay: 0.05s; }
+.waveform-bars .bar-2 { animation-delay: 0.1s; }
+.waveform-bars .bar-3 { animation-delay: 0.15s; }
+.waveform-bars .bar-4 { animation-delay: 0.2s; }
+.waveform-bars .bar-5 { animation-delay: 0.25s; }
+.waveform-bars .bar-6 { animation-delay: 0.3s; }
+.waveform-bars .bar-7 { animation-delay: 0.35s; }
+.waveform-bars .bar-8 { animation-delay: 0.4s; }
+.waveform-bars .bar-9 { animation-delay: 0.45s; }
+.waveform-bars .bar-10 { animation-delay: 0.5s; }
+.waveform-bars .bar-11 { animation-delay: 0.55s; }
+.waveform-bars .bar-12 { animation-delay: 0.6s; }
+.waveform-bars .bar-13 { animation-delay: 0.65s; }
+.waveform-bars .bar-14 { animation-delay: 0.7s; }
+.waveform-bars .bar-15 { animation-delay: 0.75s; }
+.waveform-bars .bar-16 { animation-delay: 0.8s; }
+.waveform-bars .bar-17 { animation-delay: 0.85s; }
+.waveform-bars .bar-18 { animation-delay: 0.9s; }
+.waveform-bars .bar-19 { animation-delay: 0.95s; }
+
+/* Loading Indicator */
+.audio-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.loading-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #667eea;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .flashcard-audio-player {
+        padding: 1rem;
+    }
+
+    .audio-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .btn-audio-play {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .audio-option {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .voice-selector,
+    .speed-selector {
+        min-width: auto;
+        flex: 1;
+        text-align: right;
+    }
+
+    .waveform-bars {
+        height: 50px;
+    }
+
+    .waveform-bars .bar {
+        width: 3px;
+        gap: 2px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .flashcard-audio-player {
+        background: linear-gradient(135deg, #434343 0%, #000000 100%);
+    }
+
+    .audio-option {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .option-label {
+        color: #fff;
+    }
+
+    .voice-selector,
+    .speed-selector {
+        color: #fff;
+    }
+
+    .audio-loading {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .loading-text {
+        color: #fff;
+    }
+}
+
+/* Accessibility */
+.btn-audio-play:focus-visible {
+    outline: 3px solid #F47C26;
+    outline-offset: 2px;
+}
+
+.voice-selector:focus-visible,
+.speed-selector:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 1px;
+}
+
+/* Print Styles */
+@media print {
+    .flashcard-audio-player {
+        display: none;
+    }
+}

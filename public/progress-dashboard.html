@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Dashboard - English Learning Platform</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/assets/css/theme.css">
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #00C851 0%, #007E33 100%);
+            --warning-gradient: linear-gradient(135deg, #ffbb33 0%, #ff8800 100%);
+            --danger-gradient: linear-gradient(135deg, #ff4444 0%, #CC0000 100%);
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        
+        .stat-icon-success {
+            background: var(--success-gradient);
+            color: white;
+        }
+        
+        .stat-icon-warning {
+            background: var(--warning-gradient);
+            color: white;
+        }
+        
+        .stat-icon-danger {
+            background: var(--danger-gradient);
+            color: white;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #333;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        /* Circular Progress */
+        .circular-progress-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .circular-progress {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+        
+        .circular-progress-bg {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 12;
+        }
+        
+        .circular-progress-bar {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+        
+        .circular-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .circular-progress-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #667eea;
+        }
+        
+        .circular-progress-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        /* Chart Container */
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Achievements List */
+        .achievements-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .achievement-badge {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .achievement-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .achievement-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .achievement-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .achievement-desc {
+            font-size: 0.75rem;
+            color: #999;
+        }
+        
+        /* Calendar Heatmap */
+        .calendar-heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 1rem;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            background: #e9ecef;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day[data-count="0"] {
+            background: #eee;
+        }
+        
+        .calendar-day[data-count="1"] {
+            background: #c6e48b;
+        }
+        
+        .calendar-day[data-count="2"] {
+            background: #7bc96f;
+        }
+        
+        .calendar-day[data-count="3"] {
+            background: #239a3b;
+        }
+        
+        .calendar-day[data-count="4"] {
+            background: #196127;
+        }
+        
+        .calendar-day:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard.html">
+                <i class="fas fa-graduation-cap text-primary"></i>
+                English Master
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/flashcard-study.html" class="btn btn-primary">
+                    <i class="fas fa-cards-blank"></i>
+                    Study Now
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-2">
+                <i class="fas fa-chart-line text-primary me-2"></i>
+                Your Progress
+            </h1>
+            <p class="text-muted fs-5">Track your learning journey and achievements</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-primary">
+                    <i class="fas fa-cards-blank"></i>
+                </div>
+                <div class="stat-value" id="totalCards">0</div>
+                <div class="stat-label">Total Cards Learned</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value" id="masteredCards">0</div>
+                <div class="stat-label">Mastered Cards</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-warning">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="stat-value" id="currentStreak">0</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon stat-icon-danger">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value" id="studyTime">0h</div>
+                <div class="stat-label">Total Study Time</div>
+            </div>
+        </div>
+
+        <!-- Daily Goal Progress -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-target"></i>
+                Today's Goal
+            </h3>
+            <div class="circular-progress-container">
+                <div class="circular-progress">
+                    <svg width="200" height="200">
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="circular-progress-bg" cx="100" cy="100" r="90"></circle>
+                        <circle class="circular-progress-bar" id="progressCircle" cx="100" cy="100" r="90"
+                                stroke-dasharray="565.48" stroke-dashoffset="565.48"></circle>
+                    </svg>
+                    <div class="circular-progress-text">
+                        <div class="circular-progress-value" id="dailyGoalValue">0/20</div>
+                        <div class="circular-progress-label">cards today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <!-- Learning Progress Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="chart-card">
+                    <h3 class="chart-title">
+                        <i class="fas fa-chart-line"></i>
+                        Learning Progress (Last 30 Days)
+                    </h3>
+                    <canvas id="learningChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Mastery Distribution Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="chart-card">
+                    <h3 class="chart-title">
+                        <i class="fas fa-pie-chart"></i>
+                        Mastery Distribution
+                    </h3>
+                    <canvas id="masteryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accuracy by Level Chart -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-bar-chart"></i>
+                Accuracy by CEFR Level
+            </h3>
+            <canvas id="accuracyChart"></canvas>
+        </div>
+
+        <!-- Study Calendar Heatmap -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-calendar"></i>
+                Study Activity (Last 84 Days)
+            </h3>
+            <div class="calendar-heatmap" id="calendarHeatmap"></div>
+        </div>
+
+        <!-- Recent Achievements -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="fas fa-trophy"></i>
+                Recent Achievements
+            </h3>
+            <div class="achievements-list" id="achievementsList">
+                <!-- Achievements will be loaded here -->
+            </div>
+            <div class="text-center mt-3">
+                <a href="/achievements.html" class="btn btn-outline-primary">
+                    View All Achievements
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/django-api.js"></script>
+    
+    <script>
+        let dashboardData = null;
+        let learningChart = null;
+        let masteryChart = null;
+        let accuracyChart = null;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDashboard();
+        });
+
+        async function loadDashboard() {
+            try {
+                // Fetch dashboard data
+                const response = await window.djangoApi.getFlashcardDashboard();
+                
+                if (!response || response.error) {
+                    throw new Error(response?.error || 'Failed to load dashboard');
+                }
+
+                dashboardData = response;
+                
+                // Update all UI components
+                updateStatsCards();
+                updateDailyGoalProgress();
+                renderLearningChart();
+                renderMasteryChart();
+                renderAccuracyChart();
+                renderCalendarHeatmap();
+                renderRecentAchievements();
+                
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                alert('Failed to load dashboard data. Please try again.');
+            }
+        }
+
+        function updateStatsCards() {
+            const stats = dashboardData.statistics || {};
+            
+            document.getElementById('totalCards').textContent = stats.total_cards_learned || 0;
+            document.getElementById('masteredCards').textContent = stats.mastered_cards || 0;
+            document.getElementById('currentStreak').textContent = (stats.current_streak || 0);
+            
+            // Convert minutes to hours
+            const hours = Math.round((stats.total_study_time || 0) / 60);
+            document.getElementById('studyTime').textContent = hours + 'h';
+        }
+
+        function updateDailyGoalProgress() {
+            const dailyProgress = dashboardData.daily_progress || {};
+            const cardsToday = dailyProgress.cards_today || 0;
+            const dailyGoal = dailyProgress.daily_goal || 20;
+            const percentage = dailyProgress.progress_percentage || 0;
+
+            // Update text
+            document.getElementById('dailyGoalValue').textContent = `${cardsToday}/${dailyGoal}`;
+
+            // Update circular progress
+            const circle = document.getElementById('progressCircle');
+            const circumference = 565.48; // 2 * π * 90
+            const offset = circumference - (percentage / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function renderLearningChart() {
+            const ctx = document.getElementById('learningChart').getContext('2d');
+            
+            // Generate last 30 days data
+            const labels = [];
+            const data = [];
+            const today = new Date();
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                // Mock data - replace with real data from backend
+                data.push(Math.floor(Math.random() * 30) + 5);
+            }
+
+            learningChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cards Learned',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMasteryChart() {
+            const ctx = document.getElementById('masteryChart').getContext('2d');
+            
+            const stats = dashboardData.statistics || {};
+            const newCards = stats.new_cards || 0;
+            const learningCards = stats.learning_cards || 0;
+            const masteredCards = stats.mastered_cards || 0;
+
+            masteryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['New', 'Learning', 'Mastered'],
+                    datasets: [{
+                        data: [newCards, learningCards, masteredCards],
+                        backgroundColor: [
+                            '#ff4444',
+                            '#ffbb33',
+                            '#00C851'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAccuracyChart() {
+            const ctx = document.getElementById('accuracyChart').getContext('2d');
+            
+            // Mock data by CEFR level - replace with real data
+            const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
+            const accuracyData = [95, 88, 82, 75, 68];
+
+            accuracyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: levels,
+                    datasets: [{
+                        label: 'Accuracy %',
+                        data: accuracyData,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCalendarHeatmap() {
+            const container = document.getElementById('calendarHeatmap');
+            container.innerHTML = '';
+
+            // Generate 84 days (12 weeks)
+            const today = new Date();
+            
+            for (let i = 83; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // Mock activity count (0-4)
+                const count = Math.random() > 0.3 ? Math.floor(Math.random() * 5) : 0;
+                dayElement.setAttribute('data-count', count);
+                dayElement.title = `${date.toLocaleDateString()}: ${count * 5} cards`;
+                
+                container.appendChild(dayElement);
+            }
+        }
+
+        function renderRecentAchievements() {
+            const container = document.getElementById('achievementsList');
+            const achievements = dashboardData.achievements || [];
+            
+            // Filter recent unlocked achievements (last 5)
+            const recentAchievements = achievements
+                .filter(a => a.is_unlocked)
+                .sort((a, b) => new Date(b.unlocked_at) - new Date(a.unlocked_at))
+                .slice(0, 5);
+
+            if (recentAchievements.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No achievements yet. Start studying to unlock them!</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            recentAchievements.forEach(achievement => {
+                const badge = document.createElement('div');
+                badge.className = 'achievement-badge';
+                badge.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-desc">${achievement.description}</div>
+                `;
+                container.appendChild(badge);
+            });
+        }
+    </script>
+</body>
+</html>

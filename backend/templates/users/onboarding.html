@@ -1,0 +1,714 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Thiết lập tài khoản - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    .onboarding-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF0 100%);
+        padding: 2rem;
+    }
+    
+    .onboarding-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        max-width: 600px;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    .onboarding-header {
+        background: linear-gradient(135deg, #183B56 0%, #2C5282 100%);
+        padding: 2rem;
+        color: #fff;
+        text-align: center;
+    }
+    
+    .onboarding-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .onboarding-header p {
+        opacity: 0.8;
+        margin: 0;
+    }
+    
+    .progress-steps {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(0,0,0,0.1);
+    }
+    
+    .step-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        transition: all 0.3s;
+    }
+    
+    .step-dot.active {
+        background: #F47C26;
+        transform: scale(1.2);
+    }
+    
+    .step-dot.completed {
+        background: #28A745;
+    }
+    
+    .onboarding-body {
+        padding: 2rem;
+    }
+    
+    .step-content {
+        display: none;
+    }
+    
+    .step-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .step-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #183B56;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .step-subtitle {
+        color: #6C757D;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .option-grid {
+        display: grid;
+        gap: 1rem;
+    }
+    
+    .option-item {
+        padding: 1rem 1.25rem;
+        border: 2px solid #E8ECF0;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .option-item:hover {
+        border-color: #F47C26;
+        background: rgba(244, 124, 38, 0.05);
+    }
+    
+    .option-item.selected {
+        border-color: #F47C26;
+        background: rgba(244, 124, 38, 0.1);
+    }
+    
+    .option-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: #F8F9FA;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: #F47C26;
+    }
+    
+    .option-content h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #183B56;
+        margin-bottom: 0.25rem;
+    }
+    
+    .option-content p {
+        font-size: 0.85rem;
+        color: #6C757D;
+        margin: 0;
+    }
+    
+    .option-check {
+        margin-left: auto;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid #E8ECF0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: transparent;
+        transition: all 0.2s;
+    }
+    
+    .option-item.selected .option-check {
+        border-color: #F47C26;
+        background: #F47C26;
+        color: #fff;
+    }
+    
+    .goal-slider {
+        margin: 2rem 0;
+    }
+    
+    .goal-display {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .goal-display .value {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #F47C26;
+    }
+    
+    .goal-display .unit {
+        font-size: 1rem;
+        color: #6C757D;
+    }
+    
+    .goal-range {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: #E8ECF0;
+        appearance: none;
+        outline: none;
+    }
+    
+    .goal-range::-webkit-slider-thumb {
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #F47C26;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(244, 124, 38, 0.3);
+    }
+    
+    .goal-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: #6C757D;
+    }
+    
+    .onboarding-footer {
+        padding: 1.5rem 2rem;
+        background: #F8F9FA;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-skip {
+        background: transparent;
+        border: none;
+        color: #6C757D;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    
+    .btn-skip:hover {
+        color: #183B56;
+    }
+    
+    .btn-next {
+        background: #F47C26;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-next:hover {
+        background: #E06A1A;
+    }
+    
+    .btn-next:disabled {
+        background: #D1D5DB;
+        cursor: not-allowed;
+    }
+    
+    .btn-back {
+        background: transparent;
+        border: 1px solid #D1D5DB;
+        color: #6C757D;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-back:hover {
+        border-color: #183B56;
+        color: #183B56;
+    }
+    
+    .interests-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .interest-chip {
+        padding: 0.75rem 1rem;
+        border: 2px solid #E8ECF0;
+        border-radius: 25px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        color: #6C757D;
+    }
+    
+    .interest-chip:hover {
+        border-color: #F47C26;
+        color: #F47C26;
+    }
+    
+    .interest-chip.selected {
+        border-color: #F47C26;
+        background: #F47C26;
+        color: #fff;
+    }
+    
+    .success-animation {
+        text-align: center;
+        padding: 2rem 0;
+    }
+    
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28A745 0%, #20C997 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 3rem;
+        color: #fff;
+        animation: bounceIn 0.5s ease;
+    }
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .success-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #183B56;
+        margin-bottom: 0.5rem;
+    }
+    
+    .success-subtitle {
+        color: #6C757D;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboarding-container">
+    <div class="onboarding-card">
+        <div class="onboarding-header">
+            <h1>Chào mừng bạn đến với EnglishMaster!</h1>
+            <p>Hãy để chúng tôi cá nhân hóa trải nghiệm học tập cho bạn</p>
+            <div class="progress-steps">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+                <div class="step-dot" data-step="4"></div>
+            </div>
+        </div>
+        
+        <div class="onboarding-body">
+            <!-- Step 1: Current Level -->
+            <div class="step-content active" id="step1">
+                <h2 class="step-title">Trình độ tiếng Anh hiện tại của bạn?</h2>
+                <p class="step-subtitle">Chọn mức độ phù hợp nhất với bạn</p>
+                
+                <div class="option-grid">
+                    <div class="option-item" data-value="beginner" onclick="selectOption(this, 'currentLevel')">
+                        <div class="option-icon"><i class="fas fa-seedling"></i></div>
+                        <div class="option-content">
+                            <h4>Người mới bắt đầu</h4>
+                            <p>Biết rất ít hoặc không biết tiếng Anh</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="option-item" data-value="elementary" onclick="selectOption(this, 'currentLevel')">
+                        <div class="option-icon"><i class="fas fa-leaf"></i></div>
+                        <div class="option-content">
+                            <h4>Sơ cấp (A1-A2)</h4>
+                            <p>Có thể hiểu các câu đơn giản</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="option-item" data-value="intermediate" onclick="selectOption(this, 'currentLevel')">
+                        <div class="option-icon"><i class="fas fa-tree"></i></div>
+                        <div class="option-content">
+                            <h4>Trung cấp (B1-B2)</h4>
+                            <p>Có thể giao tiếp trong các tình huống quen thuộc</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="option-item" data-value="advanced" onclick="selectOption(this, 'currentLevel')">
+                        <div class="option-icon"><i class="fas fa-mountain"></i></div>
+                        <div class="option-content">
+                            <h4>Cao cấp (C1-C2)</h4>
+                            <p>Giao tiếp trôi chảy, muốn hoàn thiện hơn</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2: Learning Goal -->
+            <div class="step-content" id="step2">
+                <h2 class="step-title">Mục tiêu học tiếng Anh của bạn?</h2>
+                <p class="step-subtitle">Chọn mục tiêu chính của bạn</p>
+                
+                <div class="option-grid">
+                    <div class="option-item" data-value="communication" onclick="selectOption(this, 'learningGoal')">
+                        <div class="option-icon"><i class="fas fa-comments"></i></div>
+                        <div class="option-content">
+                            <h4>Giao tiếp hàng ngày</h4>
+                            <p>Nói chuyện với người nước ngoài</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="option-item" data-value="work" onclick="selectOption(this, 'learningGoal')">
+                        <div class="option-icon"><i class="fas fa-briefcase"></i></div>
+                        <div class="option-content">
+                            <h4>Công việc</h4>
+                            <p>Thăng tiến nghề nghiệp, làm việc quốc tế</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="option-item" data-value="exam" onclick="selectOption(this, 'learningGoal')">
+                        <div class="option-icon"><i class="fas fa-graduation-cap"></i></div>
+                        <div class="option-content">
+                            <h4>Thi chứng chỉ</h4>
+                            <p>IELTS, TOEIC, TOEFL...</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="option-item" data-value="travel" onclick="selectOption(this, 'learningGoal')">
+                        <div class="option-icon"><i class="fas fa-plane"></i></div>
+                        <div class="option-content">
+                            <h4>Du lịch</h4>
+                            <p>Khám phá thế giới tự tin hơn</p>
+                        </div>
+                        <div class="option-check"><i class="fas fa-check"></i></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Daily Goal -->
+            <div class="step-content" id="step3">
+                <h2 class="step-title">Bạn muốn học bao nhiêu mỗi ngày?</h2>
+                <p class="step-subtitle">Thiết lập mục tiêu học tập hàng ngày</p>
+                
+                <div class="goal-slider">
+                    <div class="goal-display">
+                        <span class="value" id="goalValue">15</span>
+                        <span class="unit">phút/ngày</span>
+                    </div>
+                    <input type="range" class="goal-range" id="goalRange" min="5" max="60" value="15" step="5" oninput="updateGoal(this.value)">
+                    <div class="goal-labels">
+                        <span>5 phút</span>
+                        <span>Thoải mái</span>
+                        <span>Vừa phải</span>
+                        <span>Chăm chỉ</span>
+                        <span>60 phút</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4: Interests -->
+            <div class="step-content" id="step4">
+                <h2 class="step-title">Bạn quan tâm đến chủ đề nào?</h2>
+                <p class="step-subtitle">Chọn ít nhất 3 chủ đề yêu thích</p>
+                
+                <div class="interests-grid">
+                    <div class="interest-chip" onclick="toggleInterest(this)">🎬 Phim ảnh</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">🎵 Âm nhạc</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">📚 Sách</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">💼 Kinh doanh</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">🏃 Thể thao</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">🍳 Ẩm thực</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">✈️ Du lịch</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">💻 Công nghệ</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">🎮 Game</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">🎨 Nghệ thuật</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">🔬 Khoa học</div>
+                    <div class="interest-chip" onclick="toggleInterest(this)">🌍 Văn hóa</div>
+                </div>
+            </div>
+            
+            <!-- Success Step -->
+            <div class="step-content" id="stepSuccess">
+                <div class="success-animation">
+                    <div class="success-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2 class="success-title">Thiết lập hoàn tất!</h2>
+                    <p class="success-subtitle">Chúng tôi đã tạo lộ trình học tập dành riêng cho bạn</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="onboarding-footer" id="onboardingFooter">
+            <button class="btn-skip" id="btnSkip" onclick="skipOnboarding()">Bỏ qua</button>
+            <div>
+                <button class="btn-back" id="btnBack" onclick="prevStep()" style="display: none;">Quay lại</button>
+                <button class="btn-next" id="btnNext" onclick="nextStep()">Tiếp tục</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ================================
+// Configuration
+// ================================
+const API_BASE_URL = '/api/v1';
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+    USER: 'user'
+};
+
+let currentStep = 1;
+const totalSteps = 4;
+
+// Onboarding data
+const onboardingData = {
+    currentLevel: null,
+    learningGoal: null,
+    dailyGoal: 15,
+    interests: []
+};
+
+// ================================
+// Auth Check
+// ================================
+function checkAuth() {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) {
+        window.location.href = '/login/?next=/onboarding/';
+        return false;
+    }
+    return true;
+}
+
+// ================================
+// Step Navigation
+// ================================
+function nextStep() {
+    // Validate current step
+    if (!validateStep(currentStep)) {
+        return;
+    }
+    
+    if (currentStep < totalSteps) {
+        currentStep++;
+        showStep(currentStep);
+    } else {
+        completeOnboarding();
+    }
+}
+
+function prevStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+    }
+}
+
+function showStep(step) {
+    // Update step content
+    document.querySelectorAll('.step-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(`step${step}`).classList.add('active');
+    
+    // Update progress dots
+    document.querySelectorAll('.step-dot').forEach((dot, index) => {
+        dot.classList.remove('active', 'completed');
+        if (index + 1 < step) {
+            dot.classList.add('completed');
+        } else if (index + 1 === step) {
+            dot.classList.add('active');
+        }
+    });
+    
+    // Update buttons
+    document.getElementById('btnBack').style.display = step > 1 ? 'inline-block' : 'none';
+    document.getElementById('btnNext').textContent = step === totalSteps ? 'Hoàn thành' : 'Tiếp tục';
+}
+
+function validateStep(step) {
+    switch (step) {
+        case 1:
+            if (!onboardingData.currentLevel) {
+                alert('Vui lòng chọn trình độ hiện tại của bạn');
+                return false;
+            }
+            break;
+        case 2:
+            if (!onboardingData.learningGoal) {
+                alert('Vui lòng chọn mục tiêu học tập');
+                return false;
+            }
+            break;
+        case 4:
+            if (onboardingData.interests.length < 3) {
+                alert('Vui lòng chọn ít nhất 3 chủ đề');
+                return false;
+            }
+            break;
+    }
+    return true;
+}
+
+// ================================
+// Option Selection
+// ================================
+function selectOption(element, field) {
+    // Remove selection from siblings
+    element.parentElement.querySelectorAll('.option-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Add selection to clicked item
+    element.classList.add('selected');
+    
+    // Store value
+    onboardingData[field] = element.dataset.value;
+}
+
+function updateGoal(value) {
+    document.getElementById('goalValue').textContent = value;
+    onboardingData.dailyGoal = parseInt(value);
+}
+
+function toggleInterest(element) {
+    element.classList.toggle('selected');
+    
+    const interest = element.textContent.trim();
+    const index = onboardingData.interests.indexOf(interest);
+    
+    if (index > -1) {
+        onboardingData.interests.splice(index, 1);
+    } else {
+        onboardingData.interests.push(interest);
+    }
+}
+
+// ================================
+// Complete Onboarding
+// ================================
+async function completeOnboarding() {
+    const btn = document.getElementById('btnNext');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang lưu...';
+    
+    try {
+        const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+        const response = await fetch(`${API_BASE_URL}/users/me/onboarding/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                current_level: onboardingData.currentLevel,
+                learning_goal: onboardingData.learningGoal,
+                daily_goal: onboardingData.dailyGoal,
+                interests: onboardingData.interests,
+                onboarding_completed: true
+            })
+        });
+        
+        if (response.ok) {
+            // Show success
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('stepSuccess').classList.add('active');
+            document.getElementById('onboardingFooter').style.display = 'none';
+            
+            // Update all dots to completed
+            document.querySelectorAll('.step-dot').forEach(dot => {
+                dot.classList.remove('active');
+                dot.classList.add('completed');
+            });
+            
+            // Redirect after delay
+            setTimeout(() => {
+                window.location.href = '/dashboard/';
+            }, 2000);
+        } else {
+            const error = await response.json();
+            alert(error.detail || 'Có lỗi xảy ra. Vui lòng thử lại.');
+            btn.disabled = false;
+            btn.textContent = 'Hoàn thành';
+        }
+        
+    } catch (error) {
+        console.error('Onboarding error:', error);
+        alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        btn.disabled = false;
+        btn.textContent = 'Hoàn thành';
+    }
+}
+
+function skipOnboarding() {
+    if (confirm('Bạn có chắc muốn bỏ qua thiết lập? Bạn có thể thiết lập lại trong phần Cài đặt.')) {
+        window.location.href = '/dashboard/';
+    }
+}
+
+// ================================
+// Initialize
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+    if (!checkAuth()) return;
+    showStep(1);
+});
+</script>
+{% endblock %}

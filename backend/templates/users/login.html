@@ -1,0 +1,527 @@
+{% extends "base/_base_auth.html" %}
+{% load static %}
+
+{% block title %}Đăng nhập - EnglishMaster{% endblock %}
+{% block meta_description %}Đăng nhập vào tài khoản EnglishMaster để tiếp tục học tiếng Anh{% endblock %}
+
+{% block auth_content %}
+<div class="auth-header">
+    <h1 class="auth-title">Chào mừng trở lại!</h1>
+</div>
+
+<!-- Social Login First (như trong hình) -->
+<div class="social-login">
+    <button type="button" class="social-btn google-btn" id="googleLogin">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        <span>Tiếp tục với Google</span>
+    </button>
+</div>
+
+<div class="social-login">
+    <button type="button" class="social-btn facebook-btn" id="facebookLogin">
+        <i class="fab fa-facebook-f"></i>
+        <span>Tiếp tục với Facebook</span>
+    </button>
+</div>
+
+<div class="auth-divider">
+    <span>Hoặc đăng nhập bằng Email</span>
+</div>
+
+<!-- Alert messages -->
+<div id="alertContainer"></div>
+
+<form class="auth-form" id="loginForm">
+    <div class="form-group">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" 
+               class="form-control custom-input" 
+               id="email" 
+               name="email"
+               placeholder="example@email.com"
+               required
+               autocomplete="email">
+        <div class="invalid-feedback">Vui lòng nhập email hợp lệ</div>
+    </div>
+    
+    <div class="form-group">
+        <label for="password" class="form-label">Mật khẩu</label>
+        <div class="password-input-wrapper">
+            <input type="password" 
+                   class="form-control custom-input" 
+                   id="password" 
+                   name="password"
+                   placeholder="••••••••"
+                   required
+                   autocomplete="current-password">
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                <i class="fas fa-eye" id="passwordIcon"></i>
+            </button>
+        </div>
+        <div class="invalid-feedback">Vui lòng nhập mật khẩu</div>
+    </div>
+    
+    <div class="auth-options">
+        <div class="remember-me">
+            <input type="checkbox" id="rememberMe" name="remember">
+            <label for="rememberMe">Ghi nhớ đăng nhập</label>
+        </div>
+        <a href="{% url 'users:forgot-password' %}" class="forgot-password">Quên mật khẩu?</a>
+    </div>
+    
+    <button type="submit" class="btn btn-primary-orange auth-submit" id="submitBtn">
+        <span class="btn-text">ĐĂNG NHẬP</span>
+        <span class="btn-loader d-none">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Đang xử lý...
+        </span>
+    </button>
+</form>
+{% endblock %}
+
+{% block auth_footer %}
+<p>Chưa có tài khoản? <a href="{% url 'users:signup' %}">Đăng ký ngay</a></p>
+{% endblock %}
+
+{% block page_js %}
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Facebook SDK -->
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
+
+<script>
+// ================================
+// API Configuration
+// ================================
+const API_BASE_URL = '/api/v1';
+
+// Storage keys
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+    USER: 'user',
+    REMEMBERED_EMAIL: 'remembered_email'
+};
+
+// ================================
+// Utility Functions
+// ================================
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function showAlert(message, type = 'danger') {
+    const container = document.getElementById('alertContainer');
+    const alertClass = type === 'danger' ? 'alert-danger' : 
+                       type === 'success' ? 'alert-success' : 
+                       type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'danger' ? 'fa-times-circle' : 
+                      type === 'success' ? 'fa-check-circle' : 
+                      type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+    
+    // Handle object messages
+    let displayMessage = message;
+    if (typeof message === 'object') {
+        if (message.message) {
+            displayMessage = message.message;
+        } else if (message.detail) {
+            displayMessage = message.detail;
+        } else {
+            displayMessage = JSON.stringify(message);
+        }
+    }
+    
+    container.innerHTML = `
+        <div class="alert ${alertClass} custom-alert d-flex align-items-center" role="alert">
+            <i class="fas ${iconClass} alert-icon me-2"></i>
+            <div>${displayMessage}</div>
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
+        </div>
+    `;
+}
+
+function setLoading(loading) {
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    if (loading) {
+        submitBtn.disabled = true;
+        btnText.classList.add('d-none');
+        btnLoader.classList.remove('d-none');
+    } else {
+        submitBtn.disabled = false;
+        btnText.classList.remove('d-none');
+        btnLoader.classList.add('d-none');
+    }
+}
+
+// Toggle password visibility
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(inputId + 'Icon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Check if user is already logged in
+async function checkAuth() {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) {
+        return false;
+    }
+    
+    // CRITICAL: Check if JWT cookie exists
+    // If no cookie but localStorage has token → Expired, clear localStorage
+    const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('access_token='));
+    
+    if (!hasCookie) {
+        // Cookie expired but localStorage still has token → Clear it
+        console.warn('JWT cookie expired, clearing localStorage');
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        return false;
+    }
+    
+    // Both cookie and localStorage exist → Verify token with backend
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/token/verify/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ token: token })
+        });
+        
+        if (response.ok) {
+            // Token valid → redirect to dashboard
+            window.location.href = '/dashboard/';
+            return true;
+        } else {
+            // Token invalid → clear all auth data
+            console.warn('Token invalid, clearing localStorage');
+            localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.USER);
+            return false;
+        }
+    } catch (error) {
+        // Network error or verification failed → clear localStorage
+        console.error('Token verification failed:', error);
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        return false;
+    }
+}
+
+// ================================
+// Page Initialization
+// ================================
+document.addEventListener('DOMContentLoaded', async function() {
+    // Check if already logged in (async)
+    const isAuthenticated = await checkAuth();
+    if (isAuthenticated) return;
+    
+    // Load remembered email
+    const savedEmail = localStorage.getItem(STORAGE_KEYS.REMEMBERED_EMAIL);
+    if (savedEmail) {
+        document.getElementById('email').value = savedEmail;
+        document.getElementById('rememberMe').checked = true;
+    }
+    
+    // Check for URL messages
+    const urlParams = new URLSearchParams(window.location.search);
+    const msg = urlParams.get('message');
+    if (msg) {
+        showAlert(decodeURIComponent(msg), 'info');
+    }
+    
+    // Initialize Facebook SDK
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId: '{{ facebook_app_id|default:"" }}',
+            cookie: true,
+            xfbml: true,
+            version: 'v18.0'
+        });
+    };
+});
+
+// ================================
+// Login Form Handler
+// ================================
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+    
+    // Clear previous errors
+    document.getElementById('email').classList.remove('is-invalid');
+    document.getElementById('password').classList.remove('is-invalid');
+    
+    // Validation
+    if (!email || !validateEmail(email)) {
+        document.getElementById('email').classList.add('is-invalid');
+        showAlert('Vui lòng nhập email hợp lệ', 'danger');
+        return;
+    }
+    
+    if (!password) {
+        document.getElementById('password').classList.add('is-invalid');
+        showAlert('Vui lòng nhập mật khẩu', 'danger');
+        return;
+    }
+    
+    setLoading(true);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/token/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Save tokens to localStorage
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access);
+            localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh);
+            
+            // Also save access_token to cookie for server-side authentication
+            document.cookie = `access_token=${data.access}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
+            
+            // Save user data if available
+            if (data.user) {
+                localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+            }
+            
+            // Remember email if checked
+            if (rememberMe) {
+                localStorage.setItem(STORAGE_KEYS.REMEMBERED_EMAIL, email);
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.REMEMBERED_EMAIL);
+            }
+            
+            showAlert('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+            
+            // Dispatch event to update navbar
+            window.dispatchEvent(new Event('authStateChanged'));
+            
+            // Redirect to dashboard or intended page
+            setTimeout(() => {
+                const redirect = urlParams.get('next');
+                window.location.href = redirect || '/dashboard/';
+            }, 1000);
+            
+        } else {
+            // Extract error message from response
+            let errorMsg = 'Email hoặc mật khẩu không đúng';
+            
+            console.log('Login failed. Response data:', data);
+            
+            if (data.error && typeof data.error === 'object') {
+                // Handle custom exception handler format: {error: {message: "...", status_code: 401}}
+                if (data.error.message) {
+                    errorMsg = data.error.message;
+                } else if (data.error.messages && Array.isArray(data.error.messages)) {
+                    errorMsg = data.error.messages[0];
+                } else if (data.error.details) {
+                    const firstKey = Object.keys(data.error.details)[0];
+                    if (firstKey) {
+                        const firstError = data.error.details[firstKey];
+                        errorMsg = Array.isArray(firstError) ? firstError[0] : firstError;
+                    }
+                }
+            } else if (typeof data.error === 'string') {
+                errorMsg = data.error;
+            } else if (data.detail) {
+                // Standard DRF format
+                errorMsg = data.detail;
+            } else if (data.non_field_errors) {
+                errorMsg = Array.isArray(data.non_field_errors) 
+                    ? data.non_field_errors[0] 
+                    : data.non_field_errors;
+            }
+            
+            console.log('Displaying error:', errorMsg);
+            showAlert(errorMsg, 'danger');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showAlert('Không thể kết nối đến server. Vui lòng thử lại.', 'danger');
+    } finally {
+        setLoading(false);
+    }
+});
+
+// ================================
+// Google Login Handler
+// ================================
+document.getElementById('googleLogin').addEventListener('click', function() {
+    const googleClientId = '{{ google_client_id|default:"" }}';
+    
+    if (!googleClientId) {
+        showAlert('Google OAuth chưa được cấu hình', 'warning');
+        return;
+    }
+    
+    try {
+        google.accounts.oauth2.initTokenClient({
+            client_id: googleClientId,
+            scope: 'email profile',
+            callback: async (response) => {
+                if (response.error) {
+                    showAlert('Đăng nhập Google thất bại: ' + response.error, 'danger');
+                    return;
+                }
+                
+                setLoading(true);
+                
+                try {
+                    const result = await fetch(`${API_BASE_URL}/auth/google/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ access_token: response.access_token })
+                    });
+                    
+                    const data = await result.json();
+                    
+                    if (result.ok) {
+                        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access);
+                        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh);
+                        // Save to cookie for server-side auth
+                        document.cookie = `access_token=${data.access}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
+                        if (data.user) {
+                            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+                        }
+                        
+                        const message = data.created 
+                            ? 'Tạo tài khoản và đăng nhập thành công!' 
+                            : 'Đăng nhập thành công!';
+                        showAlert(message + ' Đang chuyển hướng...', 'success');
+                        
+                        // Dispatch event to update navbar
+                        window.dispatchEvent(new Event('authStateChanged'));
+                        
+                        setTimeout(() => {
+                            window.location.href = data.created ? '/onboarding/' : '/dashboard/';
+                        }, 1000);
+                    } else {
+                        // Extract error message properly
+                        let errorMsg = 'Đăng nhập Google thất bại';
+                        if (data.error && typeof data.error === 'object' && data.error.message) {
+                            errorMsg = data.error.message;
+                        } else if (typeof data.error === 'string') {
+                            errorMsg = data.error;
+                        } else if (data.detail) {
+                            errorMsg = data.detail;
+                        }
+                        showAlert(errorMsg, 'danger');
+                    }
+                } catch (error) {
+                    console.error('Google login error:', error);
+                    showAlert('Đã xảy ra lỗi khi đăng nhập bằng Google', 'danger');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        }).requestAccessToken();
+    } catch (error) {
+        console.error('Google SDK error:', error);
+        showAlert('Không thể khởi tạo Google Sign-In', 'danger');
+    }
+});
+
+// ================================
+// Facebook Login Handler
+// ================================
+document.getElementById('facebookLogin').addEventListener('click', function() {
+    if (typeof FB === 'undefined') {
+        showAlert('Facebook SDK chưa được tải', 'warning');
+        return;
+    }
+    
+    FB.login(async function(response) {
+        if (response.authResponse) {
+            const accessToken = response.authResponse.accessToken;
+            
+            setLoading(true);
+            
+            try {
+                const result = await fetch(`${API_BASE_URL}/auth/facebook/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ access_token: accessToken })
+                });
+                
+                const data = await result.json();
+                
+                if (result.ok) {
+                    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access);
+                    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh);
+                    // Save to cookie for server-side auth
+                    document.cookie = `access_token=${data.access}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
+                    if (data.user) {
+                        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+                    }
+                    
+                    const message = data.created 
+                        ? 'Tạo tài khoản và đăng nhập thành công!' 
+                        : 'Đăng nhập thành công!';
+                    showAlert(message + ' Đang chuyển hướng...', 'success');
+                    
+                    // Dispatch event to update navbar
+                    window.dispatchEvent(new Event('authStateChanged'));
+                    
+                    setTimeout(() => {
+                        window.location.href = data.created ? '/onboarding/' : '/dashboard/';
+                    }, 1000);
+                } else {
+                    // Extract error message properly
+                    let errorMsg = 'Đăng nhập Facebook thất bại';
+                    if (data.error && typeof data.error === 'object' && data.error.message) {
+                        errorMsg = data.error.message;
+                    } else if (typeof data.error === 'string') {
+                        errorMsg = data.error;
+                    } else if (data.detail) {
+                        errorMsg = data.detail;
+                    }
+                    showAlert(errorMsg, 'danger');
+                }
+            } catch (error) {
+                console.error('Facebook login error:', error);
+                showAlert('Đã xảy ra lỗi khi đăng nhập bằng Facebook', 'danger');
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            showAlert('Người dùng đã hủy đăng nhập Facebook', 'warning');
+        }
+    }, { scope: 'email,public_profile' });
+});
+
+// URL params for redirect
+const urlParams = new URLSearchParams(window.location.search);
+</script>
+{% endblock %}

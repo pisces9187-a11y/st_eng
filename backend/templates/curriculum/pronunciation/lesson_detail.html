@@ -1,0 +1,1733 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}{{ lesson.title_vi }} - Phát âm IPA{% endblock %}
+{% block meta_description %}{{ lesson.description_vi|truncatewords:30 }}{% endblock %}
+
+{% block page_css %}
+<style>
+    :root {
+        --phoneme-primary: #F47C26;
+        --phoneme-secondary: #183B56;
+        --phoneme-success: #2ECC71;
+        --phoneme-danger: #E74C3C;
+        --phoneme-warning: #F1C40F;
+        --phoneme-light: #F9FAFC;
+        --phoneme-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Hide navbar and main footer in lesson mode (not lesson-footer) */
+    .navbar, footer:not(.lesson-footer), .main-footer, .site-footer {
+        display: none !important;
+    }
+    
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Full Screen Lesson Container */
+    .lesson-container {
+        min-height: 100vh;
+        background: var(--phoneme-light);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Lesson Header */
+    .lesson-header {
+        background: white;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+    
+    .lesson-progress-bar {
+        height: 6px;
+        background: #E0E6ED;
+        border-radius: 10px;
+        overflow: hidden;
+        flex: 1;
+        margin: 0 1rem;
+    }
+    
+    .lesson-progress-bar .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--phoneme-primary), #FF9A56);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    
+    /* Main Lesson Area */
+    .lesson-main {
+        flex: 1;
+        margin-top: 70px;
+        margin-bottom: 80px;
+        padding: 2rem 1rem;
+        overflow-y: auto;
+    }
+    
+    /* Screen Container */
+    .screen-container {
+        max-width: 800px;
+        margin: 0 auto;
+        display: none;
+    }
+    
+    .screen-container.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Lesson Footer */
+    .lesson-footer {
+        background: white;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+    
+    /* IPA Symbol Styles */
+    .ipa-symbol-hero {
+        font-size: 6rem;
+        font-family: 'Lucida Sans Unicode', 'Segoe UI', sans-serif;
+        color: var(--phoneme-secondary);
+        text-align: center;
+        line-height: 1;
+    }
+    
+    .ipa-symbol-large {
+        font-size: 3.5rem;
+        font-family: 'Lucida Sans Unicode', 'Segoe UI', sans-serif;
+        color: var(--phoneme-secondary);
+    }
+    
+    .ipa-symbol-medium {
+        font-size: 2rem;
+        font-family: 'Lucida Sans Unicode', 'Segoe UI', sans-serif;
+        color: var(--phoneme-primary);
+    }
+    
+    /* Phoneme Comparison Card */
+    .phoneme-compare-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .phoneme-compare-card.voiceless {
+        border-top: 4px solid #3498DB;
+    }
+    
+    .phoneme-compare-card.voiced {
+        border-top: 4px solid var(--phoneme-primary);
+    }
+    
+    .phoneme-compare-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 35px rgba(0,0,0,0.15);
+    }
+    
+    /* Audio Play Button */
+    .btn-audio-play {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: var(--phoneme-primary);
+        color: white;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(244, 124, 38, 0.4);
+    }
+    
+    .btn-audio-play:hover {
+        transform: scale(1.1);
+        background: #D35400;
+    }
+    
+    .btn-audio-play.playing {
+        animation: pulse-audio 1s infinite;
+    }
+    
+    @keyframes pulse-audio {
+        0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(244, 124, 38, 0.4); }
+        50% { transform: scale(1.1); box-shadow: 0 6px 30px rgba(244, 124, 38, 0.6); }
+    }
+    
+    /* Word Practice Card */
+    .word-practice-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    
+    .word-practice-card:hover {
+        border-color: var(--phoneme-primary);
+        transform: translateY(-3px);
+    }
+    
+    .word-practice-card.active {
+        border-color: var(--phoneme-primary);
+        background: rgba(244, 124, 38, 0.05);
+    }
+    
+    .word-practice-card .word-text {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--phoneme-secondary);
+    }
+    
+    .word-practice-card .word-ipa {
+        font-size: 1.1rem;
+        color: #6c757d;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        margin: 0.5rem 0;
+    }
+    
+    .word-practice-card .word-ipa .highlight {
+        background: rgba(244, 124, 38, 0.2);
+        padding: 2px 4px;
+        border-radius: 4px;
+        color: var(--phoneme-primary);
+    }
+    
+    .word-practice-card .word-meaning {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    /* Tip Box */
+    .tip-box {
+        background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        border-left: 4px solid var(--phoneme-warning);
+    }
+    
+    .tip-box-primary {
+        background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+        border-left-color: var(--phoneme-primary);
+    }
+    
+    .tip-box i {
+        font-size: 1.5rem;
+        color: var(--phoneme-warning);
+    }
+    
+    .tip-box-primary i {
+        color: var(--phoneme-primary);
+    }
+    
+    /* Minimal Pair Challenge */
+    .challenge-question {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .challenge-audio-btn {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-size: 2.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .challenge-audio-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .choice-btn {
+        min-width: 180px;
+        padding: 1.25rem 2rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        border-radius: 16px;
+        border: 3px solid #E0E6ED;
+        background: white;
+        color: var(--phoneme-secondary);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .choice-btn:hover {
+        border-color: var(--phoneme-primary);
+        transform: translateY(-3px);
+    }
+    
+    .choice-btn.selected {
+        border-color: var(--phoneme-primary);
+        background: rgba(244, 124, 38, 0.1);
+    }
+    
+    .choice-btn.correct {
+        border-color: var(--phoneme-success) !important;
+        background: rgba(46, 204, 113, 0.15) !important;
+        color: var(--phoneme-success) !important;
+    }
+    
+    .choice-btn.incorrect {
+        border-color: var(--phoneme-danger) !important;
+        background: rgba(231, 76, 60, 0.15) !important;
+        color: var(--phoneme-danger) !important;
+    }
+    
+    /* Score Display */
+    .score-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--phoneme-primary) 0%, #FF9A56 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 8px 30px rgba(244, 124, 38, 0.4);
+    }
+    
+    .score-number {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    
+    .score-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    
+    /* XP Earned Animation */
+    .xp-earned {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: bounceIn 0.6s ease;
+    }
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Tongue Twister Box */
+    .tongue-twister-box {
+        background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border-left: 4px solid var(--phoneme-success);
+    }
+    
+    .tongue-twister-text {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--phoneme-secondary);
+        line-height: 1.6;
+    }
+    
+    /* Screen Navigation Dots */
+    .screen-dots {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .screen-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #E0E6ED;
+        transition: all 0.3s ease;
+    }
+    
+    .screen-dot.active {
+        background: var(--phoneme-primary);
+        width: 30px;
+        border-radius: 5px;
+    }
+    
+    .screen-dot.completed {
+        background: var(--phoneme-success);
+    }
+    
+    /* Comparison Table Styles (Screen 4) */
+    .comparison-table {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .comparison-table table {
+        margin-bottom: 0;
+    }
+    
+    .comparison-table th {
+        font-weight: 700;
+        vertical-align: middle;
+        padding: 1rem;
+    }
+    
+    .comparison-table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    
+    .tip-badge {
+        background: rgba(13, 110, 253, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+    
+    .word-comparison-card {
+        background: white;
+        border: 2px solid #E0E6ED;
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .word-comparison-card:hover {
+        border-color: var(--phoneme-primary);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .word-box {
+        text-align: center;
+        cursor: pointer;
+        padding: 0.75rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        flex: 1;
+    }
+    
+    .word-box:hover {
+        background: rgba(0,0,0,0.03);
+    }
+    
+    .word-box .word-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .word-box .word-ipa {
+        font-size: 0.9rem;
+        color: #6c757d;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        margin-bottom: 0.25rem;
+    }
+    
+    .word-box .word-meaning {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .vs-divider-small {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #6c757d;
+        padding: 0 0.5rem;
+    }
+    
+    /* Quick Recall Alert (Screen 3) */
+    .recall-alert {
+        animation: slideInDown 0.5s ease;
+    }
+    
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Hint Box Styles */
+    .hint-box {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .ipa-symbol-hero { font-size: 4rem; }
+        .ipa-symbol-large { font-size: 2.5rem; }
+        .phoneme-compare-card { padding: 1.5rem; }
+        .choice-btn { 
+            min-width: 140px; 
+            padding: 1rem 1.5rem;
+            font-size: 1.25rem;
+        }
+        .comparison-table {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        .word-box .word-text {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-container" id="lessonApp">
+    <!-- Lesson Header -->
+    <header class="lesson-header">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'curriculum:pronunciation-library' %}" class="btn btn-link text-muted p-0 me-3" title="Thoát bài học">
+                <i class="fas fa-times fa-lg"></i>
+            </a>
+            
+            <div class="lesson-progress-bar">
+                <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2 ms-3">
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-star me-1"></i>
+                    [[ xpEarned ]] XP
+                </span>
+                <span class="text-muted small">[[ currentScreen ]]/5</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Lesson Main Content -->
+    <main class="lesson-main">
+        
+        <!-- ============================================ -->
+        <!-- SCREEN 1: INTRO & CONCEPT -->
+        <!-- ============================================ -->
+        <div class="screen-container" :class="{ active: currentScreen === 1 }">
+            <div class="text-center mb-4">
+                <h1 class="h3 text-muted mb-2">Phần [[ lesson.part_number ]] - Bài [[ lesson.unit_number ]]</h1>
+                <h2 class="display-5 fw-bold text-primary-dark">[[ lesson.title_vi ]]</h2>
+            </div>
+            
+            <!-- Twin Sounds Intro -->
+            <div class="text-center mb-5">
+                <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
+                    <div class="phoneme-compare-card voiceless flex-fill" style="max-width: 220px;">
+                        <div class="ipa-symbol-large">/[[ phoneme1.ipa_symbol ]]/</div>
+                        <div class="mt-2 text-muted">[[ phoneme1.vietnamese_approx ]]</div>
+                        <span class="badge bg-info mt-2" v-if="phoneme1.voicing === 'voiceless'">Vô thanh</span>
+                        <span class="badge bg-warning text-dark mt-2" v-else>Hữu thanh</span>
+                        <button class="btn btn-audio-play mt-3" @click="playPhoneme(phoneme1)" :class="{ playing: playingPhoneme === 1 }">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex align-items-center" v-if="phoneme2 && phoneme2.ipa_symbol !== phoneme1.ipa_symbol">
+                        <span class="display-4 text-muted">vs</span>
+                    </div>
+                    
+                    <div class="phoneme-compare-card voiced flex-fill" style="max-width: 220px;" v-if="phoneme2 && phoneme2.ipa_symbol !== phoneme1.ipa_symbol">
+                        <div class="ipa-symbol-large">/[[ phoneme2.ipa_symbol ]]/</div>
+                        <div class="mt-2 text-muted">[[ phoneme2.vietnamese_approx ]]</div>
+                        <span class="badge bg-info mt-2" v-if="phoneme2.voicing === 'voiceless'">Vô thanh</span>
+                        <span class="badge bg-warning text-dark mt-2" v-else>Hữu thanh</span>
+                        <button class="btn btn-audio-play mt-3" @click="playPhoneme(phoneme2)" :class="{ playing: playingPhoneme === 2 }">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p class="lead text-muted mb-4">[[ lesson.description_vi ]]</p>
+            </div>
+            
+            <!-- Key Concept Box -->
+            <div class="tip-box tip-box-primary mb-4" v-if="phoneme2 && phoneme2.ipa_symbol !== phoneme1.ipa_symbol">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="fas fa-lightbulb mt-1"></i>
+                    <div>
+                        <h5 class="fw-bold mb-2">Điểm quan trọng</h5>
+                        <p class="mb-0">
+                            <strong>Điểm chung:</strong> Miệng bạn làm động tác Y HỆT nhau khi phát âm hai âm này.
+                        </p>
+                        <p class="mb-0 mt-2">
+                            <strong>Điểm khác biệt:</strong><br>
+                            • <span class="text-info fw-bold">/[[ phoneme1.ipa_symbol ]]/</span>: [[ phoneme1.pronunciation_tips_vi || phoneme1.vietnamese_approx ]]<br>
+                            • <span class="text-warning fw-bold">/[[ phoneme2.ipa_symbol ]]/</span>: [[ phoneme2.pronunciation_tips_vi || phoneme2.vietnamese_approx ]]
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Learning Objectives -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-bullseye text-primary me-2"></i>
+                        Mục tiêu bài học
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li v-for="(obj, idx) in lesson.objectives" :key="idx" class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            [[ obj ]]
+                        </li>
+                        <li class="mb-2" v-if="!lesson.objectives || lesson.objectives.length === 0">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Hiểu và phân biệt được âm /[[ phoneme1.ipa_symbol ]]/
+                            <span v-if="phoneme2 && phoneme2.ipa_symbol !== phoneme1.ipa_symbol"> và /[[ phoneme2.ipa_symbol ]]/</span>
+                        </li>
+                        <li class="mb-2" v-if="!lesson.objectives || lesson.objectives.length === 0">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Luyện tập phát âm với từ vựng thực tế
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- SCREEN 2: PRACTICE PHONEME 1 -->
+        <!-- ============================================ -->
+        <div class="screen-container" :class="{ active: currentScreen === 2 }">
+            <div class="text-center mb-4">
+                <span class="badge px-3 py-2 mb-3" :class="phoneme1.voicing === 'voiceless' ? 'bg-info' : 'bg-warning text-dark'">
+                    [[ phoneme1.voicing === 'voiceless' ? 'Âm Vô Thanh (Unvoiced)' : 'Âm Hữu Thanh (Voiced)' ]]
+                </span>
+                <div class="ipa-symbol-hero">/[[ phoneme1.ipa_symbol ]]/</div>
+                <p class="lead mt-2">[[ phoneme1.vietnamese_approx ]]</p>
+            </div>
+            
+            <!-- Tip -->
+            <div class="tip-box mb-4" v-if="phoneme1.pronunciation_tips_vi">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="fas fa-magic mt-1"></i>
+                    <div>
+                        <h5 class="fw-bold mb-2">Mẹo phát âm</h5>
+                        <p class="mb-0">[[ phoneme1.pronunciation_tips_vi ]]</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Word Flashcards -->
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-headphones text-primary me-2"></i>
+                Nghe và luyện tập từ vựng
+            </h5>
+            
+            <div class="row g-3 mb-4">
+                <div v-for="(word, idx) in phoneme1Words" :key="idx" class="col-6 col-md-4">
+                    <div class="word-practice-card" 
+                         :class="{ active: activeWord === 'p1_' + idx }"
+                         @click="playWord(word, 'p1_' + idx)">
+                        <div class="word-text">[[ word.word ]]</div>
+                        <div class="word-ipa" v-html="highlightIPA(word.ipa_transcription, phoneme1.ipa_symbol)"></div>
+                        <div class="word-meaning">[[ word.meaning_vi ]]</div>
+                        <button class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-volume-up me-1"></i> Nghe
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Common Mistakes -->
+            <div v-if="phoneme1.common_mistakes_vi" class="alert alert-warning border-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Lỗi người Việt hay mắc:</strong> [[ phoneme1.common_mistakes_vi ]]
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- SCREEN 3: PRACTICE PHONEME 2 -->
+        <!-- ============================================ -->
+        <div class="screen-container" :class="{ active: currentScreen === 3 }">
+            <!-- Quick Recall Section (NEW) -->
+            <div class="alert alert-info border-0 mb-4 recall-alert" v-if="phoneme2 && phoneme2.ipa_symbol !== phoneme1.ipa_symbol">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h6 class="mb-1">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Nhớ lại âm trước:
+                        </h6>
+                        <p class="mb-0 small">
+                            /[[ phoneme1.ipa_symbol ]]/ - [[ phoneme1.vietnamese_approx ]] 
+                            - <strong>[[ phoneme1.voicing === 'voiceless' ? 'Vô thanh (không rung thanh quản)' : 'Hữu thanh (rung thanh quản)' ]]</strong>
+                        </p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-info" @click="playPhoneme(phoneme1)" :disabled="isPlaying">
+                        <i class="fas fa-volume-up me-1"></i> Nghe lại
+                    </button>
+                </div>
+            </div>
+            
+            <div class="text-center mb-4">
+                <span class="badge px-3 py-2 mb-3" :class="phoneme2.voicing === 'voiceless' ? 'bg-info' : 'bg-warning text-dark'">
+                    Bây giờ học âm thứ 2: [[ phoneme2.voicing === 'voiceless' ? 'Âm Vô Thanh (Unvoiced)' : 'Âm Hữu Thanh (Voiced)' ]]
+                </span>
+                <div class="ipa-symbol-hero">/[[ phoneme2.ipa_symbol ]]/</div>
+                <p class="lead mt-2">[[ phoneme2.vietnamese_approx ]]</p>
+            </div>
+            
+            <!-- Tip -->
+            <div class="tip-box tip-box-primary mb-4" v-if="phoneme2.pronunciation_tips_vi">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="fas fa-hand-point-up mt-1"></i>
+                    <div>
+                        <h5 class="fw-bold mb-2">Mẹo phát âm</h5>
+                        <p class="mb-0">[[ phoneme2.pronunciation_tips_vi ]]</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Word Flashcards -->
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-headphones text-primary me-2"></i>
+                Nghe và luyện tập từ vựng
+            </h5>
+            
+            <div class="row g-3 mb-4">
+                <div v-for="(word, idx) in phoneme2Words" :key="idx" class="col-6 col-md-4">
+                    <div class="word-practice-card" 
+                         :class="{ active: activeWord === 'p2_' + idx }"
+                         @click="playWord(word, 'p2_' + idx)">
+                        <div class="word-text">[[ word.word ]]</div>
+                        <div class="word-ipa" v-html="highlightIPA(word.ipa_transcription, phoneme2.ipa_symbol)"></div>
+                        <div class="word-meaning">[[ word.meaning_vi ]]</div>
+                        <button class="btn btn-sm btn-outline-warning mt-2">
+                            <i class="fas fa-volume-up me-1"></i> Nghe
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Common Mistakes -->
+            <div v-if="phoneme2.common_mistakes_vi" class="alert alert-warning border-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Lỗi người Việt hay mắc:</strong> [[ phoneme2.common_mistakes_vi ]]
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- SCREEN 4: SIDE-BY-SIDE COMPARISON (NEW) -->
+        <!-- ============================================ -->
+        <div class="screen-container" :class="{ active: currentScreen === 4 }">
+            <div class="text-center mb-4">
+                <span class="badge bg-primary px-3 py-2 mb-3">
+                    <i class="fas fa-balance-scale me-2"></i>
+                    So sánh trực tiếp
+                </span>
+                <h2 class="h4 fw-bold">So sánh /[[ phoneme1.ipa_symbol ]]/ và /[[ phoneme2.ipa_symbol ]]/</h2>
+                <p class="text-muted">Nghe và so sánh sự khác biệt giữa hai âm</p>
+            </div>
+            
+            <!-- Comparison Table -->
+            <div class="comparison-table mb-4">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="25%">Đặc điểm</th>
+                            <th width="37.5%" class="bg-info bg-opacity-10">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span>/[[ phoneme1.ipa_symbol ]]/</span>
+                                    <button class="btn btn-sm btn-audio-play" style="width: 40px; height: 40px;" @click="playPhoneme(phoneme1)" :disabled="isPlaying">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th width="37.5%" class="bg-warning bg-opacity-10">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span>/[[ phoneme2.ipa_symbol ]]/</span>
+                                    <button class="btn btn-sm btn-audio-play" style="width: 40px; height: 40px;" @click="playPhoneme(phoneme2)" :disabled="isPlaying">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Xấp xỉ tiếng Việt</strong></td>
+                            <td>[[ phoneme1.vietnamese_approx ]]</td>
+                            <td>[[ phoneme2.vietnamese_approx ]]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Loại âm</strong></td>
+                            <td>
+                                <span class="badge" :class="phoneme1.voicing === 'voiceless' ? 'bg-info' : 'bg-warning text-dark'">
+                                    [[ phoneme1.voicing === 'voiceless' ? 'Vô thanh' : 'Hữu thanh' ]]
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" :class="phoneme2.voicing === 'voiceless' ? 'bg-info' : 'bg-warning text-dark'">
+                                    [[ phoneme2.voicing === 'voiceless' ? 'Vô thanh' : 'Hữu thanh' ]]
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>✅ Giống nhau</strong></td>
+                            <td colspan="2" class="text-center">
+                                • Cùng động tác miệng<br>
+                                • Cùng vị trí lưỡi<br>
+                                • Cùng cách khí thoát ra
+                            </td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><strong>❌ Khác nhau</strong></td>
+                            <td>[[ phoneme1.pronunciation_tips_vi || (phoneme1.voicing === 'voiceless' ? 'Không rung thanh quản' : 'Rung thanh quản') ]]</td>
+                            <td>[[ phoneme2.pronunciation_tips_vi || (phoneme2.voicing === 'voiceless' ? 'Không rung thanh quản' : 'Rung thanh quản') ]]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cách kiểm tra</strong></td>
+                            <td>
+                                <div class="tip-badge">
+                                    <i class="fas fa-hand-paper me-2"></i>
+                                    <span v-if="phoneme1.voicing === 'voiceless'">Đặt tờ giấy trước miệng → giấy bay mạnh</span>
+                                    <span v-else>Đặt ngón tay lên cổ họng → rung rõ</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="tip-badge">
+                                    <i class="fas fa-hand-point-up me-2"></i>
+                                    <span v-if="phoneme2.voicing === 'voiceless'">Đặt tờ giấy trước miệng → giấy bay mạnh</span>
+                                    <span v-else>Đặt ngón tay lên cổ họng → rung rõ</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Interactive Word Comparison -->
+            <div class="card border-0 shadow-sm" v-if="minimalPairsSample && minimalPairsSample.length > 0">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-exchange-alt text-primary me-2"></i>
+                        So sánh từ vựng
+                    </h5>
+                    
+                    <div class="row g-3">
+                        <div v-for="(pair, idx) in minimalPairsSample" :key="idx" class="col-md-6">
+                            <div class="word-comparison-card">
+                                <div class="d-flex justify-content-around align-items-center">
+                                    <!-- Word 1 -->
+                                    <div class="word-box" @click="playComparisonWord(pair.word_1)">
+                                        <div class="word-text text-info">[[ pair.word_1 ]]</div>
+                                        <div class="word-ipa">[[ pair.word_1_ipa ]]</div>
+                                        <div class="word-meaning" v-if="pair.word_1_meaning">[[ pair.word_1_meaning ]]</div>
+                                        <button class="btn btn-sm btn-outline-info mt-2">
+                                            <i class="fas fa-volume-up"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- VS -->
+                                    <div class="vs-divider-small">vs</div>
+                                    
+                                    <!-- Word 2 -->
+                                    <div class="word-box" @click="playComparisonWord(pair.word_2)">
+                                        <div class="word-text text-warning">[[ pair.word_2 ]]</div>
+                                        <div class="word-ipa">[[ pair.word_2_ipa ]]</div>
+                                        <div class="word-meaning" v-if="pair.word_2_meaning">[[ pair.word_2_meaning ]]</div>
+                                        <button class="btn btn-sm btn-outline-warning mt-2">
+                                            <i class="fas fa-volume-up"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Explanation -->
+                                <div class="mt-2 text-muted text-center small" v-if="pair.difference_note_vi">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    [[ pair.difference_note_vi ]]
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Guided Practice -->
+            <div class="alert alert-primary mt-4 border-0">
+                <h6 class="alert-heading">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Thực hành có hướng dẫn
+                </h6>
+                <ol class="mb-0">
+                    <li>Nghe âm /[[ phoneme1.ipa_symbol ]]/ → Đặt tay lên cổ họng → <strong v-if="phoneme1.voicing === 'voiceless'">Không rung</strong><strong v-else>CÓ rung</strong></li>
+                    <li>Nghe âm /[[ phoneme2.ipa_symbol ]]/ → Đặt tay lên cổ họng → <strong v-if="phoneme2.voicing === 'voiceless'">Không rung</strong><strong v-else>CÓ rung</strong></li>
+                    <li>Nghe các cặp từ bên trên → Phân biệt ngay lập tức</li>
+                    <li>Sẵn sàng cho thử thách ở màn hình tiếp theo!</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- SCREEN 5: MINIMAL PAIRS CHALLENGE -->
+        <!-- ============================================ -->
+        <div class="screen-container" :class="{ active: currentScreen === 5 }">
+            <div class="text-center mb-4">
+                <span class="badge bg-danger px-3 py-2 mb-3">Thử thách phân biệt</span>
+                <h2 class="h4 fw-bold">Nghe và chọn từ đúng!</h2>
+                <p class="text-muted">Câu [[ currentQuestion + 1 ]] / [[ challengeQuestions.length ]]</p>
+            </div>
+            
+            <!-- Challenge Question -->
+            <div class="challenge-question mb-4" v-if="currentChallenge">
+                <p class="text-muted mb-4">Bấm nút để nghe âm thanh, sau đó chọn từ bạn nghe được</p>
+                
+                <button class="challenge-audio-btn mb-4" @click="playChallengeAudio" :class="{ 'playing': isPlayingChallenge }">
+                    <i class="fas fa-play" v-if="!isPlayingChallenge"></i>
+                    <i class="fas fa-volume-up" v-else></i>
+                </button>
+                
+                <!-- Hint Button (NEW) -->
+                <div class="mb-3" v-if="!hasAnswered">
+                    <button class="btn btn-sm btn-outline-secondary" @click="showHint = !showHint">
+                        <i class="fas fa-question-circle me-1"></i>
+                        [[ showHint ? 'Ẩn gợi ý' : 'Hiện gợi ý' ]]
+                    </button>
+                    
+                    <div v-if="showHint" class="alert alert-warning mt-2 small hint-box">
+                        <strong>💡 Gợi ý:</strong><br>
+                        • Đặt ngón tay lên cổ họng khi nghe<br>
+                        • Rung = <strong>/[[ phoneme2.ipa_symbol ]]/ ([[ phoneme2.vietnamese_approx ]])</strong><br>
+                        • Không rung = <strong>/[[ phoneme1.ipa_symbol ]]/ ([[ phoneme1.vietnamese_approx ]])</strong><br>
+                        <small class="text-muted">Nghe lại nhiều lần để quen tai!</small>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-4 flex-wrap">
+                    <button class="choice-btn" 
+                            :class="getChoiceClass(currentChallenge.word_1)"
+                            @click="selectAnswer(currentChallenge.word_1)"
+                            :disabled="hasAnswered">
+                        <div>[[ currentChallenge.word_1 ]]</div>
+                        <small class="text-muted">/[[ currentChallenge.word_1_ipa ]]/</small>
+                    </button>
+                    
+                    <button class="choice-btn"
+                            :class="getChoiceClass(currentChallenge.word_2)"
+                            @click="selectAnswer(currentChallenge.word_2)"
+                            :disabled="hasAnswered">
+                        <div>[[ currentChallenge.word_2 ]]</div>
+                        <small class="text-muted">/[[ currentChallenge.word_2_ipa ]]/</small>
+                    </button>
+                </div>
+                
+                <!-- Feedback -->
+                <div v-if="hasAnswered" class="mt-4">
+                    <div v-if="isCorrect" class="alert alert-success border-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Chính xác!</strong> 
+                        <span v-if="currentChallenge.difference_note_vi">[[ currentChallenge.difference_note_vi ]]</span>
+                    </div>
+                    <div v-else class="alert alert-danger border-0">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>Chưa đúng!</strong> Đáp án đúng là <strong>"[[ correctAnswer ]]"</strong>.
+                        <span v-if="currentChallenge.difference_note_vi">[[ currentChallenge.difference_note_vi ]]</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No questions fallback -->
+            <div v-if="!currentChallenge" class="text-center py-5">
+                <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
+                <h4>Chưa có câu hỏi cho bài học này</h4>
+                <p class="text-muted">Hãy tiếp tục sang phần tổng kết!</p>
+            </div>
+            
+            <!-- Score Progress -->
+            <div class="text-center" v-if="answeredCount > 0">
+                <span class="badge bg-success fs-6">
+                    <i class="fas fa-check me-1"></i> [[ correctCount ]] / [[ answeredCount ]] đúng
+                </span>
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- SCREEN 6: SUMMARY & HOMEWORK -->
+        <!-- ============================================ -->
+        <div class="screen-container" :class="{ active: currentScreen === 6 }">
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <i class="fas fa-trophy text-warning" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="display-5 fw-bold text-success mb-3">Tuyệt vời!</h2>
+                <p class="lead">Bạn đã hoàn thành bài học này!</p>
+            </div>
+            
+            <!-- Score Circle -->
+            <div class="d-flex justify-content-center mb-4">
+                <div class="score-circle">
+                    <div class="score-number">[[ Math.round(accuracy) ]]%</div>
+                    <div class="score-label">Độ chính xác</div>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="h3 text-primary mb-1">[[ correctCount ]] / [[ challengeQuestions.length || 0 ]]</div>
+                            <div class="text-muted small">Câu trả lời đúng</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="h3 text-success mb-1">[[ timeSpentFormatted ]]</div>
+                            <div class="text-muted small">Thời gian học</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- XP Earned -->
+            <div class="text-center mb-4">
+                <div class="xp-earned">
+                    <i class="fas fa-star"></i>
+                    +[[ totalXpEarned ]] XP
+                </div>
+            </div>
+            
+            <!-- Tongue Twister Challenge -->
+            <div v-if="tongueTwister" class="tongue-twister-box mb-4">
+                <h5 class="fw-bold mb-2">
+                    <i class="fas fa-pepper-hot text-success me-2"></i>
+                    Thử thách: Câu xoắn lưỡi
+                </h5>
+                <p class="tongue-twister-text mb-2">"[[ tongueTwister.text ]]"</p>
+                <small class="text-muted">[[ tongueTwister.meaning_vi ]]</small>
+                <button class="btn btn-sm btn-success mt-3" @click="playTongueTwister">
+                    <i class="fas fa-volume-up me-1"></i> Nghe mẫu
+                </button>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary btn-lg" @click="completeLesson" :disabled="isCompleting">
+                    <span v-if="isCompleting">
+                        <i class="fas fa-spinner fa-spin me-2"></i> Đang lưu...
+                    </span>
+                    <span v-else>
+                        <i class="fas fa-check me-2"></i> Hoàn thành bài học
+                    </span>
+                </button>
+                <a href="{% url 'curriculum:pronunciation-library' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại thư viện
+                </a>
+            </div>
+        </div>
+        
+    </main>
+    
+    <!-- Lesson Footer -->
+    <footer class="lesson-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <button class="btn btn-outline-secondary" @click="prevScreen" :disabled="currentScreen === 1">
+                <i class="fas fa-arrow-left me-2"></i> Quay lại
+            </button>
+            
+            <div class="screen-dots">
+                <div v-for="n in 6" :key="n" 
+                     class="screen-dot"
+                     :class="{ 
+                         active: currentScreen === n,
+                         completed: completedScreens.includes(n)
+                     }">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" @click="nextScreen" v-if="currentScreen < 6">
+                <span v-if="currentScreen === 5 && !hasAnswered && currentChallenge">Chọn đáp án</span>
+                <span v-else>Tiếp tục <i class="fas fa-arrow-right ms-2"></i></span>
+            </button>
+            <div v-else style="width: 100px;"></div>
+        </div>
+    </footer>
+    
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// ================================
+// Token Management Utilities
+// ================================
+const TokenManager = {
+    STORAGE_KEYS: {
+        ACCESS_TOKEN: 'access_token',
+        REFRESH_TOKEN: 'refresh_token'
+    },
+    
+    getAccessToken() {
+        return localStorage.getItem(this.STORAGE_KEYS.ACCESS_TOKEN);
+    },
+    
+    getRefreshToken() {
+        return localStorage.getItem(this.STORAGE_KEYS.REFRESH_TOKEN);
+    },
+    
+    setAccessToken(token) {
+        localStorage.setItem(this.STORAGE_KEYS.ACCESS_TOKEN, token);
+    },
+    
+    isAuthenticated() {
+        return this.getAccessToken() !== null || this.getRefreshToken() !== null;
+    },
+    
+    // Refresh the access token using refresh token
+    async refreshAccessToken() {
+        const refreshToken = this.getRefreshToken();
+        if (!refreshToken) {
+            console.log('No refresh token available');
+            return null;
+        }
+        
+        try {
+            const response = await fetch('/api/v1/users/token/refresh/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refresh: refreshToken })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.setAccessToken(data.access);
+                console.log('Access token refreshed successfully');
+                return data.access;
+            } else {
+                console.log('Failed to refresh token:', response.status);
+                // Clear tokens if refresh failed (expired refresh token)
+                localStorage.removeItem(this.STORAGE_KEYS.ACCESS_TOKEN);
+                localStorage.removeItem(this.STORAGE_KEYS.REFRESH_TOKEN);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+            return null;
+        }
+    },
+    
+    // Make authenticated API call with auto-refresh
+    async fetchWithAuth(url, options = {}) {
+        let token = this.getAccessToken();
+        
+        // Setup headers
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        // First attempt
+        let response = await fetch(url, { ...options, headers });
+        
+        // If 401, try to refresh token and retry
+        if (response.status === 401 && this.getRefreshToken()) {
+            console.log('Access token expired, attempting refresh...');
+            token = await this.refreshAccessToken();
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                response = await fetch(url, { ...options, headers });
+            }
+        }
+        
+        return response;
+    }
+};
+
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    
+    data() {
+        return {
+            // Lesson data from server
+            lesson: {{ lesson_json|safe }},
+            phonemes: {{ phonemes_json|safe }},
+            minimalPairs: {{ minimal_pairs_json|safe }},
+            tongueTwisters: {{ tongue_twisters_json|safe }},
+            userProgress: {{ user_progress_json|safe }},
+            
+            // Screen navigation
+            currentScreen: 1,
+            completedScreens: [],
+            
+            // Phoneme data - khởi tạo với giá trị mặc định để tránh lỗi null
+            phoneme1: { ipa_symbol: '', vietnamese_approx: '', voicing: '', example_words: [] },
+            phoneme2: { ipa_symbol: '', vietnamese_approx: '', voicing: '', example_words: [] },
+            phoneme1Words: [],
+            phoneme2Words: [],
+            isDataLoaded: false,  // Flag để biết dữ liệu đã sẵn sàng
+            
+            // Audio state
+            activeWord: null,
+            isPlaying: false,
+            playingPhoneme: null,
+            isPlayingChallenge: false,
+            
+            // Screen 4: Comparison
+            minimalPairsSample: [],
+            
+            // Screen 5: Challenge hints
+            showHint: false,
+            
+            // Challenge state
+            challengeQuestions: [],
+            currentQuestion: 0,
+            selectedAnswer: null,
+            hasAnswered: false,
+            isCorrect: false,
+            correctAnswer: '',
+            correctCount: 0,
+            answeredCount: 0,
+            
+            // Progress & XP
+            xpEarned: 0,
+            totalXpEarned: 0,
+            startTime: Date.now(),
+            timeSpent: 0,
+            
+            // API state
+            isCompleting: false,
+            csrfToken: '{{ csrf_token }}',
+        };
+    },
+    
+    computed: {
+        progressPercent() {
+            return (this.currentScreen / 6) * 100;
+        },
+        
+        accuracy() {
+            if (this.answeredCount === 0) return 100;
+            return (this.correctCount / this.answeredCount) * 100;
+        },
+        
+        timeSpentFormatted() {
+            const seconds = Math.floor((Date.now() - this.startTime) / 1000);
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        },
+        
+        currentChallenge() {
+            return this.challengeQuestions[this.currentQuestion] || null;
+        },
+        
+        tongueTwister() {
+            return this.tongueTwisters && this.tongueTwisters.length > 0 ? this.tongueTwisters[0] : null;
+        }
+    },
+    
+    mounted() {
+        this.initializeLesson();
+    },
+    
+    methods: {
+        initializeLesson() {
+            // Set phonemes (pair contrast lesson)
+            if (this.phonemes && this.phonemes.length >= 2) {
+                this.phoneme1 = this.phonemes[0];
+                this.phoneme2 = this.phonemes[1];
+                this.phoneme1Words = this.phoneme1.example_words || [];
+                this.phoneme2Words = this.phoneme2.example_words || [];
+            } else if (this.phonemes && this.phonemes.length === 1) {
+                this.phoneme1 = this.phonemes[0];
+                this.phoneme2 = this.phonemes[0];
+                this.phoneme1Words = this.phoneme1.example_words || [];
+                this.phoneme2Words = [];
+            } else {
+                // Default fallback
+                this.phoneme1 = { ipa_symbol: 'p', vietnamese_approx: 'pờ', voicing: 'voiceless', example_words: [] };
+                this.phoneme2 = { ipa_symbol: 'b', vietnamese_approx: 'bờ', voicing: 'voiced', example_words: [] };
+            }
+            
+            // Đánh dấu dữ liệu đã sẵn sàng
+            this.isDataLoaded = true;
+            
+            // Setup challenge questions from minimal pairs
+            this.setupChallengeQuestions();
+            
+            // Setup minimal pairs sample for Screen 4 comparison (take first 4 pairs)
+            this.minimalPairsSample = (this.minimalPairs || []).slice(0, 4);
+            
+            // Restore progress if exists
+            if (this.userProgress && this.userProgress.current_screen) {
+                this.currentScreen = Math.min(this.userProgress.current_screen, 1);
+                this.completedScreens = this.userProgress.completed_screens || [];
+            }
+        },
+        
+        setupChallengeQuestions() {
+            // Create questions from minimal pairs
+            if (this.minimalPairs && this.minimalPairs.length > 0) {
+                this.challengeQuestions = this.minimalPairs.map(pair => ({
+                    ...pair,
+                    // Randomly select which word is the correct answer
+                    correctWord: Math.random() > 0.5 ? pair.word_1 : pair.word_2
+                }));
+            } else {
+                // Fallback: create from phoneme words
+                const allWords = [...(this.phoneme1Words || []), ...(this.phoneme2Words || [])];
+                if (allWords.length >= 2) {
+                    this.challengeQuestions = allWords.slice(0, Math.min(5, allWords.length)).map((w, idx) => ({
+                        word_1: w.word,
+                        word_1_ipa: w.ipa_transcription,
+                        word_2: allWords[(idx + 1) % allWords.length]?.word || w.word,
+                        word_2_ipa: allWords[(idx + 1) % allWords.length]?.ipa_transcription || w.ipa_transcription,
+                        correctWord: w.word,
+                        difference_note_vi: ''
+                    }));
+                }
+            }
+        },
+        
+        // Navigation
+        prevScreen() {
+            if (this.currentScreen > 1) {
+                this.currentScreen--;
+            }
+        },
+        
+        nextScreen() {
+            if (this.currentScreen === 5 && !this.hasAnswered && this.currentChallenge) {
+                // Must answer challenge first
+                return;
+            }
+            
+            // Mark current screen as completed
+            if (!this.completedScreens.includes(this.currentScreen)) {
+                this.completedScreens.push(this.currentScreen);
+                this.saveScreenProgress();
+            }
+            
+            // Move to next question in challenge
+            if (this.currentScreen === 5 && this.hasAnswered) {
+                if (this.currentQuestion < this.challengeQuestions.length - 1) {
+                    this.currentQuestion++;
+                    this.resetChallengeState();
+                    return;
+                } else {
+                    // Challenge completed, save results
+                    this.saveChallengeResults();
+                }
+            }
+            
+            if (this.currentScreen < 6) {
+                this.currentScreen++;
+                
+                // Reset hint when moving to next screen
+                this.showHint = false;
+                
+                // Calculate XP for completing screens
+                if (this.currentScreen === 6) {
+                    this.totalXpEarned = this.calculateXP();
+                }
+            }
+        },
+        
+        // Audio playback
+        async playPhoneme(phoneme) {
+            if (this.isPlaying || !phoneme) return;
+            
+            this.playingPhoneme = phoneme === this.phoneme1 ? 1 : 2;
+            this.isPlaying = true;
+            
+            try {
+                // Phát âm IPA trực tiếp, không phải từ ví dụ
+                const ipaSymbol = phoneme.ipa_symbol;
+                
+                // Map IPA symbol to example words for clearer pronunciation
+                // Sử dụng từ mẫu ngắn để TTS phát âm chuẩn hơn
+                const ipaPronunciationMap = {
+                    // Plosives - dùng âm tiết ngắn
+                    'p': 'puh',
+                    'b': 'buh', 
+                    't': 'tuh',
+                    'd': 'duh',
+                    'k': 'kuh',
+                    'g': 'guh',
+                    // Fricatives
+                    'f': 'fff',
+                    'v': 'vvv',
+                    'θ': 'th', // think - voiceless
+                    'ð': 'the', // this - voiced (dùng "the" để rõ)
+                    's': 'sss',
+                    'z': 'zzz',
+                    'ʃ': 'shh',  // ship
+                    'ʒ': 'zhh',  // measure
+                    'h': 'huh',
+                    // Affricates
+                    'tʃ': 'ch',  // chair
+                    'dʒ': 'j', // judge
+                    // Nasals
+                    'm': 'mmm',
+                    'n': 'nnn',
+                    'ŋ': 'ng',   // sing
+                    // Approximants
+                    'l': 'la',
+                    'r': 'ra',
+                    'w': 'wuh',
+                    'j': 'yuh',  // yes
+                    // Vowels - SHORT (ngắn gọn)
+                    'ɪ': 'ih',   // bit - short i
+                    'e': 'eh',   // bed
+                    'æ': 'aah',  // cat - mở miệng rộng
+                    'ʌ': 'uh',   // cup - âm ơ ngắn
+                    'ɒ': 'aw',   // hot - âm o ngắn British
+                    'ʊ': 'uh',   // put, book - âm u NGẮN (foot sound)
+                    'ə': 'uh',   // about - schwa
+                    // Vowels - LONG (kéo dài)
+                    'iː': 'eee',  // see - dài
+                    'ɑː': 'ahh',  // car - dài
+                    'ɔː': 'aww',  // saw - dài
+                    'uː': 'ooo',  // too, food - âm u DÀI (pool sound)
+                    'ɜː': 'err',  // bird - dài
+                    // Diphthongs - hai âm
+                    'eɪ': 'ay',  // say
+                    'aɪ': 'eye', // my
+                    'ɔɪ': 'oy',  // boy
+                    'aʊ': 'ow',  // now
+                    'əʊ': 'oh',  // go (British)
+                    'oʊ': 'oh',  // go (American)
+                    'ɪə': 'ear', // near
+                    'eə': 'air', // hair
+                    'ʊə': 'oor', // poor
+                };
+                
+                // Lấy cách phát âm cho TTS
+                let ttsText = ipaPronunciationMap[ipaSymbol];
+                
+                // Nếu không tìm thấy trong map, thử tìm từ example_words
+                if (!ttsText && phoneme.example_words && phoneme.example_words.length > 0) {
+                    // Lấy từ ngắn nhất làm ví dụ
+                    const shortestWord = phoneme.example_words
+                        .map(w => w.word)
+                        .sort((a, b) => a.length - b.length)[0];
+                    ttsText = shortestWord || ipaSymbol;
+                } else if (!ttsText) {
+                    ttsText = ipaSymbol;
+                }
+                
+                // Phát âm với tốc độ chậm hơn để nghe rõ
+                await this.playTTS(ttsText, 'en-US-AriaNeural', '-30%');
+            } finally {
+                this.isPlaying = false;
+                this.playingPhoneme = null;
+            }
+        },
+        
+        async playWord(word, key) {
+            if (this.isPlaying) return;
+            
+            this.activeWord = key;
+            this.isPlaying = true;
+            
+            try {
+                await this.playTTS(word.word);
+            } finally {
+                this.isPlaying = false;
+                setTimeout(() => { this.activeWord = null; }, 500);
+            }
+        },
+        
+        async playChallengeAudio() {
+            if (this.isPlayingChallenge || !this.currentChallenge) return;
+            
+            this.isPlayingChallenge = true;
+            try {
+                await this.playTTS(this.currentChallenge.correctWord);
+            } finally {
+                this.isPlayingChallenge = false;
+            }
+        },
+        
+        async playTongueTwister() {
+            if (this.tongueTwister) {
+                await this.playTTS(this.tongueTwister.text, 'en-US-AriaNeural', '-10%');
+            }
+        },
+        
+        async playComparisonWord(word) {
+            if (this.isPlaying) return;
+            await this.playTTS(word);
+        },
+        
+        async playTTS(text, voice = 'en-US-AriaNeural', rate = '+0%') {
+            // Sử dụng Web Speech API trực tiếp (không cần server)
+            return new Promise((resolve) => {
+                // Cancel any ongoing speech
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                
+                // Parse rate từ format "+10%" hoặc "-20%"
+                const rateMatch = rate.match(/([+-]?\d+)%/);
+                if (rateMatch) {
+                    const ratePercent = parseInt(rateMatch[1]);
+                    utterance.rate = 1 + (ratePercent / 100); // Convert to 0.5-2.0 range
+                }
+                
+                // Chọn voice US English nếu có
+                const voices = speechSynthesis.getVoices();
+                const usVoice = voices.find(v => v.lang.startsWith('en-US')) || 
+                               voices.find(v => v.lang.startsWith('en'));
+                if (usVoice) {
+                    utterance.voice = usVoice;
+                }
+                
+                utterance.onend = resolve;
+                utterance.onerror = resolve;
+                
+                speechSynthesis.speak(utterance);
+            });
+        },
+        
+        // Challenge logic
+        selectAnswer(word) {
+            if (this.hasAnswered) return;
+            
+            this.selectedAnswer = word;
+            this.hasAnswered = true;
+            this.answeredCount++;
+            
+            this.correctAnswer = this.currentChallenge.correctWord;
+            this.isCorrect = word === this.correctAnswer;
+            
+            if (this.isCorrect) {
+                this.correctCount++;
+                this.xpEarned += 2;
+            }
+        },
+        
+        getChoiceClass(word) {
+            if (!this.hasAnswered) {
+                return this.selectedAnswer === word ? 'selected' : '';
+            }
+            
+            if (word === this.correctAnswer) {
+                return 'correct';
+            }
+            
+            if (this.selectedAnswer === word && !this.isCorrect) {
+                return 'incorrect';
+            }
+            
+            return '';
+        },
+        
+        resetChallengeState() {
+            this.selectedAnswer = null;
+            this.hasAnswered = false;
+            this.isCorrect = false;
+            this.correctAnswer = '';
+            this.showHint = false;
+        },
+        
+        // IPA highlighting
+        highlightIPA(ipa, phonemeSymbol) {
+            if (!ipa || !phonemeSymbol) return ipa || '';
+            
+            // Simple highlight - replace the symbol with highlighted version
+            const escaped = phonemeSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escaped}:?)`, 'g');
+            return ipa.replace(regex, '<span class="highlight">$1</span>');
+        },
+        
+        // XP calculation
+        calculateXP() {
+            let xp = this.lesson.xp_reward || 15;
+            
+            // Accuracy bonus (up to 50%)
+            if (this.answeredCount > 0) {
+                const accuracyBonus = Math.floor(xp * 0.5 * (this.correctCount / this.answeredCount));
+                xp += accuracyBonus;
+            }
+            
+            // Completion bonus
+            if (this.completedScreens.length >= 4) {
+                xp += 5;
+            }
+            
+            return xp;
+        },
+        
+        // Check if user is authenticated (has JWT token in cookies or localStorage)
+        isAuthenticated() {
+            return TokenManager.isAuthenticated();
+        },
+        
+        // API calls - Use TokenManager for auto-refresh
+        async saveScreenProgress() {
+            // Skip API call if not authenticated (demo mode)
+            if (!this.isAuthenticated()) {
+                console.log('Demo mode: Screen progress not saved (not authenticated)');
+                return;
+            }
+            
+            try {
+                const response = await TokenManager.fetchWithAuth('/api/v1/pronunciation/progress/screen/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': this.csrfToken,
+                    },
+                    body: JSON.stringify({
+                        lesson_id: this.lesson.id,
+                        screen_number: this.currentScreen,
+                        data: {
+                            time_spent: Math.floor((Date.now() - this.startTime) / 1000)
+                        }
+                    })
+                });
+                
+                // Ignore 401 errors (token refresh failed)
+                if (response.status === 401) {
+                    console.log('Auth expired, progress not saved');
+                    return;
+                }
+                
+                console.log('Screen progress saved successfully');
+            } catch (error) {
+                console.error('Error saving screen progress:', error);
+            }
+        },
+        
+        async saveChallengeResults() {
+            // Skip API call if not authenticated (demo mode)
+            if (!this.isAuthenticated()) {
+                console.log('Demo mode: Challenge results not saved (not authenticated)');
+                return;
+            }
+            
+            try {
+                const response = await TokenManager.fetchWithAuth('/api/v1/pronunciation/progress/challenge/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': this.csrfToken,
+                    },
+                    body: JSON.stringify({
+                        lesson_id: this.lesson.id,
+                        correct: this.correctCount,
+                        total: this.answeredCount,
+                        answers: []
+                    })
+                });
+                
+                // Ignore 401 errors
+                if (response.status === 401) {
+                    console.log('Auth expired, challenge results not saved');
+                    return;
+                }
+                
+                console.log('Challenge results saved successfully');
+            } catch (error) {
+                console.error('Error saving challenge results:', error);
+            }
+        },
+        
+        async completeLesson() {
+            this.isCompleting = true;
+            
+            // If not authenticated, just show success and redirect (demo mode)
+            if (!this.isAuthenticated()) {
+                console.log('Demo mode: Lesson completed without saving');
+                this.showCompletionMessage();
+                return;
+            }
+            
+            try {
+                const response = await TokenManager.fetchWithAuth('/api/v1/pronunciation/progress/complete/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': this.csrfToken,
+                    },
+                    body: JSON.stringify({
+                        lesson_id: this.lesson.id,
+                        time_spent: Math.floor((Date.now() - this.startTime) / 1000)
+                    })
+                });
+                
+                // Handle 401 - redirect anyway (auth expired)
+                if (response.status === 401) {
+                    console.log('Auth expired, completing in demo mode');
+                    this.showCompletionMessage();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success with XP earned and redirect
+                    alert(`🎉 Chúc mừng! Bạn đã nhận được ${data.xp_earned} XP!`);
+                    window.location.href = '{% url "curriculum:pronunciation-library" %}';
+                } else {
+                    alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                }
+            } catch (error) {
+                console.error('Error completing lesson:', error);
+                // Still redirect on error (demo mode)
+                this.showCompletionMessage();
+            } finally {
+                this.isCompleting = false;
+            }
+        },
+        
+        showCompletionMessage() {
+            const xp = this.calculateXP();
+            alert(`🎉 Chúc mừng bạn đã hoàn thành bài học!\n(Dự tính: +${xp} XP)`);
+            setTimeout(() => {
+                window.location.href = '{% url "curriculum:pronunciation-library" %}';
+            }, 500);
+        }
+    }
+}).mount('#lessonApp');
+</script>
+{% endblock %}

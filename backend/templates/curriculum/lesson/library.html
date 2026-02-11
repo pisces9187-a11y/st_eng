@@ -1,0 +1,48 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - English Learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 fw-bold text-secondary mb-4">
+                <i class="fas fa-book-open me-2 text-primary"></i>
+                {{ page_title }}
+            </h1>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Thư viện bài học đang được phát triển. Vui lòng quay lại sau!
+            </div>
+            
+            {% if courses %}
+            <div class="row g-4">
+                {% for course in courses %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 card-hover">
+                        <div class="card-body">
+                            <span class="badge bg-primary mb-2">{{ course.cefr_level }}</span>
+                            <h5 class="card-title">{{ course.title }}</h5>
+                            <p class="card-text text-muted">{{ course.description|truncatewords:20 }}</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i> {{ course.estimated_hours }} giờ
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Chưa có khóa học nào. Sẽ sớm có thêm nội dung mới!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

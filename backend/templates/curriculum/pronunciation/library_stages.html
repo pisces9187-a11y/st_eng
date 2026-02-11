@@ -1,0 +1,666 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Luyện phát âm IPA - EnglishMaster{% endblock %}
+{% block meta_description %}Học phát âm tiếng Anh chuẩn IPA với 4 giai đoạn học có hệ thống: Nguyên âm → Phụ âm → Nguyên âm đôi → Kỹ thuật nâng cao{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --ipa-primary: #F47C26;
+        --ipa-secondary: #183B56;
+        --ipa-light: #F9FAFC;
+    }
+    
+    /* Hero Section */
+    .pronunciation-hero {
+        background: linear-gradient(135deg, var(--ipa-secondary) 0%, #2E5F7F 100%);
+        padding: 4rem 0;
+        color: white;
+    }
+    
+    .hero-stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .hero-stat {
+        text-align: center;
+    }
+    
+    .hero-stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        display: block;
+    }
+    
+    .hero-stat-label {
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+    
+    /* Progress Overview */
+    .progress-overview {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin: -50px auto 3rem;
+        max-width: 900px;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .overall-progress {
+        height: 12px;
+        background: #E0E6ED;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    
+    .overall-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2ECC71, #27AE60);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    
+    .progress-stats-row {
+        display: flex;
+        justify-content: space-around;
+        gap: 1rem;
+    }
+    
+    .stat-box {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--ipa-secondary);
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    /* Stage Section */
+    .stage-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-left: 6px solid var(--stage-color, var(--ipa-primary));
+        position: relative;
+    }
+    
+    .stage-section.locked {
+        opacity: 0.7;
+        background: #f8f9fa;
+    }
+    
+    .stage-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        gap: 1.5rem;
+    }
+    
+    .stage-number {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, var(--stage-color, var(--ipa-primary)), #FF9A56);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        position: relative;
+    }
+    
+    .stage-number .lock-icon {
+        font-size: 2rem;
+    }
+    
+    .stage-info {
+        flex: 1;
+    }
+    
+    .stage-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--ipa-secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stage-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stage-meta {
+        display: flex;
+        gap: 2rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .stage-meta i {
+        margin-right: 0.25rem;
+    }
+    
+    .stage-objectives {
+        background: var(--ipa-light);
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    
+    .stage-objectives h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--ipa-secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stage-objectives ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .stage-progress-bar {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #E0E6ED;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stage-progress-track {
+        flex: 1;
+        height: 8px;
+        background: #E0E6ED;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .stage-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2ECC71, #27AE60);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    
+    .stage-progress-text {
+        font-weight: 600;
+        color: var(--ipa-secondary);
+        white-space: nowrap;
+    }
+    
+    /* Lesson Card */
+    .lesson-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+    }
+    
+    .lesson-card:hover:not(.locked) {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        border-color: var(--ipa-primary);
+    }
+    
+    .lesson-card.completed {
+        border-color: #2ECC71;
+        background: linear-gradient(to bottom right, #ffffff, #f0fff4);
+    }
+    
+    .lesson-card.locked {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .lesson-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .lesson-status-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+    }
+    
+    .lesson-status-badge.completed {
+        background: #2ECC71;
+        color: white;
+    }
+    
+    .lesson-status-badge.locked {
+        background: #E0E6ED;
+        color: #6c757d;
+    }
+    
+    .lesson-number {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--ipa-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: var(--ipa-secondary);
+    }
+    
+    .lesson-phonemes {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        margin: 2.5rem 0 1rem;
+        min-height: 60px;
+        align-items: center;
+    }
+    
+    .phoneme-display {
+        font-size: 2.5rem;
+        font-family: 'Lucida Sans Unicode', 'Arial Unicode MS', sans-serif;
+        color: var(--ipa-secondary);
+        font-weight: 600;
+    }
+    
+    .phoneme-vs {
+        font-size: 1rem;
+        color: #6c757d;
+        font-weight: 600;
+        align-self: center;
+    }
+    
+    .lesson-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ipa-secondary);
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .lesson-desc {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-align: center;
+        margin-bottom: 1rem;
+        min-height: 40px;
+    }
+    
+    .lesson-meta {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #E0E6ED;
+    }
+    
+    .lesson-progress-bar {
+        height: 6px;
+        background: #E0E6ED;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    
+    .lesson-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2ECC71, #27AE60);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    .btn-start-lesson {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-start-lesson:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    
+    .lock-reason {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-align: center;
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+    
+    /* Roadmap connector */
+    .stage-connector {
+        text-align: center;
+        padding: 1rem 0;
+        color: #6c757d;
+    }
+    
+    .stage-connector i {
+        font-size: 2rem;
+        opacity: 0.3;
+    }
+    
+    /* Color variants for stages */
+    .stage-section[data-stage="1"] {
+        --stage-color: #3498DB;
+    }
+    
+    .stage-section[data-stage="2"] {
+        --stage-color: #E74C3C;
+    }
+    
+    .stage-section[data-stage="3"] {
+        --stage-color: #9B59B6;
+    }
+    
+    .stage-section[data-stage="4"] {
+        --stage-color: #F39C12;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="pronunciation-library">
+    <!-- Hero Section -->
+    <section class="pronunciation-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="badge bg-warning text-dark mb-3" style="font-size: 1rem;">
+                        <i class="fas fa-volume-up me-2"></i> Hệ thống luyện phát âm 4 giai đoạn
+                    </span>
+                    <h1 class="display-4 fw-bold mb-3">Phát Âm Tiếng Anh Chuẩn IPA</h1>
+                    <p class="lead mb-4" style="max-width: 600px; margin: 0 auto;">
+                        Học phát âm theo phương pháp 4 giai đoạn khoa học: 
+                        <strong>Nguyên âm → Phụ âm → Nguyên âm đôi → Kỹ thuật nâng cao</strong>
+                    </p>
+                    
+                    <div class="hero-stats justify-content-center d-flex">
+                        <div class="hero-stat">
+                            <span class="hero-stat-value">{{ total_lessons }}</span>
+                            <span class="hero-stat-label">Bài học</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-value">4</span>
+                            <span class="hero-stat-label">Giai đoạn</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-value">44</span>
+                            <span class="hero-stat-label">Âm IPA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <main class="container py-5">
+        <!-- Progress Overview -->
+        {% if user.is_authenticated %}
+        <div class="progress-overview">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">
+                    <i class="fas fa-chart-line me-2 text-primary"></i>
+                    Tiến độ học tập của bạn
+                </h5>
+                <div>
+                    <a href="{% url 'curriculum:tongue-twister-challenge' %}" class="btn btn-outline-success btn-sm me-2">
+                        <i class="fas fa-gamepad me-1"></i>
+                        Thử thách
+                    </a>
+                    <a href="{% url 'curriculum:pronunciation-error-heatmap' %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-fire me-1"></i>
+                        Phân tích lỗi
+                    </a>
+                </div>
+            </div>
+            
+            <div class="overall-progress mb-3">
+                <div class="overall-progress-fill" style="width: {{ overall_progress }}%"></div>
+            </div>
+            
+            <div class="progress-stats-row">
+                <div class="stat-box">
+                    <div class="stat-value text-success">{{ completed_lessons }}</div>
+                    <div class="stat-label">Đã hoàn thành</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value text-primary">{{ total_lessons }}</div>
+                    <div class="stat-label">Tổng bài học</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value text-warning">{{ overall_progress }}%</div>
+                    <div class="stat-label">Hoàn thành</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Curriculum Stages -->
+        {% for stage_data in stages %}
+        <div class="stage-section {% if not stage_data.is_unlocked %}locked{% endif %}" data-stage="{{ stage_data.stage.number }}">
+            <div class="stage-header">
+                <div class="stage-number">
+                    {% if stage_data.is_unlocked %}
+                        {{ stage_data.stage.number }}
+                    {% else %}
+                        <i class="fas fa-lock lock-icon"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="stage-info">
+                    <h2 class="stage-title">
+                        {{ stage_data.stage.name_vi }}
+                        {% if stage_data.completed_lessons == stage_data.total_lessons and stage_data.total_lessons > 0 %}
+                        <span class="badge bg-success ms-2">
+                            <i class="fas fa-check"></i> Hoàn thành
+                        </span>
+                        {% endif %}
+                    </h2>
+                    <p class="stage-subtitle">{{ stage_data.stage.description_vi }}</p>
+                    
+                    <div class="stage-meta">
+                        <span>
+                            <i class="fas fa-book"></i>
+                            {{ stage_data.total_lessons }} bài học
+                        </span>
+                        <span>
+                            <i class="fas fa-clock"></i>
+                            ~{{ stage_data.stage.estimated_hours }} giờ
+                        </span>
+                        <span>
+                            <i class="fas fa-bullseye"></i>
+                            {{ stage_data.stage.focus_area }}
+                        </span>
+                    </div>
+                    
+                    {% if stage_data.stage.objectives %}
+                    <div class="stage-objectives">
+                        <h6><i class="fas fa-target me-1"></i>Mục tiêu:</h6>
+                        <ul>
+                            {% for objective in stage_data.stage.objectives %}
+                            <li>{{ objective }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated %}
+                    <div class="stage-progress-bar">
+                        <div class="stage-progress-track">
+                            <div class="stage-progress-fill" style="width: {{ stage_data.progress_percent }}%"></div>
+                        </div>
+                        <span class="stage-progress-text">
+                            {{ stage_data.completed_lessons }}/{{ stage_data.total_lessons }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Lessons Grid -->
+            <div class="row g-4">
+                {% for lesson_data in stage_data.lessons %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="lesson-card {% if lesson_data.is_completed %}completed{% endif %} {% if not lesson_data.can_access %}locked{% endif %}">
+                        <!-- Lesson Number -->
+                        <span class="lesson-number">{{ forloop.counter }}</span>
+                        
+                        <!-- Status Badges -->
+                        <div class="lesson-badge">
+                            {% if lesson_data.is_completed %}
+                            <span class="lesson-status-badge completed" title="Đã hoàn thành">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            {% elif not lesson_data.can_access %}
+                            <span class="lesson-status-badge locked" title="Chưa mở khóa">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Phonemes Display -->
+                        <div class="lesson-phonemes">
+                            {% for phoneme in lesson_data.lesson.phonemes.all|slice:":3" %}
+                                <span class="phoneme-display">/{{ phoneme.symbol }}/</span>
+                                {% if not forloop.last and forloop.counter < 3 %}
+                                    <span class="phoneme-vs">vs</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Lesson Info -->
+                        <h3 class="lesson-title">{{ lesson_data.lesson.title_vi }}</h3>
+                        <p class="lesson-desc">{{ lesson_data.lesson.description_vi|truncatewords:12 }}</p>
+                        
+                        <!-- Meta Info -->
+                        <div class="lesson-meta">
+                            <span>
+                                <i class="fas fa-clock"></i>
+                                {{ lesson_data.lesson.estimated_minutes }} phút
+                            </span>
+                            <span>
+                                <i class="fas fa-star"></i>
+                                {{ lesson_data.lesson.xp_reward }} XP
+                            </span>
+                            {% if lesson_data.lesson.difficulty %}
+                            <span>
+                                <i class="fas fa-signal"></i>
+                                {% if lesson_data.lesson.difficulty <= 3 %}Dễ
+                                {% elif lesson_data.lesson.difficulty <= 6 %}TB
+                                {% else %}Khó{% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        {% if lesson_data.progress > 0 and lesson_data.progress < 100 %}
+                        <div class="lesson-progress-bar">
+                            <div class="lesson-progress-fill" style="width: {{ lesson_data.progress }}%"></div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Action Button -->
+                        {% if lesson_data.can_access %}
+                            <a href="{% url 'curriculum:pronunciation-lesson' slug=lesson_data.lesson.slug %}" class="btn btn-primary btn-start-lesson">
+                                {% if lesson_data.is_completed %}
+                                    <i class="fas fa-redo me-2"></i>Học lại
+                                {% elif lesson_data.progress > 0 %}
+                                    <i class="fas fa-play me-2"></i>Tiếp tục ({{ lesson_data.progress }}%)
+                                {% else %}
+                                    <i class="fas fa-play me-2"></i>Bắt đầu
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-start-lesson" disabled>
+                                <i class="fas fa-lock me-2"></i>Chưa mở khóa
+                            </button>
+                            {% if lesson_data.lock_reason %}
+                            <div class="lock-reason">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ lesson_data.lock_reason }}
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if not forloop.last %}
+        <div class="stage-connector">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        {% endif %}
+        {% endfor %}
+        
+        {% if not stages %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">Chưa có bài học nào</h3>
+            <p class="text-muted">Hệ thống đang được cập nhật...</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Smooth scroll to lessons
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+</script>
+{% endblock %}

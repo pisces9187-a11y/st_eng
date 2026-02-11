@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Admin Panel</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="assets/css/theme.css">
+    
+    <style>
+        /* Admin Layout */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #183B56 0%, #0F2538 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar .logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-sidebar .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-item.active {
+            background: rgba(244, 124, 38, 0.2);
+            border-left-color: var(--bs-primary);
+        }
+        
+        .admin-sidebar .nav-icon {
+            width: 25px;
+            display: inline-block;
+        }
+        
+        .admin-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #F9FAFC;
+        }
+        
+        /* Settings Navigation */
+        .settings-nav .nav-link {
+            color: #183B56;
+            font-weight: 600;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .settings-nav .nav-link:hover {
+            background: rgba(244, 124, 38, 0.1);
+            color: var(--bs-primary);
+        }
+        
+        .settings-nav .nav-link.active {
+            background: var(--bs-primary);
+            color: white;
+        }
+        
+        /* Color Picker Preview */
+        .color-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 2px solid #E0E6ED;
+            cursor: pointer;
+        }
+        
+        /* Switch */
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            cursor: pointer;
+        }
+        
+        .form-switch .form-check-input:checked {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="logo">
+                <h4 class="fw-bold mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span>Admin Panel</span>
+                </h4>
+            </div>
+            
+            <nav class="mt-3">
+                <div class="nav-item" @click="goTo('admin-dashboard.html')">
+                    <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-lesson-editor.html')">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span>
+                    <span>Quản lý bài học</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-flashcard.html')">
+                    <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+                    <span>Flashcard</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-users.html')">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    <span>Học viên</span>
+                </div>
+                <div class="nav-item" @click="goTo('admin-revenue.html')">
+                    <span class="nav-icon"><i class="fas fa-dollar-sign"></i></span>
+                    <span>Doanh thu</span>
+                </div>
+                <div class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span>Cài đặt</span>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.1);">
+                
+                <div class="nav-item" @click="logout">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span>Đăng xuất</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Top Bar -->
+            <div class="mb-4">
+                <h2 class="fw-bold text-secondary mb-1">Cài đặt hệ thống</h2>
+                <p class="text-muted mb-0">Quản lý cấu hình website và tính năng</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Settings Navigation -->
+                <div class="col-lg-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <nav class="settings-nav nav flex-column">
+                                <a class="nav-link active" href="#general" @click.prevent="activeTab = 'general'">
+                                    <i class="fas fa-cog me-2"></i>Chung
+                                </a>
+                                <a class="nav-link" href="#payment" @click.prevent="activeTab = 'payment'">
+                                    <i class="fas fa-credit-card me-2"></i>Thanh toán
+                                </a>
+                                <a class="nav-link" href="#email" @click.prevent="activeTab = 'email'">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </a>
+                                <a class="nav-link" href="#security" @click.prevent="activeTab = 'security'">
+                                    <i class="fas fa-shield-alt me-2"></i>Bảo mật
+                                </a>
+                                <a class="nav-link" href="#notification" @click.prevent="activeTab = 'notification'">
+                                    <i class="fas fa-bell me-2"></i>Thông báo
+                                </a>
+                                <a class="nav-link" href="#backup" @click.prevent="activeTab = 'backup'">
+                                    <i class="fas fa-database me-2"></i>Sao lưu
+                                </a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="col-lg-9">
+                    <!-- General Settings -->
+                    <div v-show="activeTab === 'general'" class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-cog me-2 text-primary"></i>Cài đặt chung
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Tên website</label>
+                                    <input type="text" class="form-control" v-model="settings.general.siteName">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Tagline</label>
+                                    <input type="text" class="form-control" v-model="settings.general.tagline">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Email liên hệ</label>
+                                    <input type="email" class="form-control" v-model="settings.general.contactEmail">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Số điện thoại</label>
+                                    <input type="tel" class="form-control" v-model="settings.general.phone">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Màu chủ đạo</label>
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <input type="color" class="form-control" v-model="settings.general.primaryColor" style="width: 80px;">
+                                        <div class="color-preview" :style="{backgroundColor: settings.general.primaryColor}"></div>
+                                        <span class="text-muted">{{ settings.general.primaryColor }}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Timezone</label>
+                                    <select class="form-select" v-model="settings.general.timezone">
+                                        <option value="Asia/Ho_Chi_Minh">Asia/Ho Chi Minh (GMT+7)</option>
+                                        <option value="Asia/Bangkok">Asia/Bangkok (GMT+7)</option>
+                                        <option value="Asia/Singapore">Asia/Singapore (GMT+8)</option>
+                                    </select>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.general.maintenanceMode" id="maintenanceMode">
+                                    <label class="form-check-label fw-bold" for="maintenanceMode">
+                                        Chế độ bảo trì
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary" @click.prevent="saveSettings('general')">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Payment Settings -->
+                    <div v-show="activeTab === 'payment'" class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-credit-card me-2 text-primary"></i>Cài đặt thanh toán
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <h6 class="fw-bold mb-3">VietQR Banking</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Tên ngân hàng</label>
+                                    <input type="text" class="form-control" v-model="settings.payment.bankName">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Số tài khoản</label>
+                                    <input type="text" class="form-control" v-model="settings.payment.bankAccount">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Chủ tài khoản</label>
+                                    <input type="text" class="form-control" v-model="settings.payment.bankOwner">
+                                </div>
+
+                                <hr class="my-4">
+
+                                <h6 class="fw-bold mb-3">Momo Wallet</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Partner Code</label>
+                                    <input type="text" class="form-control" v-model="settings.payment.momoPartnerCode">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Access Key</label>
+                                    <input type="password" class="form-control" v-model="settings.payment.momoAccessKey">
+                                </div>
+
+                                <hr class="my-4">
+
+                                <h6 class="fw-bold mb-3">Stripe</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Publishable Key</label>
+                                    <input type="text" class="form-control" v-model="settings.payment.stripePublicKey">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Secret Key</label>
+                                    <input type="password" class="form-control" v-model="settings.payment.stripeSecretKey">
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" @click.prevent="saveSettings('payment')">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Email Settings -->
+                    <div v-show="activeTab === 'email'" class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-envelope me-2 text-primary"></i>Cài đặt Email
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">SMTP Host</label>
+                                    <input type="text" class="form-control" v-model="settings.email.smtpHost">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">SMTP Port</label>
+                                    <input type="number" class="form-control" v-model="settings.email.smtpPort">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Username</label>
+                                    <input type="text" class="form-control" v-model="settings.email.smtpUser">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Password</label>
+                                    <input type="password" class="form-control" v-model="settings.email.smtpPassword">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Email gửi đi</label>
+                                    <input type="email" class="form-control" v-model="settings.email.fromEmail">
+                                </div>
+                                <div class="form-check form-switch mb-4">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.email.enableSSL" id="enableSSL">
+                                    <label class="form-check-label fw-bold" for="enableSSL">
+                                        Sử dụng SSL/TLS
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary" @click.prevent="saveSettings('email')">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" @click="testEmail">
+                                    <i class="fas fa-paper-plane me-2"></i>Gửi email test
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Security Settings -->
+                    <div v-show="activeTab === 'security'" class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-shield-alt me-2 text-primary"></i>Bảo mật
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.security.twoFactorAuth" id="twoFactorAuth">
+                                    <label class="form-check-label fw-bold" for="twoFactorAuth">
+                                        Xác thực 2 bước (2FA)
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.security.forceSSL" id="forceSSL">
+                                    <label class="form-check-label fw-bold" for="forceSSL">
+                                        Bắt buộc HTTPS
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-4">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.security.captchaEnabled" id="captchaEnabled">
+                                    <label class="form-check-label fw-bold" for="captchaEnabled">
+                                        Bật reCAPTCHA
+                                    </label>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Thời gian timeout session (phút)</label>
+                                    <input type="number" class="form-control" v-model="settings.security.sessionTimeout">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Số lần đăng nhập sai tối đa</label>
+                                    <input type="number" class="form-control" v-model="settings.security.maxLoginAttempts">
+                                </div>
+                                <button type="submit" class="btn btn-primary" @click.prevent="saveSettings('security')">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div v-show="activeTab === 'notification'" class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-bell me-2 text-primary"></i>Thông báo
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <h6 class="fw-bold mb-3">Email Notifications</h6>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.notification.newUserEmail" id="newUserEmail">
+                                    <label class="form-check-label" for="newUserEmail">
+                                        Thông báo khi có người dùng mới
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.notification.newPaymentEmail" id="newPaymentEmail">
+                                    <label class="form-check-label" for="newPaymentEmail">
+                                        Thông báo khi có giao dịch mới
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-4">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.notification.systemErrorEmail" id="systemErrorEmail">
+                                    <label class="form-check-label" for="systemErrorEmail">
+                                        Thông báo lỗi hệ thống
+                                    </label>
+                                </div>
+
+                                <hr class="my-4">
+
+                                <h6 class="fw-bold mb-3">Push Notifications</h6>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" v-model="settings.notification.pushEnabled" id="pushEnabled">
+                                    <label class="form-check-label fw-bold" for="pushEnabled">
+                                        Bật thông báo đẩy
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" @click.prevent="saveSettings('notification')">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Backup Settings -->
+                    <div v-show="activeTab === 'backup'" class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-database me-2 text-primary"></i>Sao lưu dữ liệu
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Lần sao lưu gần nhất: <strong>05/12/2024 02:00 AM</strong>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" v-model="settings.backup.autoBackup" id="autoBackup">
+                                <label class="form-check-label fw-bold" for="autoBackup">
+                                    Tự động sao lưu
+                                </label>
+                            </div>
+
+                            <div class="mb-4" v-if="settings.backup.autoBackup">
+                                <label class="form-label fw-bold">Chu kỳ sao lưu</label>
+                                <select class="form-select" v-model="settings.backup.frequency">
+                                    <option value="daily">Hàng ngày</option>
+                                    <option value="weekly">Hàng tuần</option>
+                                    <option value="monthly">Hàng tháng</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" @click="createBackup">
+                                    <i class="fas fa-download me-2"></i>Tạo bản sao lưu ngay
+                                </button>
+                                <button class="btn btn-outline-secondary">
+                                    <i class="fas fa-history me-2"></i>Xem lịch sử
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeTab: 'general',
+                    settings: {
+                        general: {
+                            siteName: 'English Learning Platform',
+                            tagline: 'Master English from A1 to C1',
+                            contactEmail: 'contact@englishlearning.vn',
+                            phone: '0123456789',
+                            primaryColor: '#F47C26',
+                            timezone: 'Asia/Ho_Chi_Minh',
+                            maintenanceMode: false
+                        },
+                        payment: {
+                            bankName: 'Vietcombank',
+                            bankAccount: '1234567890',
+                            bankOwner: 'NGUYEN VAN A',
+                            momoPartnerCode: 'MOMO_PARTNER_CODE',
+                            momoAccessKey: '••••••••••••',
+                            stripePublicKey: 'pk_test_••••••••',
+                            stripeSecretKey: '••••••••••••'
+                        },
+                        email: {
+                            smtpHost: 'smtp.gmail.com',
+                            smtpPort: 587,
+                            smtpUser: 'noreply@englishlearning.vn',
+                            smtpPassword: '••••••••',
+                            fromEmail: 'noreply@englishlearning.vn',
+                            enableSSL: true
+                        },
+                        security: {
+                            twoFactorAuth: false,
+                            forceSSL: true,
+                            captchaEnabled: true,
+                            sessionTimeout: 30,
+                            maxLoginAttempts: 5
+                        },
+                        notification: {
+                            newUserEmail: true,
+                            newPaymentEmail: true,
+                            systemErrorEmail: true,
+                            pushEnabled: false
+                        },
+                        backup: {
+                            autoBackup: true,
+                            frequency: 'daily'
+                        }
+                    }
+                };
+            },
+            methods: {
+                goTo(page) {
+                    window.location.href = page;
+                },
+                logout() {
+                    if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                        window.location.href = 'logout.html';
+                    }
+                },
+                saveSettings(section) {
+                    alert(`Đã lưu cài đặt ${section} thành công!`);
+                },
+                testEmail() {
+                    alert('Đã gửi email test đến ' + this.settings.email.fromEmail);
+                },
+                createBackup() {
+                    if (confirm('Tạo bản sao lưu toàn bộ dữ liệu?')) {
+                        alert('Đang tạo bản sao lưu... Quá trình này có thể mất vài phút.');
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

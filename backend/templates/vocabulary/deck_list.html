@@ -1,0 +1,73 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Flashcard Decks - EnglishMaster{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">📚 Bộ thẻ Flashcard</h2>
+            <p class="text-muted">Chọn bộ thẻ để bắt đầu học</p>
+        </div>
+    </div>
+
+    {% for level, level_decks in decks_by_level.items %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">
+                {% if level == 'A1' %}📗 Beginner (A1)
+                {% elif level == 'A2' %}📘 Elementary (A2)
+                {% elif level == 'B1' %}📙 Intermediate (B1)
+                {% elif level == 'B2' %}📕 Upper-Intermediate (B2)
+                {% elif level == 'C1' %}📚 Advanced (C1)
+                {% else %}🎯 Mixed Levels
+                {% endif %}
+            </h4>
+            
+            <div class="row g-3">
+                {% for deck in level_decks %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{ deck.icon }} {{ deck.name }}
+                            </h5>
+                            <p class="card-text text-muted">
+                                {{ deck.description|truncatewords:15 }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    {{ deck.card_count }} thẻ
+                                </small>
+                                {% if deck.is_official %}
+                                <span class="badge bg-primary">Official</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a href="{% url 'vocabulary_pages:flashcard-study-deck' deck.id %}" 
+                               class="btn btn-primary w-100">
+                                <i class="fas fa-play me-2"></i>Bắt đầu học
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not decks %}
+    <div class="row">
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Chưa có bộ thẻ nào</h5>
+            <p class="text-muted">Vui lòng liên hệ admin để import dữ liệu</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

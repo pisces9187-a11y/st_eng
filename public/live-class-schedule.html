@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch học trực tuyến - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: #F9FAFC;
+            color: #2C3E50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Header */
+        .page-header {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .page-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: #183B56;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .view-btn {
+            padding: 10px 20px;
+            border: 2px solid #E0E6ED;
+            background: white;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #57606F;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .view-btn:hover, .view-btn.active {
+            border-color: #F47C26;
+            color: #F47C26;
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        .filters-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 10px 16px;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        /* Calendar View */
+        .calendar-container {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .calendar-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #183B56;
+        }
+        
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #F47C26;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background: #D35400;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background: #E0E6ED;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .calendar-day-header {
+            background: #183B56;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .calendar-day {
+            background: white;
+            padding: 12px;
+            min-height: 120px;
+            position: relative;
+        }
+        
+        .calendar-day.other-month {
+            background: #F9FAFC;
+            opacity: 0.5;
+        }
+        
+        .calendar-day.today {
+            background: rgba(244, 124, 38, 0.05);
+            border: 2px solid #F47C26;
+        }
+        
+        .day-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+        
+        .day-classes {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .mini-class {
+            background: linear-gradient(135deg, #F47C26 0%, #FFA500 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mini-class:hover {
+            transform: translateX(4px);
+        }
+        
+        /* List View */
+        .classes-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .class-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            transition: all 0.3s ease;
+        }
+        
+        .class-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .class-time {
+            background: linear-gradient(135deg, #183B56 0%, #2C5F8D 100%);
+            color: white;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+        }
+        
+        .time-day {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            margin-bottom: 4px;
+        }
+        
+        .time-month {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        
+        .time-hour {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+        
+        .class-content {
+            flex: 1;
+            padding: 24px;
+        }
+        
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            gap: 20px;
+        }
+        
+        .class-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+        
+        .class-level {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #E3F2FD;
+            color: #1976D2;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .status-badge.available {
+            background: #EAFAF1;
+            color: #27AE60;
+        }
+        
+        .status-badge.full {
+            background: #FADBD8;
+            color: #E74C3C;
+        }
+        
+        .status-badge.booked {
+            background: #FFF4E5;
+            color: #F39C12;
+        }
+        
+        .class-teacher {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .teacher-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        
+        .teacher-info {
+            font-size: 0.875rem;
+        }
+        
+        .teacher-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #183B56;
+        }
+        
+        .teacher-rating {
+            color: #F39C12;
+        }
+        
+        .class-meta {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: #57606F;
+        }
+        
+        .meta-item i {
+            color: #F47C26;
+        }
+        
+        .class-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-book {
+            background: #F47C26;
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-book:hover {
+            background: #D35400;
+        }
+        
+        .btn-details {
+            background: white;
+            color: #183B56;
+            padding: 10px 24px;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-details:hover {
+            border-color: #F47C26;
+            color: #F47C26;
+        }
+        
+        .btn-cancel {
+            background: #E74C3C;
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .calendar-grid {
+                font-size: 0.75rem;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .class-card {
+                flex-direction: column;
+            }
+            
+            .class-time {
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- Header -->
+            <div class="page-header">
+                <div class="header-top">
+                    <h1 class="page-title"><i class="fas fa-calendar-alt me-3"></i>Lịch học trực tuyến</h1>
+                    <div class="view-toggle">
+                        <button class="view-btn" :class="{active: view === 'calendar'}" @click="view = 'calendar'">
+                            <i class="fas fa-calendar me-2"></i>Lịch
+                        </button>
+                        <button class="view-btn" :class="{active: view === 'list'}" @click="view = 'list'">
+                            <i class="fas fa-list me-2"></i>Danh sách
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filters-bar">
+                    <select class="filter-select" v-model="levelFilter">
+                        <option value="">Tất cả cấp độ</option>
+                        <option value="A1">A1 - Beginner</option>
+                        <option value="A2">A2 - Elementary</option>
+                        <option value="B1">B1 - Intermediate</option>
+                        <option value="B2">B2 - Upper-Intermediate</option>
+                        <option value="C1">C1 - Advanced</option>
+                    </select>
+                    
+                    <select class="filter-select" v-model="typeFilter">
+                        <option value="">Tất cả loại</option>
+                        <option value="Grammar">Grammar</option>
+                        <option value="Speaking">Speaking</option>
+                        <option value="IELTS">IELTS</option>
+                        <option value="TOEIC">TOEIC</option>
+                    </select>
+                    
+                    <select class="filter-select" v-model="statusFilter">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="available">Còn chỗ</option>
+                        <option value="booked">Đã đặt</option>
+                        <option value="full">Hết chỗ</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div v-if="view === 'calendar'" class="calendar-container">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="nav-btn" @click="previousMonth">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h2 class="calendar-title">{{ currentMonthYear }}</h2>
+                        <button class="nav-btn" @click="nextMonth">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <button class="view-btn" @click="goToday">
+                        <i class="fas fa-calendar-day me-2"></i>Hôm nay
+                    </button>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div v-for="day in ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']" :key="day" class="calendar-day-header">
+                        {{ day }}
+                    </div>
+                    <div 
+                        v-for="day in calendarDays" 
+                        :key="day.date"
+                        class="calendar-day"
+                        :class="{
+                            'other-month': day.otherMonth,
+                            'today': day.isToday
+                        }"
+                    >
+                        <div class="day-number">{{ day.number }}</div>
+                        <div class="day-classes">
+                            <div 
+                                v-for="cls in day.classes" 
+                                :key="cls.id"
+                                class="mini-class"
+                                @click="viewClass(cls)"
+                            >
+                                {{ cls.time }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List View -->
+            <div v-if="view === 'list'" class="classes-list">
+                <div 
+                    v-for="cls in filteredClasses" 
+                    :key="cls.id"
+                    class="class-card"
+                >
+                    <div class="class-time">
+                        <div class="time-day">{{ cls.day }}</div>
+                        <div class="time-month">Tháng {{ cls.month }}</div>
+                        <div class="time-hour">{{ cls.time }}</div>
+                    </div>
+                    
+                    <div class="class-content">
+                        <div class="class-header">
+                            <div>
+                                <h3 class="class-title">{{ cls.title }}</h3>
+                                <span class="class-level">{{ cls.level }}</span>
+                            </div>
+                            <span class="status-badge" :class="cls.status">
+                                {{ getStatusLabel(cls.status) }}
+                            </span>
+                        </div>
+                        
+                        <div class="class-teacher">
+                            <img :src="cls.teacherAvatar" :alt="cls.teacher" class="teacher-avatar">
+                            <div class="teacher-info">
+                                <div class="teacher-name">{{ cls.teacher }}</div>
+                                <div class="teacher-rating">
+                                    <i class="fas fa-star"></i>
+                                    {{ cls.rating }} ({{ cls.reviews }} đánh giá)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="class-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ cls.duration }} phút</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-users"></i>
+                                <span>{{ cls.enrolled }}/{{ cls.maxStudents }} học viên</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-tag"></i>
+                                <span>{{ cls.type }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="class-actions">
+                            <button 
+                                v-if="cls.status === 'available'" 
+                                class="btn-book"
+                                @click="bookClass(cls)"
+                            >
+                                <i class="fas fa-check me-2"></i>Đặt lịch
+                            </button>
+                            <button 
+                                v-if="cls.status === 'booked'" 
+                                class="btn-cancel"
+                                @click="cancelClass(cls)"
+                            >
+                                <i class="fas fa-times me-2"></i>Hủy lịch
+                            </button>
+                            <button class="btn-details" @click="viewClass(cls)">
+                                <i class="fas fa-info-circle me-2"></i>Chi tiết
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    view: 'list',
+                    levelFilter: '',
+                    typeFilter: '',
+                    statusFilter: '',
+                    currentMonth: 11, // December (0-indexed)
+                    currentYear: 2025,
+                    classes: [
+                        {
+                            id: 1,
+                            title: 'Grammar Mastery: Present Perfect',
+                            level: 'B1',
+                            type: 'Grammar',
+                            teacher: 'Nguyễn Văn A',
+                            teacherAvatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+A&background=F47C26&color=fff',
+                            rating: 4.8,
+                            reviews: 145,
+                            day: 8,
+                            month: 12,
+                            time: '19:00',
+                            duration: 60,
+                            enrolled: 8,
+                            maxStudents: 12,
+                            status: 'available'
+                        },
+                        {
+                            id: 2,
+                            title: 'IELTS Speaking Practice - Part 2',
+                            level: 'B2',
+                            type: 'IELTS',
+                            teacher: 'Trần Thị B',
+                            teacherAvatar: 'https://ui-avatars.com/api/?name=Tran+Thi+B&background=3498DB&color=fff',
+                            rating: 4.9,
+                            reviews: 203,
+                            day: 9,
+                            month: 12,
+                            time: '20:00',
+                            duration: 90,
+                            enrolled: 10,
+                            maxStudents: 15,
+                            status: 'booked'
+                        },
+                        {
+                            id: 3,
+                            title: 'TOEIC Listening Strategies',
+                            level: 'A2',
+                            type: 'TOEIC',
+                            teacher: 'Lê Văn C',
+                            teacherAvatar: 'https://ui-avatars.com/api/?name=Le+Van+C&background=2ECC71&color=fff',
+                            rating: 4.7,
+                            reviews: 167,
+                            day: 10,
+                            month: 12,
+                            time: '18:30',
+                            duration: 60,
+                            enrolled: 15,
+                            maxStudents: 15,
+                            status: 'full'
+                        },
+                        {
+                            id: 4,
+                            title: 'Conversation Club: Daily Topics',
+                            level: 'B1',
+                            type: 'Speaking',
+                            teacher: 'Phạm Thị D',
+                            teacherAvatar: 'https://ui-avatars.com/api/?name=Pham+Thi+D&background=9B59B6&color=fff',
+                            rating: 4.6,
+                            reviews: 89,
+                            day: 12,
+                            month: 12,
+                            time: '19:30',
+                            duration: 60,
+                            enrolled: 6,
+                            maxStudents: 10,
+                            status: 'available'
+                        },
+                        {
+                            id: 5,
+                            title: 'Business English: Presentations',
+                            level: 'C1',
+                            type: 'Speaking',
+                            teacher: 'Hoàng Văn E',
+                            teacherAvatar: 'https://ui-avatars.com/api/?name=Hoang+Van+E&background=E74C3C&color=fff',
+                            rating: 4.9,
+                            reviews: 178,
+                            day: 15,
+                            month: 12,
+                            time: '20:00',
+                            duration: 90,
+                            enrolled: 4,
+                            maxStudents: 8,
+                            status: 'available'
+                        }
+                    ]
+                };
+            },
+            computed: {
+                currentMonthYear() {
+                    const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                                    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+                    return `${months[this.currentMonth]} ${this.currentYear}`;
+                },
+                calendarDays() {
+                    const days = [];
+                    const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+                    const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+                    const startDay = firstDay.getDay();
+                    const daysInMonth = lastDay.getDate();
+                    
+                    // Previous month days
+                    const prevMonth = new Date(this.currentYear, this.currentMonth, 0);
+                    const daysInPrevMonth = prevMonth.getDate();
+                    for (let i = startDay - 1; i >= 0; i--) {
+                        days.push({
+                            number: daysInPrevMonth - i,
+                            date: `${this.currentYear}-${this.currentMonth}-${daysInPrevMonth - i}`,
+                            otherMonth: true,
+                            isToday: false,
+                            classes: []
+                        });
+                    }
+                    
+                    // Current month days
+                    const today = new Date();
+                    for (let i = 1; i <= daysInMonth; i++) {
+                        const isToday = i === today.getDate() && 
+                                       this.currentMonth === today.getMonth() && 
+                                       this.currentYear === today.getFullYear();
+                        
+                        const dayClasses = this.classes.filter(c => c.day === i && c.month === this.currentMonth + 1);
+                        
+                        days.push({
+                            number: i,
+                            date: `${this.currentYear}-${this.currentMonth + 1}-${i}`,
+                            otherMonth: false,
+                            isToday: isToday,
+                            classes: dayClasses
+                        });
+                    }
+                    
+                    // Next month days
+                    const remainingDays = 42 - days.length;
+                    for (let i = 1; i <= remainingDays; i++) {
+                        days.push({
+                            number: i,
+                            date: `${this.currentYear}-${this.currentMonth + 2}-${i}`,
+                            otherMonth: true,
+                            isToday: false,
+                            classes: []
+                        });
+                    }
+                    
+                    return days;
+                },
+                filteredClasses() {
+                    return this.classes.filter(cls => {
+                        const matchLevel = !this.levelFilter || cls.level === this.levelFilter;
+                        const matchType = !this.typeFilter || cls.type === this.typeFilter;
+                        const matchStatus = !this.statusFilter || cls.status === this.statusFilter;
+                        
+                        return matchLevel && matchType && matchStatus;
+                    });
+                }
+            },
+            methods: {
+                previousMonth() {
+                    if (this.currentMonth === 0) {
+                        this.currentMonth = 11;
+                        this.currentYear--;
+                    } else {
+                        this.currentMonth--;
+                    }
+                },
+                nextMonth() {
+                    if (this.currentMonth === 11) {
+                        this.currentMonth = 0;
+                        this.currentYear++;
+                    } else {
+                        this.currentMonth++;
+                    }
+                },
+                goToday() {
+                    const today = new Date();
+                    this.currentMonth = today.getMonth();
+                    this.currentYear = today.getFullYear();
+                },
+                getStatusLabel(status) {
+                    const labels = {
+                        available: 'Còn chỗ',
+                        booked: 'Đã đặt',
+                        full: 'Hết chỗ'
+                    };
+                    return labels[status] || status;
+                },
+                viewClass(cls) {
+                    alert('Xem chi tiết: ' + cls.title);
+                },
+                bookClass(cls) {
+                    if (confirm('Đặt lịch học: ' + cls.title + '?')) {
+                        cls.status = 'booked';
+                        cls.enrolled++;
+                    }
+                },
+                cancelClass(cls) {
+                    if (confirm('Hủy lịch học: ' + cls.title + '?')) {
+                        cls.status = 'available';
+                        cls.enrolled--;
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

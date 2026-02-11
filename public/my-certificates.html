@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chứng chỉ của tôi - English Learning Platform</title>
+    
+    <!-- Bootstrap 5.3.0 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Montserrat + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: #F9FAFC;
+            color: #2C3E50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Header */
+        .page-header {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: #183B56;
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            color: #57606F;
+            font-size: 1.125rem;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #F47C26 0%, #FFA500 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 1.75rem;
+        }
+        
+        .stat-icon.gold {
+            background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+        }
+        
+        .stat-icon.blue {
+            background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+        }
+        
+        .stat-icon.green {
+            background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+        }
+        
+        .stat-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: #183B56;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: #57606F;
+            font-size: 0.875rem;
+        }
+        
+        /* Filters */
+        .filters-bar {
+            background: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 10px 24px;
+            background: white;
+            border: 2px solid #E0E6ED;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #57606F;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-tab:hover, .filter-tab.active {
+            border-color: #F47C26;
+            color: #F47C26;
+            background: rgba(244, 124, 38, 0.05);
+        }
+        
+        /* Certificates Grid */
+        .certificates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+        
+        .certificate-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .certificate-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        }
+        
+        .certificate-preview {
+            position: relative;
+            background: linear-gradient(135deg, #183B56 0%, #2C5F8D 100%);
+            padding: 40px 24px;
+            text-align: center;
+            color: white;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .certificate-badge {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 4px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+        }
+        
+        .certificate-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .certificate-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .certificate-date {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .certificate-body {
+            padding: 24px;
+        }
+        
+        .certificate-info {
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+        }
+        
+        .info-label {
+            color: #57606F;
+        }
+        
+        .info-value {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #183B56;
+        }
+        
+        .certificate-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-download {
+            background: #F47C26;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: #D35400;
+        }
+        
+        .btn-share {
+            background: #3498DB;
+            color: white;
+        }
+        
+        .btn-share:hover {
+            background: #2980B9;
+        }
+        
+        .btn-verify {
+            background: #2ECC71;
+            color: white;
+        }
+        
+        .btn-verify:hover {
+            background: #27AE60;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            background: white;
+            padding: 80px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            background: rgba(244, 124, 38, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 3rem;
+            color: #F47C26;
+        }
+        
+        .empty-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #183B56;
+            margin-bottom: 12px;
+        }
+        
+        .empty-text {
+            color: #57606F;
+            margin-bottom: 24px;
+        }
+        
+        .btn-explore {
+            background: #F47C26;
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .modal-certificate {
+            background: white;
+            padding: 60px;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+        
+        .certificate-border {
+            border: 8px solid #F47C26;
+            padding: 40px;
+            border-radius: 8px;
+        }
+        
+        .certificate-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #F47C26 0%, #FFA500 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        .certificate-header-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            color: #183B56;
+            margin-bottom: 32px;
+            letter-spacing: 2px;
+        }
+        
+        .certificate-recipient {
+            font-size: 1.125rem;
+            color: #57606F;
+            margin-bottom: 16px;
+        }
+        
+        .certificate-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 3rem;
+            color: #F47C26;
+            margin-bottom: 32px;
+        }
+        
+        .certificate-description {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: #57606F;
+            margin-bottom: 32px;
+        }
+        
+        .certificate-footer {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 48px;
+        }
+        
+        .signature-block {
+            text-align: center;
+        }
+        
+        .signature-line {
+            width: 200px;
+            height: 2px;
+            background: #183B56;
+            margin: 0 auto 12px;
+        }
+        
+        .signature-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #183B56;
+        }
+        
+        .signature-title {
+            font-size: 0.875rem;
+            color: #57606F;
+        }
+        
+        .btn-close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #57606F;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .certificates-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-certificate {
+                padding: 30px 20px;
+            }
+            
+            .certificate-border {
+                padding: 20px;
+            }
+            
+            .certificate-name {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- Header -->
+            <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-award me-3"></i>Chứng chỉ của tôi</h1>
+                <p class="page-subtitle">Tất cả chứng chỉ bạn đã đạt được trong hành trình học tập</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="stat-number">{{ totalCertificates }}</div>
+                    <div class="stat-label">Chứng chỉ đã đạt</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon gold">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-number">{{ highestLevel }}</div>
+                    <div class="stat-label">Cấp độ cao nhất</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-number">{{ avgScore }}%</div>
+                    <div class="stat-label">Điểm trung bình</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-number">{{ completedCourses }}</div>
+                    <div class="stat-label">Khóa học hoàn thành</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <button 
+                    v-for="filter in filters" 
+                    :key="filter"
+                    class="filter-tab"
+                    :class="{active: activeFilter === filter}"
+                    @click="activeFilter = filter"
+                >
+                    {{ filter }}
+                </button>
+            </div>
+
+            <!-- Certificates Grid -->
+            <div v-if="filteredCertificates.length > 0" class="certificates-grid">
+                <div 
+                    v-for="cert in filteredCertificates" 
+                    :key="cert.id"
+                    class="certificate-card"
+                >
+                    <div class="certificate-preview" :style="{background: cert.gradient}">
+                        <div class="certificate-badge">{{ cert.icon }}</div>
+                        <h3 class="certificate-title">{{ cert.title }}</h3>
+                        <div class="certificate-level">{{ cert.level }}</div>
+                        <div class="certificate-date">
+                            <i class="fas fa-calendar me-2"></i>{{ cert.date }}
+                        </div>
+                    </div>
+                    
+                    <div class="certificate-body">
+                        <div class="certificate-info">
+                            <div class="info-row">
+                                <span class="info-label">Khóa học:</span>
+                                <span class="info-value">{{ cert.course }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Điểm số:</span>
+                                <span class="info-value">{{ cert.score }}/100</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Xếp loại:</span>
+                                <span class="info-value">{{ cert.grade }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Mã xác thực:</span>
+                                <span class="info-value">{{ cert.verifyCode }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="certificate-actions">
+                            <button class="btn-action btn-download" @click="downloadCertificate(cert)">
+                                <i class="fas fa-download me-2"></i>Tải xuống
+                            </button>
+                            <button class="btn-action btn-share" @click="shareCertificate(cert)">
+                                <i class="fas fa-share-alt me-2"></i>Chia sẻ
+                            </button>
+                        </div>
+                        <button class="btn-action btn-verify mt-2" @click="viewCertificate(cert)" style="width: 100%;">
+                            <i class="fas fa-eye me-2"></i>Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <h2 class="empty-title">Chưa có chứng chỉ nào</h2>
+                <p class="empty-text">Hoàn thành các khóa học để nhận chứng chỉ của bạn</p>
+                <button class="btn-explore">
+                    <i class="fas fa-search me-2"></i>Khám phá khóa học
+                </button>
+            </div>
+        </div>
+
+        <!-- Certificate Detail Modal -->
+        <div v-if="selectedCertificate" class="modal-overlay" @click.self="selectedCertificate = null">
+            <div class="modal-certificate">
+                <button class="btn-close-modal" @click="selectedCertificate = null">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <div class="certificate-border">
+                    <div class="certificate-logo">🎓</div>
+                    <h1 class="certificate-header-text">CERTIFICATE OF COMPLETION</h1>
+                    
+                    <p class="certificate-recipient">This is to certify that</p>
+                    <h2 class="certificate-name">{{ studentName }}</h2>
+                    
+                    <p class="certificate-description">
+                        has successfully completed the course<br>
+                        <strong style="font-size: 1.5rem; color: #183B56;">{{ selectedCertificate.title }}</strong><br>
+                        with a final score of <strong>{{ selectedCertificate.score }}/100</strong> ({{ selectedCertificate.grade }})<br>
+                        on {{ selectedCertificate.date }}
+                    </p>
+                    
+                    <div class="certificate-footer">
+                        <div class="signature-block">
+                            <div class="signature-line"></div>
+                            <div class="signature-name">Director</div>
+                            <div class="signature-title">Academic Director</div>
+                        </div>
+                        
+                        <div class="signature-block">
+                            <div class="signature-line"></div>
+                            <div class="signature-name">{{ selectedCertificate.teacher }}</div>
+                            <div class="signature-title">Course Instructor</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 32px; font-size: 0.875rem; color: #57606F;">
+                        Verification Code: <strong>{{ selectedCertificate.verifyCode }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- App Logic -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeFilter: 'Tất cả',
+                    filters: ['Tất cả', 'A1-A2', 'B1-B2', 'C1-C2', 'IELTS', 'TOEIC'],
+                    selectedCertificate: null,
+                    studentName: 'Nguyễn Văn A',
+                    certificates: [
+                        {
+                            id: 1,
+                            title: 'Elementary English Mastery',
+                            level: 'A2',
+                            course: 'English A2 Complete',
+                            date: '15/10/2024',
+                            score: 92,
+                            grade: 'Excellent',
+                            teacher: 'Ms. Sarah Johnson',
+                            verifyCode: 'CERT-A2-2024-001234',
+                            icon: '🎓',
+                            gradient: 'linear-gradient(135deg, #3498DB 0%, #2980B9 100%)'
+                        },
+                        {
+                            id: 2,
+                            title: 'IELTS Preparation Advanced',
+                            level: 'B2',
+                            course: 'IELTS 7.0+ Intensive',
+                            date: '22/11/2024',
+                            score: 88,
+                            grade: 'Very Good',
+                            teacher: 'Mr. David Brown',
+                            verifyCode: 'CERT-IELTS-2024-005678',
+                            icon: '🏆',
+                            gradient: 'linear-gradient(135deg, #2ECC71 0%, #27AE60 100%)'
+                        },
+                        {
+                            id: 3,
+                            title: 'Business English Professional',
+                            level: 'C1',
+                            course: 'Business Communication',
+                            date: '05/12/2024',
+                            score: 95,
+                            grade: 'Outstanding',
+                            teacher: 'Dr. Emily Wilson',
+                            verifyCode: 'CERT-C1-2024-009012',
+                            icon: '💼',
+                            gradient: 'linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%)'
+                        },
+                        {
+                            id: 4,
+                            title: 'TOEIC Mastery Program',
+                            level: 'B1',
+                            course: 'TOEIC 750+ Preparation',
+                            date: '18/09/2024',
+                            score: 85,
+                            grade: 'Good',
+                            teacher: 'Ms. Jennifer Lee',
+                            verifyCode: 'CERT-TOEIC-2024-003456',
+                            icon: '📊',
+                            gradient: 'linear-gradient(135deg, #F39C12 0%, #E67E22 100%)'
+                        }
+                    ]
+                };
+            },
+            computed: {
+                filteredCertificates() {
+                    if (this.activeFilter === 'Tất cả') {
+                        return this.certificates;
+                    }
+                    
+                    if (this.activeFilter === 'IELTS' || this.activeFilter === 'TOEIC') {
+                        return this.certificates.filter(c => c.title.includes(this.activeFilter));
+                    }
+                    
+                    const levelMap = {
+                        'A1-A2': ['A1', 'A2'],
+                        'B1-B2': ['B1', 'B2'],
+                        'C1-C2': ['C1', 'C2']
+                    };
+                    
+                    return this.certificates.filter(c => levelMap[this.activeFilter]?.includes(c.level));
+                },
+                totalCertificates() {
+                    return this.certificates.length;
+                },
+                highestLevel() {
+                    const levels = this.certificates.map(c => c.level);
+                    if (levels.includes('C2')) return 'C2';
+                    if (levels.includes('C1')) return 'C1';
+                    if (levels.includes('B2')) return 'B2';
+                    if (levels.includes('B1')) return 'B1';
+                    if (levels.includes('A2')) return 'A2';
+                    return 'A1';
+                },
+                avgScore() {
+                    const sum = this.certificates.reduce((acc, c) => acc + c.score, 0);
+                    return Math.round(sum / this.certificates.length);
+                },
+                completedCourses() {
+                    return this.certificates.length;
+                }
+            },
+            methods: {
+                viewCertificate(cert) {
+                    this.selectedCertificate = cert;
+                },
+                downloadCertificate(cert) {
+                    alert('Tải xuống chứng chỉ: ' + cert.title + '\nFormat: PDF');
+                },
+                shareCertificate(cert) {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: cert.title,
+                            text: `Tôi vừa hoàn thành khóa học ${cert.title} với điểm ${cert.score}/100!`,
+                            url: window.location.href
+                        });
+                    } else {
+                        alert('Chia sẻ chứng chỉ: ' + cert.title);
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

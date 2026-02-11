@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Minimal Pair Practice - English Learning Platform{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #3498db;
+            --color-success: #27ae60;
+            --color-warning: #f39c12;
+            --color-error: #e74c3c;
+            --color-text: #2c3e50;
+            --color-bg: #f8f9fa;
+        }
+
+        body {
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .practice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .practice-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .practice-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--color-primary);
+        }
+
+        /* Minimal Pair Options */
+        .pair-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .minimal-pair-option {
+            background: #f8f9fa;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .minimal-pair-option:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .minimal-pair-option.selected {
+            border-color: var(--color-primary);
+            background: #ebf5fb;
+        }
+
+        .minimal-pair-option.correct {
+            border-color: var(--color-success);
+            background: #eafaf1;
+        }
+
+        .minimal-pair-option.incorrect {
+            border-color: var(--color-error);
+            background: #fadbd8;
+        }
+
+        .pair-word {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+
+        .pair-ipa {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0.75rem;
+        }
+
+        .pair-meaning {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+        }
+
+        .play-audio-btn {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .play-audio-btn:hover {
+            background: #2980b9;
+        }
+
+        .play-audio-btn.disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* Feedback Messages */
+        .feedback-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .feedback-message.show {
+            display: block;
+        }
+
+        .feedback-message.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-message.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .feedback-text {
+            margin: 0;
+        }
+
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary.disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .practice-container {
+                padding: 1rem;
+            }
+
+            .pair-options {
+                grid-template-columns: 1fr;
+            }
+
+            .pair-word {
+                font-size: 1.25rem;
+            }
+
+            .practice-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Complete Message */
+        .completion-message {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .completion-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .completion-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .completion-text {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="practice-container">
+        <!-- Header -->
+        <div class="practice-header">
+            <h1>📚 Minimal Pair Practice</h1>
+            <p class="text-muted">Learn to distinguish similar sounds in English</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="correct-count">0</div>
+                <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="incorrect-count">0</div>
+                <div class="stat-label">Incorrect</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="accuracy-count">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section">
+            <div class="progress-info">
+                <span id="progress-text">Question 1 of 10</span>
+                <span id="difficulty-level">Easy</span>
+            </div>
+            <div class="progress" style="height: 20px;">
+                <div id="progress-bar" class="progress-bar bg-primary" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Question -->
+        <div id="question-container" class="question-card">
+            <div class="question-title">
+                Which word contains the <strong id="target-phoneme">/æ/</strong> sound?
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback" class="feedback-message">
+                <p class="feedback-text" id="feedback-text"></p>
+            </div>
+
+            <!-- Options -->
+            <div class="pair-options" id="options-container">
+                <!-- Options will be populated by JavaScript -->
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="check-btn" class="btn-primary" @click="checkAnswer()">
+                    Check Answer
+                </button>
+                <button id="skip-btn" class="btn-secondary" @click="skipQuestion()">
+                    Skip
+                </button>
+            </div>
+        </div>
+
+        <!-- Completion Message (hidden initially) -->
+        <div id="completion-container" style="display: none;">
+            <div class="completion-message">
+                <div class="completion-icon">🎉</div>
+                <div class="completion-title">Practice Complete!</div>
+                <div class="completion-text">
+                    You answered <strong id="final-correct">0</strong> out of 10 correctly.
+                </div>
+                <p id="completion-feedback"></p>
+                <button class="btn-primary" onclick="restartPractice()">
+                    Start Over
+                </button>
+                <a href="{% url 'curriculum:phoneme-chart' %}" class="btn-secondary" style="margin-left: 0.5rem;">
+                    Back to Chart
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Minimal Pair Practice Logic
+        class MinimalPairPractice {
+            constructor() {
+                this.pairs = [
+                    { phoneme_1: '/b/', phoneme_2: '/v/', word_1: 'bat', word_2: 'vat', ipa_1: '/bæt/', ipa_2: '/væt/', meaning_1: 'chim non', meaning_2: 'bể chứa' },
+                    { phoneme_1: '/p/', phoneme_2: '/b/', word_1: 'pat', word_2: 'bat', ipa_1: '/pæt/', ipa_2: '/bæt/', meaning_1: 'vuốt', meaning_2: 'chim non' },
+                    { phoneme_1: '/ɪ/', phoneme_2: '/iː/', word_1: 'bit', word_2: 'beat', ipa_1: '/bɪt/', ipa_2: '/biːt/', meaning_1: 'miếng nhỏ', meaning_2: 'nhịp đập' },
+                    { phoneme_1: '/ʌ/', phoneme_2: '/ɔː/', word_1: 'cup', word_2: 'cough', ipa_1: '/kʌp/', ipa_2: '/kɔːf/', meaning_1: 'cốc', meaning_2: 'ho' },
+                    { phoneme_1: '/æ/', phoneme_2: '/ʌ/', word_1: 'cat', word_2: 'cut', ipa_1: '/kæt/', ipa_2: '/kʌt/', meaning_1: 'mèo', meaning_2: 'cắt' },
+                    { phoneme_1: '/θ/', phoneme_2: '/ð/', word_1: 'thin', word_2: 'this', ipa_1: '/θɪn/', ipa_2: '/ðɪs/', meaning_1: 'mỏng', meaning_2: 'cái này' },
+                    { phoneme_1: '/s/', phoneme_2: '/z/', word_1: 'seal', word_2: 'zeal', ipa_1: '/siːl/', ipa_2: '/ziːl/', meaning_1: 'con hải cẩu', meaning_2: 'nhiệt tình' },
+                    { phoneme_1: '/ʃ/', phoneme_2: '/tʃ/', word_1: 'share', word_2: 'chair', ipa_1: '/ʃeə/', ipa_2: '/tʃeə/', meaning_1: 'chia sẻ', meaning_2: 'ghế' },
+                    { phoneme_1: '/l/', phoneme_2: '/r/', word_1: 'light', word_2: 'right', ipa_1: '/laɪt/', ipa_2: '/raɪt/', meaning_1: 'ánh sáng', meaning_2: 'đúng' },
+                    { phoneme_1: '/w/', phoneme_2: '/v/', word_1: 'wine', word_2: 'vine', ipa_1: '/waɪn/', ipa_2: '/vaɪn/', meaning_1: 'rượu vang', meaning_2: 'cây nho' }
+                ];
+
+                this.currentQuestion = 0;
+                this.correctCount = 0;
+                this.incorrectCount = 0;
+                this.selectedOption = null;
+                this.answered = false;
+
+                this.init();
+            }
+
+            init() {
+                this.showQuestion();
+                document.getElementById('check-btn').addEventListener('click', () => this.checkAnswer());
+                document.getElementById('skip-btn').addEventListener('click', () => this.skipQuestion());
+            }
+
+            showQuestion() {
+                if (this.currentQuestion >= this.pairs.length) {
+                    this.showCompletion();
+                    return;
+                }
+
+                const pair = this.pairs[this.currentQuestion];
+                this.answered = false;
+                this.selectedOption = null;
+
+                // Update progress
+                const progress = ((this.currentQuestion + 1) / this.pairs.length) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('progress-text').textContent = 
+                    `Question ${this.currentQuestion + 1} of ${this.pairs.length}`;
+
+                // Randomize which word to ask about
+                const askAbout = Math.random() < 0.5 ? 'word_1' : 'word_2';
+                const phonemeToAsk = askAbout === 'word_1' ? pair.phoneme_1 : pair.phoneme_2;
+                
+                document.getElementById('target-phoneme').textContent = phonemeToAsk;
+
+                // Clear feedback
+                document.getElementById('feedback').classList.remove('show', 'correct', 'incorrect');
+                
+                // Clear options container
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+
+                // Create options (randomize order)
+                const options = [
+                    { word: pair.word_1, ipa: pair.ipa_1, meaning: pair.meaning_1, isCorrect: askAbout === 'word_1' },
+                    { word: pair.word_2, ipa: pair.ipa_2, meaning: pair.meaning_2, isCorrect: askAbout === 'word_2' }
+                ].sort(() => Math.random() - 0.5);
+
+                options.forEach((option, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'minimal-pair-option';
+                    div.innerHTML = `
+                        <div class="pair-word">${option.word}</div>
+                        <div class="pair-ipa">${option.ipa}</div>
+                        <div class="pair-meaning">${option.meaning}</div>
+                        <button class="play-audio-btn">🔊 Play</button>
+                    `;
+                    div.addEventListener('click', () => this.selectOption(div, option.isCorrect));
+                    container.appendChild(div);
+                });
+
+                this.updateStats();
+            }
+
+            selectOption(element, isCorrect) {
+                if (this.answered) return;
+
+                // Clear previous selection
+                document.querySelectorAll('.minimal-pair-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+
+                element.classList.add('selected');
+                this.selectedOption = { element, isCorrect };
+            }
+
+            checkAnswer() {
+                if (!this.selectedOption) {
+                    alert('Please select an option');
+                    return;
+                }
+
+                this.answered = true;
+                const feedback = document.getElementById('feedback');
+                const feedbackText = document.getElementById('feedback-text');
+
+                if (this.selectedOption.isCorrect) {
+                    this.selectedOption.element.classList.remove('selected');
+                    this.selectedOption.element.classList.add('correct');
+                    feedback.classList.add('show', 'correct');
+                    feedbackText.textContent = '✓ Correct! Good job!';
+                    this.correctCount++;
+                } else {
+                    this.selectedOption.element.classList.remove('selected');
+                    this.selectedOption.element.classList.add('incorrect');
+                    feedback.classList.add('show', 'incorrect');
+                    feedbackText.textContent = '✗ Incorrect. Try the other option.';
+                    this.incorrectCount++;
+                }
+
+                document.getElementById('check-btn').textContent = 'Next Question';
+                document.getElementById('check-btn').onclick = () => {
+                    this.currentQuestion++;
+                    this.showQuestion();
+                };
+
+                this.updateStats();
+            }
+
+            skipQuestion() {
+                this.incorrectCount++;
+                this.currentQuestion++;
+                this.showQuestion();
+            }
+
+            updateStats() {
+                document.getElementById('correct-count').textContent = this.correctCount;
+                document.getElementById('incorrect-count').textContent = this.incorrectCount;
+                
+                const total = this.correctCount + this.incorrectCount;
+                const accuracy = total > 0 ? Math.round((this.correctCount / total) * 100) : 0;
+                document.getElementById('accuracy-count').textContent = accuracy + '%';
+            }
+
+            showCompletion() {
+                document.getElementById('question-container').style.display = 'none';
+                document.getElementById('completion-container').style.display = 'block';
+                document.getElementById('final-correct').textContent = this.correctCount;
+
+                const accuracy = Math.round((this.correctCount / 10) * 100);
+                let feedback = '';
+                if (accuracy === 100) {
+                    feedback = '🌟 Perfect score! You\'ve mastered minimal pairs!';
+                } else if (accuracy >= 80) {
+                    feedback = '👏 Great work! Keep practicing to improve further.';
+                } else if (accuracy >= 60) {
+                    feedback = '📚 Good progress! More practice will help you improve.';
+                } else {
+                    feedback = '💪 Keep practicing! Minimal pairs take time to master.';
+                }
+                document.getElementById('completion-feedback').textContent = feedback;
+            }
+        }
+
+        function restartPractice() {
+            location.reload();
+        }
+
+        // Initialize practice
+        const practice = new MinimalPairPractice();
+    </script>
+</body>
+</html>

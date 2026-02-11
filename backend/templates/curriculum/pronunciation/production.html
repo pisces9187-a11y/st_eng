@@ -1,0 +1,462 @@
+{% extends 'base/_base_public.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Breadcrumb Styles */
+    .custom-breadcrumb {
+        background: #f8f9fa;
+        padding: 1rem 0;
+        margin-bottom: 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .custom-breadcrumb .breadcrumb {
+        margin-bottom: 0;
+        background: transparent;
+        padding: 0;
+    }
+    .custom-breadcrumb .breadcrumb-item {
+        font-size: 14px;
+    }
+    .custom-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        font-size: 18px;
+        color: #6c757d;
+        padding: 0 0.5rem;
+    }
+    .custom-breadcrumb .breadcrumb-item a {
+        color: #ec4899;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .custom-breadcrumb .breadcrumb-item a:hover {
+        color: #8b5cf6;
+        text-decoration: underline;
+    }
+    .custom-breadcrumb .breadcrumb-item.active {
+        color: #495057;
+        font-weight: 500;
+    }
+    .breadcrumb-phoneme {
+        font-family: 'Times New Roman', serif;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .phoneme-hero {
+        background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    .ipa-large {
+        font-size: 6rem;
+        font-weight: 300;
+        margin: 0;
+    }
+    .recording-circle {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 auto;
+    }
+    .recording-circle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .recording-circle.recording {
+        animation: pulse 1.5s infinite;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    .waveform {
+        height: 100px;
+        background: #f3f4f6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 1rem;
+    }
+    .waveform-bar {
+        width: 4px;
+        background: #8b5cf6;
+        border-radius: 2px;
+        transition: height 0.1s;
+    }
+    .score-badge {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0 auto;
+    }
+    .score-excellent { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .score-good { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+    .score-fair { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .score-poor { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<div class="custom-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/dashboard/">
+                        <i class="bi bi-house-door"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'curriculum:pronunciation-discovery' %}">
+                        <i class="bi bi-mic"></i> Phát âm
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'curriculum:pronunciation-learning' phoneme.id %}">
+                        <span class="breadcrumb-phoneme">/{{ phoneme.ipa_symbol }}/</span> {{ phoneme.name_vi }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bi bi-mic-fill"></i> Luyện ghi âm
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div id="productionApp" v-cloak>
+    <!-- Hero Section -->
+    <div class="phoneme-hero text-center">
+        <div class="container">
+            <h1 class="ipa-large">/{{ phoneme.ipa_symbol }}/</h1>
+            <p class="lead mb-0">{{ phoneme.vietnamese_approx }}</p>
+            <p class="mt-2 opacity-75">Luyện phát âm</p>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Instructions -->
+        <div class="alert alert-info mb-4" v-if="!recordingStarted">
+            <h5 class="alert-heading"><i class="bi bi-info-circle"></i> Hướng dẫn</h5>
+            <ul class="mb-0">
+                <li>Bấm nút ghi âm và phát âm từ được hiển thị</li>
+                <li>Hệ thống sẽ đánh giá độ chính xác phát âm của bạn</li>
+                <li>Luyện tập nhiều lần để cải thiện điểm số</li>
+            </ul>
+        </div>
+
+        <!-- Practice Word Display -->
+        <div class="card shadow-sm mb-4" v-if="!showResults">
+            <div class="card-body text-center py-5">
+                <h2 class="mb-3">[[ currentWord.word ]]</h2>
+                <p class="lead text-muted">/[[ currentWord.phonetic ]]/</p>
+                <p class="text-muted">[[ currentWord.meaning ]]</p>
+                
+                <!-- Listen Button -->
+                <button @click="playReference" class="btn btn-outline-primary mt-3">
+                    <i class="bi bi-volume-up"></i> Nghe phát âm mẫu
+                </button>
+            </div>
+        </div>
+
+        <!-- Recording Interface -->
+        <div v-if="!showResults">
+            <div class="text-center py-4">
+                <div 
+                    class="recording-circle"
+                    :class="{ 'recording': isRecording }"
+                    @click="toggleRecording"
+                >
+                    <div class="text-white">
+                        <i class="bi" :class="isRecording ? 'bi-stop-fill' : 'bi-mic-fill'" style="font-size: 4rem;"></i>
+                        <p class="mt-2 mb-0">[[ isRecording ? 'Dừng' : 'Ghi âm' ]]</p>
+                    </div>
+                </div>
+                
+                <p class="text-muted mt-3" v-if="isRecording">Đang ghi âm...</p>
+                <p class="text-muted mt-3" v-else-if="recordingCompleted">Đã ghi xong, đang phân tích...</p>
+            </div>
+
+            <!-- Waveform Visualization (Mock) -->
+            <div class="waveform mb-4" v-if="isRecording">
+                <div class="waveform-bar" v-for="n in 20" :key="n" :style="{ height: getRandomHeight() }"></div>
+            </div>
+
+            <!-- Previous Attempts -->
+            <div v-if="attempts.length > 0" class="mt-4">
+                <h5>Lịch sử luyện tập</h5>
+                <div class="list-group">
+                    <div class="list-group-item" v-for="(attempt, index) in attempts" :key="index">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Lần [[ index + 1 ]]</strong>
+                                <span class="ms-2" :class="getScoreClass(attempt.score)">
+                                    [[ attempt.score ]]%
+                                </span>
+                            </div>
+                            <button @click="playRecording(index)" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-play-fill"></i> Nghe lại
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="text-center mt-4">
+                <button @click="nextWord" class="btn btn-primary btn-lg px-5" v-if="attempts.length > 0">
+                    <i class="bi bi-arrow-right"></i> Từ tiếp theo
+                </button>
+                <a href="/pronunciation/discovery/" class="btn btn-outline-secondary btn-lg ms-2">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div v-if="showResults" class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <h2 class="mb-4">Kết quả luyện tập</h2>
+                    
+                    <div 
+                        class="score-badge mx-auto mb-4"
+                        :class="getScoreBadgeClass(averageScore)"
+                    >
+                        <div>
+                            [[ averageScore ]]%
+                            <div style="font-size: 0.8rem;">TB</div>
+                        </div>
+                    </div>
+                    
+                    <p class="lead">[[ getScoreMessage(averageScore) ]]</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <h4>[[ totalAttempts ]]</h4>
+                            <p class="text-muted">Lần ghi âm</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4>[[ bestScore ]]%</h4>
+                            <p class="text-muted">Điểm cao nhất</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4>[[ wordsCompleted ]]</h4>
+                            <p class="text-muted">Từ đã luyện</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button @click="restartPractice" class="btn btn-primary btn-lg me-2">
+                            <i class="bi bi-arrow-clockwise"></i> Luyện lại
+                        </button>
+                        <a href="/pronunciation/discovery/" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            phoneme: {
+                id: {{ phoneme.id }},
+                ipa_symbol: '{{ phoneme.ipa_symbol|escapejs }}',
+                name_vi: '{{ phoneme.name_vi|escapejs }}',
+                vietnamese_approx: '{{ phoneme.vietnamese_approx|escapejs }}'
+            },
+            recordingStarted: false,
+            isRecording: false,
+            recordingCompleted: false,
+            showResults: false,
+            
+            // Current word
+            currentWordIndex: 0,
+            
+            // Mock words
+            words: [
+                { word: 'sit', phonetic: 'sɪt', meaning: 'ngồi' },
+                { word: 'bit', phonetic: 'bɪt', meaning: 'chút' },
+                { word: 'hit', phonetic: 'hɪt', meaning: 'đánh' },
+                { word: 'fit', phonetic: 'fɪt', meaning: 'vừa vặn' },
+                { word: 'ship', phonetic: 'ʃɪp', meaning: 'tàu' }
+            ],
+            
+            // Recording data
+            attempts: [],
+            mediaRecorder: null,
+            audioChunks: []
+        }
+    },
+    computed: {
+        currentWord() {
+            return this.words[this.currentWordIndex];
+        },
+        totalAttempts() {
+            return this.attempts.length;
+        },
+        averageScore() {
+            if (this.attempts.length === 0) return 0;
+            const sum = this.attempts.reduce((acc, attempt) => acc + attempt.score, 0);
+            return Math.round(sum / this.attempts.length);
+        },
+        bestScore() {
+            if (this.attempts.length === 0) return 0;
+            return Math.max(...this.attempts.map(a => a.score));
+        },
+        wordsCompleted() {
+            return this.currentWordIndex + 1;
+        }
+    },
+    methods: {
+        async toggleRecording() {
+            if (this.isRecording) {
+                await this.stopRecording();
+            } else {
+                await this.startRecording();
+            }
+        },
+        
+        async startRecording() {
+            this.recordingStarted = true;
+            this.isRecording = true;
+            this.recordingCompleted = false;
+            
+            // Mock recording - in production, use real MediaRecorder API
+            // try {
+            //     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            //     this.mediaRecorder = new MediaRecorder(stream);
+            //     this.audioChunks = [];
+            //     
+            //     this.mediaRecorder.addEventListener('dataavailable', event => {
+            //         this.audioChunks.push(event.data);
+            //     });
+            //     
+            //     this.mediaRecorder.start();
+            // } catch (error) {
+            //     console.error('Error accessing microphone:', error);
+            //     alert('Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.');
+            // }
+        },
+        
+        async stopRecording() {
+            this.isRecording = false;
+            this.recordingCompleted = true;
+            
+            // Mock analysis - in production, send audio to backend for analysis
+            setTimeout(() => {
+                const mockScore = Math.floor(Math.random() * 30) + 70; // 70-100
+                this.attempts.push({
+                    score: mockScore,
+                    timestamp: new Date(),
+                    audioBlob: null // In production, store actual audio blob
+                });
+                this.recordingCompleted = false;
+            }, 1500);
+            
+            // if (this.mediaRecorder) {
+            //     this.mediaRecorder.stop();
+            //     // Process and send to backend for scoring
+            // }
+        },
+        
+        playReference() {
+            // Mock - in production, play actual audio file
+            console.log('Playing reference audio for:', this.currentWord.word);
+        },
+        
+        playRecording(index) {
+            // Mock - in production, play recorded audio
+            console.log('Playing recording:', index);
+        },
+        
+        nextWord() {
+            this.currentWordIndex++;
+            this.attempts = [];
+            
+            if (this.currentWordIndex >= this.words.length) {
+                this.showResults = true;
+                this.saveProgress();
+            }
+        },
+        
+        async saveProgress() {
+            // TODO: Save progress to backend
+            const data = {
+                phoneme_id: this.phoneme.id,
+                best_score: this.bestScore,
+                average_score: this.averageScore,
+                total_attempts: this.totalAttempts
+            };
+            
+            // await ApiClient.post('/pronunciation/production/submit/', data);
+        },
+        
+        restartPractice() {
+            this.currentWordIndex = 0;
+            this.attempts = [];
+            this.showResults = false;
+            this.recordingStarted = false;
+        },
+        
+        getRandomHeight() {
+            return Math.random() * 80 + 20 + 'px';
+        },
+        
+        getScoreClass(score) {
+            if (score >= 90) return 'text-success';
+            if (score >= 75) return 'text-primary';
+            if (score >= 60) return 'text-warning';
+            return 'text-danger';
+        },
+        
+        getScoreBadgeClass(score) {
+            if (score >= 90) return 'score-excellent';
+            if (score >= 75) return 'score-good';
+            if (score >= 60) return 'score-fair';
+            return 'score-poor';
+        },
+        
+        getScoreMessage(score) {
+            if (score >= 90) return 'Xuất sắc! Phát âm của bạn rất chuẩn!';
+            if (score >= 75) return 'Tốt! Tiếp tục luyện tập để cải thiện!';
+            if (score >= 60) return 'Khá! Bạn cần luyện tập thêm!';
+            return 'Cần cố gắng thêm! Hãy nghe và bắt chước âm mẫu!';
+        }
+    },
+    mounted() {
+        console.log('Production practice app mounted');
+    }
+}).mount('#productionApp');
+</script>
+{% endblock %}

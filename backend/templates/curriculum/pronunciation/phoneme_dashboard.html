@@ -1,0 +1,649 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Dashboard Phoneme - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #667eea;
+        --success-color: #27AE60;
+        --warning-color: #F39C12;
+        --danger-color: #E74C3C;
+        --info-color: #3498DB;
+    }
+    
+    .dashboard-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .phoneme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .phoneme-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    
+    .phoneme-card:hover {
+        border-color: var(--primary-color);
+        transform: scale(1.05);
+    }
+    
+    .phoneme-card.mastered {
+        background: linear-gradient(135deg, #27AE60 0%, #2ecc71 100%);
+        color: white;
+    }
+    
+    .phoneme-card.in-progress {
+        background: linear-gradient(135deg, #3498DB 0%, #5dade2 100%);
+        color: white;
+    }
+    
+    .phoneme-card.struggling {
+        background: linear-gradient(135deg, #F39C12 0%, #f8c471 100%);
+        color: white;
+    }
+    
+    .phoneme-ipa {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .phoneme-accuracy {
+        font-size: 1.2rem;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-bar-container {
+        background: #ecf0f1;
+        height: 8px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+        transition: width 0.5s;
+    }
+    
+    .activity-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .grade-badge {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        line-height: 40px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .grade-A { background: #27AE60; color: white; }
+    .grade-B { background: #3498DB; color: white; }
+    .grade-C { background: #F39C12; color: white; }
+    .grade-D { background: #E67E22; color: white; }
+    .grade-F { background: #E74C3C; color: white; }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-top: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .tab-nav {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #ecf0f1;
+    }
+    
+    .tab-btn {
+        padding: 1rem 2rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #6c757d;
+        transition: all 0.3s;
+    }
+    
+    .tab-btn.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #ecf0f1;
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #95a5a6;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-hero">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-2">
+            <i class="fas fa-chart-line me-3"></i>
+            Dashboard Phoneme Cá Nhân
+        </h1>
+        <p class="lead mb-0">Theo dõi tiến độ và cải thiện phát âm của bạn</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4" id="statistics">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" id="totalPhonemes">--</div>
+                <div class="stat-label">Tổng Phoneme</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" id="masteredPhonemes">--</div>
+                <div class="stat-label">Đã Thành Thạo</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" id="inProgressPhonemes">--</div>
+                <div class="stat-label">Đang Luyện Tập</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" id="overallAccuracy">--</div>
+                <div class="stat-label">Độ Chính Xác TB</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="mastered">
+            <i class="fas fa-trophy me-2"></i>Thành Thạo
+        </button>
+        <button class="tab-btn" data-tab="in-progress">
+            <i class="fas fa-dumbbell me-2"></i>Đang Luyện
+        </button>
+        <button class="tab-btn" data-tab="struggling">
+            <i class="fas fa-exclamation-triangle me-2"></i>Cần Cải Thiện
+        </button>
+        <button class="tab-btn" data-tab="activity">
+            <i class="fas fa-history me-2"></i>Hoạt Động Gần Đây
+        </button>
+    </div>
+    
+    <!-- Mastered Phonemes -->
+    <div class="tab-content active" id="tab-mastered">
+        <h3 class="mb-3">Phoneme Đã Thành Thạo</h3>
+        <div class="phoneme-grid" id="masteredGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- In Progress Phonemes -->
+    <div class="tab-content" id="tab-in-progress">
+        <h3 class="mb-3">Phoneme Đang Luyện Tập</h3>
+        <div class="phoneme-grid" id="inProgressGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Struggling Phonemes -->
+    <div class="tab-content" id="tab-struggling">
+        <h3 class="mb-3">Phoneme Cần Cải Thiện</h3>
+        <div class="phoneme-grid" id="strugglingGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Đang tải dữ liệu...</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-warning btn-lg" id="generateExercisesBtn">
+                <i class="fas fa-magic me-2"></i>
+                Tạo Bài Tập Tùy Chỉnh
+            </button>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="tab-content" id="tab-activity">
+        <h3 class="mb-3">Hoạt Động Gần Đây</h3>
+        <div id="activityList">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Progress Chart -->
+    <div class="chart-container">
+        <h3 class="mb-4">
+            <i class="fas fa-chart-area me-2"></i>
+            Tiến Độ 30 Ngày Gần Đây
+        </h3>
+        <canvas id="progressChart" height="100"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// API Base URL
+const API_BASE = '/api/v1';
+
+// Global data
+let dashboardData = null;
+let progressChart = null;
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Update active button
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Show corresponding tab
+        const tabName = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+    });
+});
+
+// Load dashboard data
+async function loadDashboard() {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`${API_BASE}/phoneme-progress/dashboard/`, {
+            credentials: 'same-origin',
+            headers: {
+                'Authorization': token ? `Bearer ${token}` : '',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load dashboard');
+        
+        dashboardData = await response.json();
+        
+        renderStatistics(dashboardData.statistics);
+        renderPhonemes(dashboardData.phonemes);
+        renderActivity(dashboardData.recent_activity);
+        loadProgressChart();
+        
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        showError('Không thể tải dữ liệu dashboard');
+    }
+}
+
+// Render statistics
+function renderStatistics(stats) {
+    document.getElementById('totalPhonemes').textContent = stats.total_phonemes;
+    document.getElementById('masteredPhonemes').textContent = stats.mastered_phonemes;
+    document.getElementById('inProgressPhonemes').textContent = stats.in_progress_phonemes;
+    document.getElementById('overallAccuracy').textContent = `${stats.overall_accuracy}%`;
+}
+
+// Render phoneme grids
+function renderPhonemes(phonemes) {
+    renderPhonemeGrid('masteredGrid', phonemes.mastered, 'mastered');
+    renderPhonemeGrid('inProgressGrid', phonemes.in_progress, 'in-progress');
+    renderPhonemeGrid('strugglingGrid', phonemes.struggling, 'struggling');
+}
+
+function renderPhonemeGrid(gridId, phonemeList, cssClass) {
+    const grid = document.getElementById(gridId);
+    
+    if (!phonemeList || phonemeList.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>Chưa có phoneme nào trong danh mục này</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = phonemeList.map(p => `
+        <div class="phoneme-card ${cssClass}" onclick="viewPhonemeDetail(${p.phoneme_id})">
+            <div class="phoneme-ipa">/${p.ipa_symbol}/</div>
+            <div>${p.vietnamese_approx || p.category || ''}</div>
+            <div class="phoneme-accuracy">${p.accuracy_rate.toFixed(1)}%</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: ${p.accuracy_rate}%"></div>
+            </div>
+            <small class="d-block mt-2">${p.times_practiced} lần thực hành</small>
+        </div>
+    `).join('');
+}
+
+// Render recent activity
+function renderActivity(activities) {
+    const list = document.getElementById('activityList');
+    
+    if (!activities || activities.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-clock"></i>
+                <p>Chưa có hoạt động nào</p>
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = activities.map(activity => {
+        const date = new Date(activity.attempted_at);
+        const timeStr = date.toLocaleString('vi-VN');
+        
+        return `
+            <div class="activity-item">
+                <div>
+                    <strong>/${activity.phoneme}/</strong>
+                    <span class="text-muted ms-2">${activity.exercise_type || 'practice'}</span>
+                    <br>
+                    <small class="text-muted">
+                        <i class="far fa-clock me-1"></i>${timeStr}
+                    </small>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="fs-5 fw-bold">${activity.accuracy.toFixed(1)}%</span>
+                    <div class="grade-badge grade-${activity.grade}">${activity.grade}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Load progress chart
+async function loadProgressChart() {
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`${API_BASE}/progress-history/?days=30`, {
+            credentials: 'same-origin',
+            headers: {
+                'Authorization': token ? `Bearer ${token}` : '',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load history');
+        
+        const data = await response.json();
+        renderChart(data.history);
+        
+    } catch (error) {
+        console.error('Error loading chart:', error);
+    }
+}
+
+// Render Chart.js chart
+function renderChart(history) {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    // Destroy existing chart
+    if (progressChart) {
+        progressChart.destroy();
+    }
+    
+    // Prepare data
+    const labels = history.map(h => {
+        const date = new Date(h.date);
+        return date.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' });
+    });
+    
+    const accuracyData = history.map(h => h.avg_accuracy);
+    const attemptsData = history.map(h => h.attempts);
+    
+    progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Độ chính xác (%)',
+                    data: accuracyData,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Số lần thực hành',
+                    data: attemptsData,
+                    borderColor: '#27AE60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Độ chính xác (%)'
+                    },
+                    min: 0,
+                    max: 100
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Số lần thực hành'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    min: 0
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                if (context.dataset.yAxisID === 'y') {
+                                    label += context.parsed.y.toFixed(1) + '%';
+                                } else {
+                                    label += Math.round(context.parsed.y) + ' lần';
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// View phoneme detail
+function viewPhonemeDetail(phonemeId) {
+    window.location.href = `/pronunciation/phoneme-progress/${phonemeId}/`;
+}
+
+// Generate custom exercises
+document.getElementById('generateExercisesBtn').addEventListener('click', async function() {
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo...';
+    
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`${API_BASE}/custom-exercises/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token ? `Bearer ${token}` : '',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                count: 5,
+                difficulty: 'medium'
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to generate exercises');
+        
+        const data = await response.json();
+        
+        // Redirect to exercises page with generated exercises
+        sessionStorage.setItem('customExercises', JSON.stringify(data.exercises));
+        window.location.href = '/pronunciation/custom-practice/';
+        
+    } catch (error) {
+        console.error('Error generating exercises:', error);
+        alert('Không thể tạo bài tập. Vui lòng thử lại.');
+        this.disabled = false;
+        this.innerHTML = '<i class="fas fa-magic me-2"></i>Tạo Bài Tập Tùy Chỉnh';
+    }
+});
+
+// Helper: Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Show error
+function showError(message) {
+    alert(message);
+}
+
+// Load dashboard on page load
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+{% endblock %}

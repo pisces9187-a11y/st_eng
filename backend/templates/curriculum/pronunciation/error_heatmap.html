@@ -1,0 +1,426 @@
+{% extends "base/_base_public.html" %}
+{% load static %}
+
+{% block title %}Phân tích lỗi phát âm - EnglishMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --error-critical: #E74C3C;
+        --error-high: #E67E22;
+        --error-medium: #F39C12;
+        --error-low: #27AE60;
+        --bg-light: #F9FAFC;
+    }
+    
+    .error-heatmap-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .error-bar-container {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .error-item {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #E0E6ED;
+    }
+    
+    .error-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .error-phoneme {
+        font-size: 2rem;
+        font-family: 'Lucida Sans Unicode', sans-serif;
+        color: #183B56;
+        font-weight: 600;
+        display: inline-block;
+        margin-right: 1rem;
+    }
+    
+    .error-bar-track {
+        height: 30px;
+        background: #E0E6ED;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        margin-top: 0.5rem;
+    }
+    
+    .error-bar-fill {
+        height: 100%;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 1rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: width 0.5s ease;
+    }
+    
+    .error-bar-fill.critical {
+        background: linear-gradient(90deg, var(--error-critical), #C0392B);
+    }
+    
+    .error-bar-fill.high {
+        background: linear-gradient(90deg, var(--error-high), #D35400);
+    }
+    
+    .error-bar-fill.medium {
+        background: linear-gradient(90deg, var(--error-medium), #E67E22);
+    }
+    
+    .recommendation-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-left: 4px solid;
+        transition: all 0.3s ease;
+    }
+    
+    .recommendation-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    
+    .recommendation-card.priority-critical {
+        border-left-color: var(--error-critical);
+    }
+    
+    .recommendation-card.priority-high {
+        border-left-color: var(--error-high);
+    }
+    
+    .recommendation-card.priority-medium {
+        border-left-color: var(--error-medium);
+    }
+    
+    .category-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+    
+    .category-badge-vowels {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498DB;
+    }
+    
+    .category-badge-consonants {
+        background: rgba(231, 76, 60, 0.1);
+        color: #E74C3C;
+    }
+    
+    .category-badge-ending {
+        background: rgba(155, 89, 182, 0.1);
+        color: #9B59B6;
+    }
+    
+    .category-badge-clusters {
+        background: rgba(243, 156, 18, 0.1);
+        color: #F39C12;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #27AE60;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-heatmap-header">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-2">
+            <i class="fas fa-chart-bar me-3"></i>
+            Phân tích lỗi phát âm
+        </h1>
+        <p class="lead mb-0">Xem các âm bạn hay phát âm sai và cách cải thiện</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Overall Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <span class="stat-value text-primary">{{ completed_lessons }}</span>
+                <span class="stat-label">Bài đã học</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <span class="stat-value text-success">{{ completion_rate }}%</span>
+                <span class="stat-label">Tỉ lệ hoàn thành</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <span class="stat-value" 
+                      :class="{ 'text-danger': {{ avg_accuracy }} < 50, 'text-warning': {{ avg_accuracy }} >= 50 && {{ avg_accuracy }} < 70, 'text-success': {{ avg_accuracy }} >= 70 }">
+                    {{ avg_accuracy }}%
+                </span>
+                <span class="stat-label">Độ chính xác TB</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <span class="stat-value text-danger">{{ phoneme_errors|length }}</span>
+                <span class="stat-label">Âm hay sai</span>
+            </div>
+        </div>
+    </div>
+    
+    {% if has_errors %}
+    <div class="row">
+        <!-- Left Column: Error Details -->
+        <div class="col-lg-8">
+            <!-- Error Heatmap -->
+            <div class="error-bar-container">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-fire text-danger me-2"></i>
+                    Các âm hay phát âm sai
+                </h4>
+                <p class="text-muted mb-4">Độ chính xác &lt; 70% - Cần luyện tập thêm</p>
+                
+                {% if phoneme_errors %}
+                    {% for error in phoneme_errors %}
+                    <div class="error-item">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div>
+                                <span class="error-phoneme">/{{ error.phoneme.ipa_symbol }}/</span>
+                                <span class="text-muted">{{ error.phoneme.vietnamese_approx }}</span>
+                            </div>
+                            <span class="badge {% if error.error_rate >= 50 %}bg-danger{% elif error.error_rate >= 30 %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                {{ error.error_rate|floatformat:0 }}% lỗi
+                            </span>
+                        </div>
+                        
+                        <div class="error-bar-track">
+                            <div class="error-bar-fill {% if error.error_rate >= 50 %}critical{% elif error.error_rate >= 30 %}high{% else %}medium{% endif %}" 
+                                 style="width: {{ error.error_rate }}%">
+                                {{ error.accuracy|floatformat:0 }}%
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-redo me-1"></i>
+                                {{ error.attempts }} lần thử
+                            </small>
+                            {% if error.phoneme.vietnamese_comparison %}
+                            <small class="text-info">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ error.phoneme.vietnamese_comparison|truncatewords:10 }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <p>Bạn chưa có phoneme nào dưới 70% accuracy!</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Common Mistakes by Lesson -->
+            {% if common_mistakes %}
+            <div class="error-bar-container">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Bài học cần cải thiện
+                </h4>
+                <p class="text-muted mb-4">Các bài có tỉ lệ đúng &lt; 70%</p>
+                
+                {% for mistake in common_mistakes %}
+                <div class="error-item">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <div>
+                            <h6 class="mb-1">{{ mistake.lesson.title_vi }}</h6>
+                            <span class="badge bg-secondary">{{ mistake.stage.name_vi }}</span>
+                        </div>
+                        <span class="badge {% if mistake.accuracy < 50 %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {{ mistake.correct }}/{{ mistake.total }} đúng
+                        </span>
+                    </div>
+                    
+                    <div class="error-bar-track">
+                        <div class="error-bar-fill {% if mistake.accuracy < 50 %}critical{% else %}high{% endif %}" 
+                             style="width: {{ mistake.accuracy }}%">
+                            {{ mistake.accuracy|floatformat:0 }}%
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <a href="{% url 'curriculum:pronunciation-lesson' slug=mistake.lesson.slug %}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-redo me-1"></i>Học lại
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Error Categories -->
+            <div class="error-bar-container">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-layer-group text-info me-2"></i>
+                    Phân loại lỗi
+                </h4>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="category-badge category-badge-vowels w-100">
+                            <div class="display-6 mb-1">{{ error_categories.vowels }}</div>
+                            <div>Lỗi nguyên âm</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="category-badge category-badge-consonants w-100">
+                            <div class="display-6 mb-1">{{ error_categories.consonants }}</div>
+                            <div>Lỗi phụ âm</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="category-badge category-badge-ending w-100">
+                            <div class="display-6 mb-1">{{ error_categories.ending_sounds }}</div>
+                            <div>Lỗi âm cuối</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="category-badge category-badge-clusters w-100">
+                            <div class="display-6 mb-1">{{ error_categories.clusters }}</div>
+                            <div>Lỗi tổ hợp âm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Recommendations -->
+        <div class="col-lg-4">
+            <div class="error-bar-container sticky-top" style="top: 80px;">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                    Đề xuất luyện tập
+                </h4>
+                <p class="text-muted mb-4">Các bài học bạn nên ôn lại</p>
+                
+                {% if recommendations %}
+                    {% for rec in recommendations %}
+                    <div class="recommendation-card priority-{{ rec.priority }}">
+                        <div class="d-flex align-items-start gap-2 mb-2">
+                            {% if rec.priority == 'critical' %}
+                                <i class="fas fa-exclamation-circle text-danger mt-1"></i>
+                            {% elif rec.priority == 'high' %}
+                                <i class="fas fa-fire text-warning mt-1"></i>
+                            {% else %}
+                                <i class="fas fa-arrow-up text-info mt-1"></i>
+                            {% endif %}
+                            <div>
+                                <h6 class="mb-1">{{ rec.title }}</h6>
+                                <small class="text-muted">{{ rec.reason }}</small>
+                            </div>
+                        </div>
+                        <a href="{% url 'curriculum:pronunciation-lesson' slug=rec.lesson.slug %}" 
+                           class="btn btn-sm btn-primary w-100 mt-2">
+                            <i class="fas fa-play me-1"></i>Bắt đầu
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-thumbs-up fa-2x text-success mb-2"></i>
+                        <p>Không có gợi ý đặc biệt. Tiếp tục học tốt!</p>
+                    </div>
+                {% endif %}
+                
+                <div class="alert alert-info mt-3 border-0">
+                    <h6 class="alert-heading mb-2">
+                        <i class="fas fa-info-circle me-1"></i>Mẹo
+                    </h6>
+                    <small>
+                        Luyện tập âm hay sai 10-15 phút mỗi ngày sẽ cải thiện độ chính xác nhanh chóng!
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="fas fa-check-circle"></i>
+        <h3 class="h4 fw-bold mb-3">Chưa có dữ liệu phân tích</h3>
+        <p class="text-muted mb-4">
+            Bạn cần hoàn thành một số bài học trước để hệ thống có thể phân tích lỗi của bạn.
+        </p>
+        <a href="{% url 'curriculum:pronunciation-library' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-rocket me-2"></i>Bắt đầu học ngay
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animate error bars on load
+document.addEventListener('DOMContentLoaded', function() {
+    const bars = document.querySelectorAll('.error-bar-fill');
+    bars.forEach((bar, index) => {
+        const targetWidth = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = targetWidth;
+        }, 100 * index);
+    });
+});
+</script>
+{% endblock %}

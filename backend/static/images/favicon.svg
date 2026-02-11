@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Favicon - English Learning App -->
+  <rect width="64" height="64" rx="12" fill="#F47C26"/>
+  <text x="32" y="44" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white">
+    E
+  </text>
+  <circle cx="45" cy="18" r="4" fill="#FFD700"/>
+</svg>

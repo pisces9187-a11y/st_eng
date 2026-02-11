@@ -1,0 +1,156 @@
+{% extends "base/_base_auth.html" %}
+{% load static %}
+
+{% block title %}Đăng xuất - EnglishMaster{% endblock %}
+{% block meta_description %}Đăng xuất khỏi tài khoản EnglishMaster{% endblock %}
+
+{% block auth_content %}
+<div class="auth-success-page text-center">
+    <div class="logout-icon mb-4">
+        <i class="fas fa-sign-out-alt"></i>
+    </div>
+    <h1 class="auth-title">Đăng xuất thành công!</h1>
+    <p class="auth-subtitle mb-4">Cảm ơn bạn đã sử dụng EnglishMaster.<br>Hẹn gặp lại bạn sớm!</p>
+    
+    <div class="d-flex flex-column gap-3">
+        <a href="{% url 'users:login' %}" class="btn btn-primary-orange btn-lg">
+            <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập lại
+        </a>
+        <a href="/" class="btn btn-outline-secondary">
+            <i class="fas fa-home me-2"></i>Về trang chủ
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block auth_footer %}{% endblock %}
+
+{% block page_css %}
+<style>
+    .logout-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        background: var(--primary-orange-light);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-orange);
+        font-size: 2.5rem;
+        animation: icon-pop 0.4s ease;
+    }
+    
+    @keyframes icon-pop {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block page_js %}
+<script>
+// ================================
+// Storage Keys
+// ================================
+const STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+    USER: 'user',
+    REMEMBERED_EMAIL: 'remembered_email'
+};
+
+// ================================
+// Logout Logic
+// ================================
+document.addEventListener('DOMContentLoaded', async function() {
+    const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    
+    // Call logout API to blacklist token AND clear Django session
+    try {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        
+        const response = await fetch('/api/v1/auth/logout/', {
+            method: 'POST',
+            headers: headers,
+            credentials: 'include',  // Include cookies
+            body: JSON.stringify({
+                refresh_token: refreshToken
+            })
+        });
+        
+        console.log('Logout API response:', response.status);
+    } catch (error) {
+        console.error('Logout API error:', error);
+    }
+    
+    // ALWAYS clear local storage and cookies (even if API fails)
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    
+    // Clear JWT cookies
+    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax';
+    document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax';
+    
+    // Clear Django session cookie
+    document.cookie = 'sessionid=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax';
+    document.cookie = 'csrftoken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax';
+    
+    console.log('✅ All authentication data cleared (localStorage + cookies)');
+});
+        
+        const body = {};
+        if (refreshToken) {
+            body.refresh = refreshToken;
+        }
+        
+        await fetch('/api/v1/auth/logout/', {
+            method: 'POST',
+            headers: headers,
+            credentials: 'include', // IMPORTANT: Include cookies to logout Django session
+            body: JSON.stringify(body)
+        });
+        console.log('Logged out successfully (JWT + Session)');
+    } catch (error) {
+        console.log('Logout API error (ignored):', error);
+    }
+    
+    // Clear all auth data from local storage
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem('user_data'); // Also remove user_data for compatibility
+    // Keep remembered_email for convenience
+    
+    // Clear ALL authentication cookies (JWT + Django session)
+    document.cookie = 'access_token=; path=/; max-age=0; SameSite=Lax';
+    document.cookie = 'refresh_token=; path=/; max-age=0; SameSite=Lax';
+    document.cookie = 'sessionid=; path=/; max-age=0; SameSite=Lax'; // Django session
+    document.cookie = 'csrftoken=; path=/; max-age=0; SameSite=Lax'; // CSRF token
+    
+    console.log('All cookies cleared - checking remaining cookies:');
+    console.log('Cookies:', document.cookie);
+    
+    // Clear session storage too
+    sessionStorage.clear();
+    
+    // Update body classes
+    document.body.classList.remove('user-authenticated');
+    document.body.classList.add('user-guest');
+    
+    // Dispatch event to update navbar
+    window.dispatchEvent(new Event('authStateChanged'));
+    
+    console.log('User logged out successfully (all auth data cleared)');
+});
+</script>
+{% endblock %}
